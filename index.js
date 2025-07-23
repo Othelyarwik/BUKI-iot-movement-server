@@ -44,20 +44,16 @@ app.post('/update', (req, res) => {
 app.get('/latest/:token', (req, res) => {
   const s = sessions[req.params.token];
   if (s && Date.now() - s.ts < 30000) {
-    // MODIFIED PART: Nesting x and y values for PictoBlox
+    // MODIFIED PART: Nesting x and y values for PictoBlox (2 levels deep)
     res.json({
       x: {
-        level1: {
-          level2: {
-            data: s.x // This is the actual X value
-          }
+        level1: { // This key will go into the first blank oval in PictoBlox
+          data: s.x // This key will go into the second blank oval, and its value is the actual X
         }
       },
       y: {
         level1: {
-          level2: {
-            data: s.y // This is the actual Y value
-          }
+          data: s.y
         }
       }
     });
