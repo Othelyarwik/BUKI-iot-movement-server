@@ -1,3 +1,4 @@
+// index.js — Complete Working Version
 const express = require('express');
 const cors = require('cors');
 const { nanoid } = require('nanoid');
@@ -8,7 +9,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.text());
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const sessions = {};
 
@@ -23,11 +26,13 @@ app.post('/update', (req, res) => {
   const { token, x, y } = data;
   if (sessions[token]) {
     sessions[token] = { x, y, ts: Date.now() };
-    return res.json({ ok: true });
+    res.json({ ok: true });
+  } else {
+    res.status(400).json({ error: 'Invalid token' });
   }
-  res.status(400).json({ error: 'Invalid token' });
 });
 
+// 🔄 Flat JSON version for easy parsing in PictoBlox
 app.get('/latest/:token', (req, res) => {
   const s = sessions[req.params.token];
   if (s && Date.now() - s.ts < 30000) {
