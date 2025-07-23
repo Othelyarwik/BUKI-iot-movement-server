@@ -1,35 +1,38 @@
-// 1. Load needed modules
 const express = require('express');
 const cors = require('cors');
 const { nanoid } = require('nanoid');
 const path = require('path');
 
-// 2. Create server app
 const app = express();
 app.use(cors());
+
+// Parse both application/json and text/plain bodies
 app.use(express.json());
+app.use(express.text());
 
-// 3. Serve static files from /public
 app.use(express.static(path.join(__dirname, 'public')));
-
-// 4. Redundantly serve index.html at root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 5. Session data
 const sessions = {};
 
-// 6. Give students unique tokens
 app.post('/connect', (req, res) => {
   const token = nanoid(8);
   sessions[token] = { x: 0, y: 0, ts: Date.now() };
   res.json({ token });
 });
 
-// 7. Save phone motion data
 app.post('/update', (req, res) => {
-  const { token, x, y } = req.body;
+  let data = req.body;
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data);
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON' });
+    }
+  }
+  const { token, x, y } = data;
   if (sessions[token]) {
     sessions[token] = { x, y, ts: Date.now() };
     res.json({ ok: true });
@@ -38,7 +41,6 @@ app.post('/update', (req, res) => {
   }
 });
 
-// 8. Fetch the latest motion values
 app.get('/latest/:token', (req, res) => {
   const s = sessions[req.params.token];
   if (s && Date.now() - s.ts < 30000) {
@@ -48,6 +50,5 @@ app.get('/latest/:token', (req, res) => {
   }
 });
 
-// 9. Start HTTP server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
