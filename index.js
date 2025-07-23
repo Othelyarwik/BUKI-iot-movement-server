@@ -5,15 +5,10 @@ const path = require('path');
 
 const app = express();
 app.use(cors());
-
-// Parse both application/json and text/plain bodies
 app.use(express.json());
 app.use(express.text());
-
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const sessions = {};
 
@@ -24,39 +19,19 @@ app.post('/connect', (req, res) => {
 });
 
 app.post('/update', (req, res) => {
-  let data = req.body;
-  if (typeof data === 'string') {
-    try {
-      data = JSON.parse(data);
-    } catch {
-      return res.status(400).json({ error: 'Invalid JSON' });
-    }
-  }
+  let data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const { token, x, y } = data;
   if (sessions[token]) {
     sessions[token] = { x, y, ts: Date.now() };
-    res.json({ ok: true });
-  } else {
-    res.status(400).json({ error: 'Invalid token' });
+    return res.json({ ok: true });
   }
+  res.status(400).json({ error: 'Invalid token' });
 });
 
 app.get('/latest/:token', (req, res) => {
   const s = sessions[req.params.token];
   if (s && Date.now() - s.ts < 30000) {
-    // MODIFIED PART: Nesting x and y values for PictoBlox (2 levels deep)
-    res.json({
-      x: {
-        level1: { // This key will go into the first blank oval in PictoBlox
-          data: s.x // This key will go into the second blank oval, and its value is the actual X
-        }
-      },
-      y: {
-        level1: {
-          data: s.y
-        }
-      }
-    });
+    res.json({ x: s.x, y: s.y });
   } else {
     res.status(404).json({ error: 'Session expired or not found' });
   }
