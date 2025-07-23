@@ -44,7 +44,23 @@ app.post('/update', (req, res) => {
 app.get('/latest/:token', (req, res) => {
   const s = sessions[req.params.token];
   if (s && Date.now() - s.ts < 30000) {
-    res.json({ x: s.x, y: s.y });
+    // MODIFIED PART: Nesting x and y values for PictoBlox
+    res.json({
+      x: {
+        level1: {
+          level2: {
+            data: s.x // This is the actual X value
+          }
+        }
+      },
+      y: {
+        level1: {
+          level2: {
+            data: s.y // This is the actual Y value
+          }
+        }
+      }
+    });
   } else {
     res.status(404).json({ error: 'Session expired or not found' });
   }
