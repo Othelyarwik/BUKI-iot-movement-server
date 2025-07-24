@@ -16,43 +16,29 @@
     <script>
         let token = '';
 
-        // Request permission for motion sensors
-        if ('permissions' in navigator) {
-            navigator.permissions.query({ name: 'accelerometer' }).then(permissionStatus => {
-                if (permissionStatus.state === 'denied') {
-                    alert('Motion sensor access is denied. Please allow it in Brave settings.');
-                }
-                permissionStatus.onchange = () => {
-                    if (permissionStatus.state === 'granted') {
-                        startMotionListener();
-                    }
-                };
-            });
-        }
-
         document.getElementById('start').onclick = async () => {
             const res = await fetch('/start', { method: 'POST' });
             const data = await res.json();
             token = data.token;
             document.getElementById('token').innerText = token;
-            startMotionListener();
-        };
 
-        function startMotionListener() {
+            // Request motion sensor permission
             if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
-                DeviceMotionEvent.requestPermission().then(permissionState => {
+                try {
+                    const permissionState = await DeviceMotionEvent.requestPermission();
                     if (permissionState === 'granted') {
                         window.addEventListener('devicemotion', handleMotion);
                     } else {
-                        alert('Motion sensor permission denied. Enable it in Brave settings.');
+                        alert('Motion sensor permission denied. Please allow access in Brave settings.');
                     }
-                }).catch(error => {
+                } catch (error) {
                     alert('Error requesting permission: ' + error);
-                });
+                    window.addEventListener('devicemotion', handleMotion); // Fallback for no permission prompt
+                }
             } else {
                 window.addEventListener('devicemotion', handleMotion); // For browsers without permission prompt
             }
-        }
+        };
 
         function handleMotion(e) {
             const accel = e.accelerationIncludingGravity || e.acceleration || {};
