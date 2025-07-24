@@ -29,33 +29,55 @@ app.get('/', (req, res) => {
 
 // Create new session
 app.post('/start', (req, res) => {
-    // Custom alphabet without confusing characters: no l, I, O, 0, 1
-    const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
-    
-    // Generate 8-character token using only clear characters
-    let token = '';
-    for (let i = 0; i < 8; i++) {
-        token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
+    try {
+        console.log('POST /start endpoint called');
+        
+        // Custom alphabet without confusing characters: no l, I, O, 0, 1
+        const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
+        
+        // Generate 8-character token using only clear characters
+        let token = '';
+        for (let i = 0; i < 8; i++) {
+            token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
+        }
+        
+        sessions[token] = { x: 0, y: 0, ts: Date.now() };
+        console.log(`✅ Created session: ${token}`);
+        
+        // Ensure we send proper JSON
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json({ token });
+        
+    } catch (error) {
+        console.error('❌ Error in /start:', error);
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500).json({ error: 'Failed to create session' });
     }
-    
-    sessions[token] = { x: 0, y: 0, ts: Date.now() };
-    console.log(`Created session: ${token}`);
-    res.json({ token });
 });
 
 // Update phone movement data
 app.post('/update', (req, res) => {
-    const { token, x, y } = req.body;
-    console.log(`Update received - Token: ${token}, X: ${x}, Y: ${y}`);
-    
-    if (sessions[token]) {
-        sessions[token] = { x: parseFloat(x) || 0, y: parseFloat(y) || 0, ts: Date.now() };
-        console.log(`✅ Session updated for ${token}: x=${x}, y=${y}`);
-        res.json({ ok: true });
-    } else {
-        console.log(`❌ Invalid token in update: ${token}`);
-        console.log(`Available tokens: ${Object.keys(sessions)}`);
-        res.status(400).json({ error: 'Invalid token' });
+    try {
+        const { token, x, y } = req.body;
+        console.log(`Update received - Token: ${token}, X: ${x}, Y: ${y}`);
+        
+        if (sessions[token]) {
+            sessions[token] = { x: parseFloat(x) || 0, y: parseFloat(y) || 0, ts: Date.now() };
+            console.log(`✅ Session updated for ${token}: x=${x}, y=${y}`);
+            
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({ ok: true });
+        } else {
+            console.log(`❌ Invalid token in update: ${token}`);
+            console.log(`Available tokens: ${Object.keys(sessions)}`);
+            
+            res.setHeader('Content-Type', 'application/json');
+            res.status(400).json({ error: 'Invalid token' });
+        }
+    } catch (error) {
+        console.error('❌ Error in /update:', error);
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500).json({ error: 'Update failed' });
     }
 });
 
