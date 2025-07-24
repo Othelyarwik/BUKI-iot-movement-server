@@ -1,24 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="bg">
 <head>
+    <meta charset="UTF-8">
     <title>Phone Controller</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Arial', sans-serif; 
             text-align: center; 
             padding: 20px; 
             background: #7A74CE;
             color: white;
-            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
+        
         .container {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             padding: 30px;
             margin: 20px auto;
             max-width: 400px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
         button { 
             font-size: 18px; 
             padding: 15px 30px; 
@@ -29,135 +47,371 @@
             cursor: pointer;
             margin: 10px;
             font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 200px;
         }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .token-display {
+            background: #3F469D;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .token-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .token-value {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         .values {
             background: #3F469D;
             padding: 20px;
             border-radius: 15px;
             margin: 20px 0;
             display: none;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .values h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .value-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+        
         .value {
-            display: inline-block;
-            margin: 0 15px;
             font-family: 'Courier New', monospace;
             background: rgba(255, 255, 255, 0.15);
-            padding: 8px 12px;
+            padding: 12px 16px;
             border-radius: 8px;
-            min-width: 60px;
+            min-width: 80px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .value-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .value-number {
+            font-size: 16px;
+            font-weight: normal;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .instructions {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📱 Phone Controller</h1>
-        <button id="connect">Connect & Start</button>
-        <p>Token: <span id="token">-</span></p>
+        <p>Контролирайте играта с движенията на телефона</p>
+        
+        <button id="connect">🔗 Свържи се</button>
+        
+        <div class="token-display">
+            <div class="token-label">Код за връзка:</div>
+            <div class="token-value" id="token">Няма връзка</div>
+        </div>
         
         <div class="values" id="values">
-            <div class="value">X: <span id="x">0.0</span></div>
-            <div class="value">Y: <span id="y">0.0</span></div>
+            <h3>📊 Данни за движение</h3>
+            <div class="value-row">
+                <div class="value">
+                    <div class="value-label">X (ляво/дясно)</div>
+                    <div class="value-number" id="x">0.0</div>
+                </div>
+                <div class="value">
+                    <div class="value-label">Y (нагоре/надолу)</div>
+                    <div class="value-number" id="y">0.0</div>
+                </div>
+            </div>
+            <div class="status" id="status">
+                Готов за движение...
+            </div>
+        </div>
+        
+        <div class="instructions">
+            💡 <strong>Инструкции:</strong><br>
+            1. Натиснете "Свържи се"<br>
+            2. Разрешете достъп до сензорите<br>
+            3. Въведете кода в PictoBlox<br>
+            4. Движете телефона за контрол
         </div>
     </div>
 
     <script>
+        console.log('📱 Phone Controller started');
+        
+        // Global variables
         let token = '';
         let connected = false;
+        let velocityX = 0;
+        let velocityY = 0;
+        let baselineX = null;
+        let baselineY = null;
+        let lastDisplayUpdate = 0;
+        let updateCount = 0;
 
-        document.getElementById('connect').onclick = async () => {
+        // DOM elements
+        const connectButton = document.getElementById('connect');
+        const tokenElement = document.getElementById('token');
+        const valuesElement = document.getElementById('values');
+        const xElement = document.getElementById('x');
+        const yElement = document.getElementById('y');
+        const statusElement = document.getElementById('status');
+
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            console.log(`📊 Status: ${message}`);
+        }
+
+        // Connect button handler
+        connectButton.onclick = async () => {
+            console.log('🔗 Connect button clicked');
+            connectButton.disabled = true;
+            connectButton.textContent = 'Свързване...';
+            
             try {
-                // Get token
-                const response = await fetch('/start', { method: 'POST' });
-                const data = await response.json();
-                token = data.token;
-                document.getElementById('token').textContent = token;
+                console.log('📡 Requesting session token...');
                 
-                // Request motion permission
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    const permission = await DeviceMotionEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        alert('Motion permission required');
-                        return;
+                // Request token from server
+                const response = await fetch('/start', { 
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
+                });
+                
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('📡 Raw response:', responseText);
+                
+                const data = JSON.parse(responseText);
+                console.log('📡 Parsed response:', data);
+                
+                if (!data.token) {
+                    throw new Error('No token received from server');
+                }
+                
+                token = data.token;
+                tokenElement.textContent = token;
+                console.log('✅ Token received:', token);
+                
+                // Request motion sensor permission
+                console.log('📱 Requesting motion sensor permission...');
+                
+                if (typeof DeviceMotionEvent !== 'undefined' &&
+                    typeof DeviceMotionEvent.requestPermission === 'function') {
+                    
+                    console.log('🍎 iOS device detected, requesting permission...');
+                    const permission = await DeviceMotionEvent.requestPermission();
+                    
+                    if (permission !== 'granted') {
+                        throw new Error('Motion sensor permission denied');
+                    }
+                    console.log('✅ iOS motion permission granted');
+                } else {
+                    console.log('🤖 Android/Desktop device, no permission needed');
                 }
                 
                 // Start motion tracking
-                window.addEventListener('devicemotion', handleMotion);
+                console.log('🎯 Starting motion tracking...');
+                window.addEventListener('devicemotion', handleMotion, { passive: true });
+                
+                // Update UI
                 connected = true;
-                document.getElementById('values').style.display = 'block';
-                document.getElementById('connect').textContent = 'Connected ✓';
-                document.getElementById('connect').style.background = '#6CC5A1';
+                valuesElement.style.display = 'block';
+                connectButton.textContent = '✅ Свързан';
+                connectButton.style.background = '#6CC5A1';
+                updateStatus('Свързан успешно! Движете телефона.', 'success');
+                
+                console.log('🎉 Connection successful!');
                 
             } catch (error) {
-                alert('Connection failed: ' + error.message);
+                console.error('❌ Connection failed:', error);
+                alert(`Грешка при свързване: ${error.message}`);
+                
+                // Reset UI
+                connectButton.disabled = false;
+                connectButton.textContent = '🔗 Свържи се';
+                connectButton.style.background = '#F9AC7E';
+                tokenElement.textContent = 'Грешка при свързване';
+                updateStatus(`Грешка: ${error.message}`, 'error');
             }
         };
 
-        let lastX = 0, lastY = 0;
-        let velocityX = 0, velocityY = 0;
-        let isInitialized = false;
-        let lastDisplayUpdate = 0;
-
+        // Motion event handler
         function handleMotion(event) {
-            if (!connected) return;
-            
-            const accel = event.accelerationIncludingGravity || {};
-            const currentX = parseFloat(accel.x) || 0;
-            const currentY = parseFloat(accel.y) || 0;
-            
-            // Initialize baseline on first reading
-            if (!isInitialized) {
-                lastX = currentX;
-                lastY = currentY;
-                isInitialized = true;
+            if (!connected || !token) {
                 return;
             }
             
-            // Calculate change in acceleration (indicates movement)
-            const deltaX = currentX - lastX;
-            const deltaY = currentY - lastY;
-            
-            // Higher threshold to avoid noise when stationary
-            const threshold = 0.3;
-            const decay = 0.7; // Faster decay when not moving
-            
-            // Only update velocity if there's significant movement
-            if (Math.abs(deltaX) > threshold) {
-                velocityX = Math.max(-10, Math.min(10, deltaX * 30));
-            } else {
-                // Decay velocity when no movement detected
-                velocityX *= decay;
-                if (Math.abs(velocityX) < 0.8) velocityX = 0;
+            try {
+                // Get acceleration data
+                const accel = event.accelerationIncludingGravity || event.acceleration || {};
+                const rawX = parseFloat(accel.x) || 0;
+                const rawY = parseFloat(accel.y) || 0;
+
+                // Set baseline on first reading
+                if (baselineX === null || baselineY === null) {
+                    baselineX = rawX;
+                    baselineY = rawY;
+                    console.log('📏 Baseline set:', { baselineX, baselineY });
+                    return;
+                }
+
+                // Calculate acceleration difference from baseline
+                const deltaX = rawX - baselineX;
+                const deltaY = rawY - baselineY;
+
+                // Motion detection with threshold
+                const threshold = 0.3;
+                const decay = 0.8;
+
+                // Update velocities based on movement
+                if (Math.abs(deltaX) > threshold) {
+                    velocityX = Math.max(-10, Math.min(10, deltaX * 20));
+                } else {
+                    velocityX *= decay;
+                    if (Math.abs(velocityX) < 0.5) velocityX = 0;
+                }
+
+                if (Math.abs(deltaY) > threshold) {
+                    velocityY = Math.max(-10, Math.min(10, deltaY * 20));
+                } else {
+                    velocityY *= decay;
+                    if (Math.abs(velocityY) < 0.5) velocityY = 0;
+                }
+
+                // Update display (throttled to reduce visual noise)
+                const now = Date.now();
+                if (now - lastDisplayUpdate > 200) {
+                    xElement.textContent = velocityX.toFixed(1);
+                    yElement.textContent = velocityY.toFixed(1);
+                    lastDisplayUpdate = now;
+                }
+                
+                // Send update to server
+                updateCount++;
+                sendUpdate(velocityX, velocityY);
+                
+                // Update status periodically
+                if (updateCount % 50 === 0) {
+                    updateStatus(`Активен (${updateCount} актуализации)`, 'info');
+                }
+                
+            } catch (error) {
+                console.error('❌ Motion handling error:', error);
             }
-            
-            if (Math.abs(deltaY) > threshold) {
-                velocityY = Math.max(-10, Math.min(10, deltaY * 30));
-            } else {
-                // Decay velocity when no movement detected  
-                velocityY *= decay;
-                if (Math.abs(velocityY) < 0.8) velocityY = 0;
-            }
-            
-            // Update baseline for next calculation
-            lastX = currentX;
-            lastY = currentY;
-            
-            // Update display only every 200ms to reduce visual noise
-            const now = Date.now();
-            if (now - lastDisplayUpdate > 200) {
-                document.getElementById('x').textContent = velocityX.toFixed(1);
-                document.getElementById('y').textContent = velocityY.toFixed(1);
-                lastDisplayUpdate = now;
-            }
-            
-            // Send to server
-            fetch('/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, x: velocityX, y: velocityY })
-            }).catch(() => {}); // Ignore errors
         }
+
+        // Send motion data to server
+        async function sendUpdate(x, y) {
+            try {
+                const updateData = { token, x, y };
+                
+                const response = await fetch('/update', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    console.warn(`⚠️ Update failed: ${response.status}`);
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                // Log successful updates occasionally
+                if (updateCount % 100 === 0) {
+                    console.log(`📤 Update ${updateCount} sent successfully:`, { x, y });
+                }
+                
+            } catch (error) {
+                console.error('❌ Send update error:', error);
+                
+                // Show connection error in UI
+                if (updateCount % 20 === 0) {
+                    updateStatus('Проблем с връзката...', 'error');
+                }
+            }
+        }
+
+        // Page visibility handling
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('📱 Page hidden');
+            } else {
+                console.log('📱 Page visible');
+                if (connected) {
+                    updateStatus('Връзката е активна', 'success');
+                }
+            }
+        });
+
+        // Initial page load
+        console.log('🚀 Phone Controller initialized');
+        updateStatus('Готов за свързване', 'info');
     </script>
 </body>
 </html>
