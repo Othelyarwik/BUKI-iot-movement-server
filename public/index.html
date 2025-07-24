@@ -1,96 +1,312 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IoT Motion Game</title>
+    <title>IoT Игра с Движение</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        button { font-size: 18px; padding: 10px 20px; }
-        #token { font-weight: bold; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background: #7A74CE;
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        button { 
+            font-size: 18px; 
+            padding: 15px 30px; 
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #F9AC7E, #F9AC7E);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+            background: linear-gradient(45deg, #F9AC7E, #FF9F6B);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        #token { 
+            font-weight: bold; 
+            background: linear-gradient(135deg, #6CC5A1, #5BB892);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: inline-block;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(108, 197, 161, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .status.success { background: linear-gradient(135deg, #6CC5A1, #5BB892); box-shadow: 0 2px 10px rgba(108, 197, 161, 0.3); }
+        .status.error { background: linear-gradient(135deg, #F9AC7E, #FF9F6B); box-shadow: 0 2px 10px rgba(249, 172, 126, 0.3); }
+        .status.info { background: linear-gradient(135deg, #3F469D, #4A5494); box-shadow: 0 2px 10px rgba(63, 70, 157, 0.3); }
+        .motion-data {
+            background: linear-gradient(135deg, #3F469D, #4A5494);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 6px 20px rgba(63, 70, 157, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .axis {
+            display: inline-block;
+            margin: 0 15px;
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body>
-    <h1>IoT Motion Game</h1>
-    <p>Click below to start and get your token:</p>
-    <button id="start">Start & Connect</button>
-    <p>Your token: <span id="token">-</span></p>
+    <div class="container">
+        <h1>🎮 IoT Игра с Движение</h1>
+        <p>Свържете сензорите за движение на телефона си, за да контролирате играта!</p>
+        
+        <button id="start">🚀 Стартирай и Свържи</button>
+        <button id="test-server" style="background: linear-gradient(45deg, #6CC5A1, #5BB892);">📡 Тествай Сървър</button>
+        
+        <div class="status" id="status">Готов за свързване...</div>
+        
+        <p>Вашият токен: <span id="token">-</span></p>
+        
+        <div class="motion-data" id="motion-data" style="display: none;">
+            <h3>📱 Данни за Движение</h3>
+            <div class="axis">X: <span id="x-val">0</span></div>
+            <div class="axis">Y: <span id="y-val">0</span></div>
+            <div style="margin-top: 10px; font-size: 12px;">
+                Последна актуализация: <span id="last-update">Никога</span>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM fully loaded'); // Debug step 1
-            let token = '';
+        let token = '';
+        let isConnected = false;
+        let motionEnabled = false;
 
-            const startButton = document.getElementById('start');
-            if (startButton) {
-                console.log('Start button found'); // Debug step 2
-                startButton.onclick = async () => {
-                    console.log('Button clicked'); // Debug step 3
-                    alert('Initiating connection...');
-                    try {
-                        const res = await fetch('/start', {
-                            method: 'POST',
-                            mode: 'cors' // Explicitly set CORS mode
-                        });
-                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                        const data = await res.json();
-                        console.log('Fetch response:', data); // Debug step 4
-                        alert(`Fetch succeeded, data: ${JSON.stringify(data)}`);
-                        token = data.token;
-                        document.getElementById('token').innerText = token;
-                        alert(`Token set to: ${token}`);
+        // Utility functions
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
 
-                        // Setup motion listener
-                        if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
-                            try {
-                                const permissionState = await DeviceMotionEvent.requestPermission();
-                                if (permissionState === 'granted') {
-                                    window.addEventListener('devicemotion', handleMotion);
-                                } else {
-                                    alert('Motion sensor permission denied. Please allow access in browser settings.');
-                                }
-                            } catch (error) {
-                                alert('Error requesting permission: ' + error);
-                                window.addEventListener('devicemotion', handleMotion); // Fallback
-                            }
-                        } else {
-                            window.addEventListener('devicemotion', handleMotion); // For browsers without prompt
-                        }
-                    } catch (error) {
-                        console.error('Fetch error:', error); // Debug step 5
-                        alert(`Error: ${error.message}`);
+        function updateMotionDisplay(x, y) {
+            document.getElementById('x-val').textContent = x.toFixed(3);
+            document.getElementById('y-val').textContent = y.toFixed(3);
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Server communication functions
+        async function testServer() {
+            updateStatus('Тестване на връзката със сървъра...', 'info');
+            try {
+                const response = await fetch('/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    updateStatus('✅ Сървърът е достъпен!', 'success');
+                    return true;
+                } else {
+                    updateStatus(`❌ Грешка на сървъра: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus(`❌ Сървърът е недостъпен: ${error.message}`, 'error');
+                console.error('Server test failed:', error);
+                return false;
+            }
+        }
+
+        async function startConnection() {
+            updateStatus('Започване на връзката...', 'info');
+            
+            try {
+                const response = await fetch('/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Start response:', data);
+                
+                if (data.token) {
+                    token = data.token;
+                    document.getElementById('token').textContent = token;
+                    isConnected = true;
+                    updateStatus('✅ Токенът е генериран успешно!', 'success');
+                    
+                    // Now request motion permissions
+                    await requestMotionPermission();
+                    return true;
+                } else {
+                    throw new Error('Не е получен токен от сървъра');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Връзката неуспешна: ${error.message}`, 'error');
+                console.error('Start connection error:', error);
+                return false;
+            }
+        }
+
+        async function requestMotionPermission() {
+            updateStatus('Заявка за разрешение за сензори за движение...', 'info');
+            
+            try {
+                // Check if we're on iOS and need permission
+                if (typeof DeviceMotionEvent !== 'undefined' && 
+                    typeof DeviceMotionEvent.requestPermission === 'function') {
+                    
+                    console.log('iOS detected, requesting permission...');
+                    const permissionState = await DeviceMotionEvent.requestPermission();
+                    
+                    if (permissionState === 'granted') {
+                        enableMotionTracking();
+                        updateStatus('✅ Разрешение за движение е дадено!', 'success');
+                    } else {
+                        updateStatus('❌ Разрешение за движение е отказано', 'error');
+                        alert('Моля, активирайте сензорите за движение в настройките на браузъра, за да използвате тази функция.');
                     }
-                };
-            } else {
-                console.error('Start button not found in DOM'); // Debug step 6
-                alert('Error: Start button not found!');
+                } else {
+                    // Android or desktop - try to enable directly
+                    console.log('Non-iOS device, enabling motion tracking...');
+                    enableMotionTracking();
+                    updateStatus('✅ Проследяването на движение е активирано!', 'success');
+                }
+            } catch (error) {
+                console.error('Permission request error:', error);
+                updateStatus('⚠️ Грешка при разрешението, опитваме въпреки това...', 'info');
+                enableMotionTracking(); // Try anyway
             }
+        }
 
-            // Fallback to check server status
-            fetch('/').then(res => {
-                console.log('Server status check:', res.status);
-            }).catch(err => {
-                console.error('Server unreachable:', err);
-            });
-        });
+        function enableMotionTracking() {
+            if (motionEnabled) return;
+            
+            window.addEventListener('devicemotion', handleMotion, { passive: true });
+            motionEnabled = true;
+            document.getElementById('motion-data').style.display = 'block';
+            console.log('Motion event listener added');
+        }
 
-        function handleMotion(e) {
-            const accel = e.accelerationIncludingGravity || e.acceleration || {};
-            const x = accel.x || 0;
-            const y = accel.y || 0;
-            alert(`Motion detected: x=${x}, y=${y}`);
-            if (x === 0 && y === 0) {
-                console.log('Full event data:', e);
-            }
+        async function handleMotion(event) {
+            if (!isConnected || !token) return;
+
+            // Get acceleration data with fallbacks
+            const accel = event.accelerationIncludingGravity || event.acceleration || {};
+            const x = parseFloat(accel.x) || 0;
+            const y = parseFloat(accel.y) || 0;
+
+            // Update display
+            updateMotionDisplay(x, y);
+
+            // Skip sending if values are exactly zero (might indicate no data)
+            if (x === 0 && y === 0) return;
+
             try {
                 const response = await fetch('/update', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token, x, y })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, x, y }),
+                    mode: 'cors'
                 });
+
+                if (!response.ok) {
+                    console.error('Update failed:', response.status, response.statusText);
+                }
+                
                 const result = await response.json();
-                console.log('Update response:', result);
+                console.log('Motion update sent:', { x, y }, 'Response:', result);
+                
             } catch (error) {
-                alert(`Fetch error: ${error}`);
+                console.error('Motion update error:', error);
+                // Don't spam error messages for motion updates
             }
         }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing...');
+            
+            const startButton = document.getElementById('start');
+            const testButton = document.getElementById('test-server');
+            
+            if (startButton) {
+                startButton.onclick = async () => {
+                    startButton.disabled = true;
+                    const success = await startConnection();
+                    if (success) {
+                        startButton.textContent = '✅ Свързан';
+                        startButton.style.background = 'linear-gradient(45deg, #6CC5A1, #5BB892)';
+                    } else {
+                        startButton.disabled = false;
+                    }
+                };
+            } else {
+                console.error('Start button not found!');
+                updateStatus('❌ Бутонът за стартиране не е намерен!', 'error');
+            }
+
+            if (testButton) {
+                testButton.onclick = async () => {
+                    testButton.disabled = true;
+                    await testServer();
+                    testButton.disabled = false;
+                };
+            }
+
+            // Initial server test
+            testServer();
+        });
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isConnected) {
+                console.log('Страницата стана видима, проверяване на връзката...');
+                testServer();
+            }
+        });
     </script>
 </body>
 </html>
