@@ -20,14 +20,21 @@
             const data = await res.json();
             token = data.token;
             document.getElementById('token').innerText = token;
-            window.addEventListener('devicemotion', e => {
+            window.addEventListener('devicemotion', async e => {
                 const x = e.acceleration.x || 0;
                 const y = e.acceleration.y || 0;
-                fetch('/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token, x, y })
-                });
+                alert(`Motion detected: x=${x}, y=${y}`);
+                try {
+                    const response = await fetch('/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token, x, y })
+                    });
+                    const result = await response.json();
+                    console.log('Update response:', result);
+                } catch (error) {
+                    alert(`Fetch error: ${error}`);
+                }
             });
         };
     </script>
