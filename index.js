@@ -23,6 +23,7 @@ app.post('/update', (req, res) => {
     const { token, x, y } = req.body;
     if (sessions[token]) {
         sessions[token] = { x, y, ts: Date.now() };
+        console.log(`Updated ${token} with x: ${x}, y: ${y}`); // Debug log
         res.json({ ok: true });
     } else {
         res.status(400).json({ error: 'Invalid token' });
