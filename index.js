@@ -48,28 +48,42 @@ app.post('/update', (req, res) => {
 
 // Get X movement for PictoBlox
 app.get('/x/:token', (req, res) => {
+    console.log(`X endpoint called with token: ${req.params.token}`);
     const session = sessions[req.params.token];
+    
     if (session && Date.now() - session.ts < 60000) {
         const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
+        console.log(`X endpoint returning: ${movement}`);
         res.set('Content-Type', 'text/plain');
-        res.end(movement.toString()); // Send raw number, no JSON quotes
+        res.end(movement.toString());
     } else {
+        console.log(`X endpoint returning default: 0`);
         res.set('Content-Type', 'text/plain');
-        res.end('0'); // Send raw number, no JSON quotes
+        res.end('0');
     }
 });
 
 // Get Y movement for PictoBlox  
 app.get('/y/:token', (req, res) => {
+    console.log(`Y endpoint called with token: ${req.params.token}`);
     const session = sessions[req.params.token];
+    
     if (session && Date.now() - session.ts < 60000) {
         const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.5)));
+        console.log(`Y endpoint returning: ${movement}`);
         res.set('Content-Type', 'text/plain');
-        res.end(movement.toString()); // Send raw number, no JSON quotes
+        res.end(movement.toString());
     } else {
-        res.set('Content-Type', 'text/plain');
-        res.end('0'); // Send raw number, no JSON quotes
+        console.log(`Y endpoint returning default: 0`);
+        res.set('Content-Type', 'text/plain');  
+        res.end('0');
     }
+});
+
+// Test endpoint to verify server is working
+app.get('/test', (req, res) => {
+    res.set('Content-Type', 'text/plain');
+    res.end('Server is working!');
 });
 
 const PORT = process.env.PORT || 3000;
