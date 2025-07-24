@@ -261,6 +261,56 @@ app.get('/sessions', (req, res) => {
     }
 });
 
+// X movement endpoint - returns just the X movement value
+app.get('/x/:token', (req, res) => {
+    try {
+        const token = req.params.token;
+        const session = sessions[token];
+        
+        res.set({
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'text/plain; charset=utf-8'
+        });
+        
+        if (!session || Date.now() - session.ts >= 60000) {
+            return res.send('0');
+        }
+        
+        // Calculate X movement directly
+        const xMovement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
+        res.send(xMovement.toString());
+        
+    } catch (error) {
+        console.error('❌ Error in /x:', error);
+        res.send('0');
+    }
+});
+
+// Y movement endpoint - returns just the Y movement value
+app.get('/y/:token', (req, res) => {
+    try {
+        const token = req.params.token;
+        const session = sessions[token];
+        
+        res.set({
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'text/plain; charset=utf-8'
+        });
+        
+        if (!session || Date.now() - session.ts >= 60000) {
+            return res.send('0');
+        }
+        
+        // Calculate Y movement directly
+        const yMovement = Math.max(-5, Math.min(5, Math.round(session.y * 0.5)));
+        res.send(yMovement.toString());
+        
+    } catch (error) {
+        console.error('❌ Error in /y:', error);
+        res.send('0');
+    }
+});
+
 // Simple endpoint that returns movement values for PictoBlox
 app.get('/simple/:token', (req, res) => {
     try {
