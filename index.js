@@ -267,53 +267,51 @@ app.get('/simple/:token', (req, res) => {
         const token = req.params.token;
         const session = sessions[token];
         
-        // Set headers for speed
+        // Set headers for speed and plain text (no JSON)
         res.set({
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
-            'Content-Type': 'text/plain'
+            'Content-Type': 'text/plain; charset=utf-8'
         });
         
         if (!session) {
-            return res.status(404).send('+00+00');  // No movement
+            return res.send('+00+00');  // Send plain text, no quotes
         }
         
         const age = Date.now() - session.ts;
         if (age >= 60000) {
             delete sessions[token];
-            return res.status(404).send('+00+00');  // No movement
+            return res.send('+00+00');  // Send plain text, no quotes
         }
         
         // Convert velocity to movement values suitable for PictoBlox
-        // Input: velocity -10 to +10
-        // Output: movement -99 to +99 (but we'll limit to -20 to +20 for reasonable sprite speed)
-        
         const formatNumber = (num) => {
-            // Clamp to reasonable movement range
-            const clamped = Math.max(-20, Math.min(20, Math.round(num * 2))); // Scale and clamp
+            // Much smaller scaling for smoother control
+            const scaled = Math.max(-5, Math.min(5, num * 0.5));
+            const rounded = Math.round(scaled);
             
             // Format as +XX or -XX (always 3 characters)
-            if (clamped >= 0) {
-                return '+' + String(clamped).padStart(2, '0');
+            if (rounded >= 0) {
+                return '+' + String(Math.abs(rounded)).padStart(2, '0');
             } else {
-                return String(clamped).padStart(3, '0'); // Negative sign counts as one character
+                return '-' + String(Math.abs(rounded)).padStart(2, '0');
             }
         };
         
         const xFormatted = formatNumber(session.x);
         const yFormatted = formatNumber(session.y);
         
-        // Return format: "+05-03" (6 characters total)
-        // First 3 chars = X movement (+05 = move right 5)
-        // Last 3 chars = Y movement (-03 = move down 3)
+        // Return EXACTLY 6 characters: +05-03 (NO QUOTES!)
         const result = xFormatted + yFormatted;
         
-        console.log(`📡 Movement for ${token}: X=${session.x} Y=${session.y} → ${result}`);
+        console.log(`📡 Plain text for ${token}: ${result} (length: ${result.length})`);
+        
+        // Send raw text without any JSON formatting
         res.send(result);
         
     } catch (error) {
         console.error('❌ Error in /simple:', error);
-        res.status(500).send('+00+00');  // No movement on error
+        res.send('+00+00');  // Plain text, no quotes
     }
 });
 
