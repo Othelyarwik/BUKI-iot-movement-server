@@ -23,9 +23,11 @@
             window.addEventListener('devicemotion', e => {
                 const x = e.acceleration.x || 0;
                 const y = e.acceleration.y || 0;
-                alert(`x: ${x}, y: ${y}`); // Debug alert
-                const blob = new Blob([JSON.stringify({ token, x, y })], { type: 'application/json' });
-                navigator.sendBeacon('/update', blob);
+                fetch('/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, x, y })
+                });
             });
         };
     </script>
