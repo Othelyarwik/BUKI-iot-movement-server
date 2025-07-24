@@ -44,6 +44,8 @@
             background: rgba(255, 255, 255, 0.15);
             padding: 8px 12px;
             border-radius: 8px;
+            min-width: 60px;
+            text-align: center;
         }
     </style>
 </head>
@@ -95,6 +97,7 @@
         let lastX = 0, lastY = 0;
         let velocityX = 0, velocityY = 0;
         let isInitialized = false;
+        let lastDisplayUpdate = 0;
 
         function handleMotion(event) {
             if (!connected) return;
@@ -140,9 +143,13 @@
             lastX = currentX;
             lastY = currentY;
             
-            // Update display
-            document.getElementById('x').textContent = velocityX.toFixed(1);
-            document.getElementById('y').textContent = velocityY.toFixed(1);
+            // Update display only every 200ms to reduce visual noise
+            const now = Date.now();
+            if (now - lastDisplayUpdate > 200) {
+                document.getElementById('x').textContent = velocityX.toFixed(1);
+                document.getElementById('y').textContent = velocityY.toFixed(1);
+                lastDisplayUpdate = now;
+            }
             
             // Send to server
             fetch('/update', {
