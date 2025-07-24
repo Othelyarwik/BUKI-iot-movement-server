@@ -29,7 +29,15 @@ app.get('/', (req, res) => {
 
 // Create new session
 app.post('/start', (req, res) => {
-    const token = nanoid(8);
+    // Custom alphabet without confusing characters: no l, I, O, 0, 1
+    const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
+    
+    // Generate 8-character token using only clear characters
+    let token = '';
+    for (let i = 0; i < 8; i++) {
+        token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
+    }
+    
     sessions[token] = { x: 0, y: 0, ts: Date.now() };
     console.log(`Created session: ${token}`);
     res.json({ token });
