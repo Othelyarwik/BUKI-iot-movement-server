@@ -48,19 +48,51 @@ app.post('/update', (req, res) => {
 
 // Get X movement for PictoBlox
 app.get('/x/:token', (req, res) => {
-    console.log(`X endpoint called with token: ${req.params.token}`);
-    const session = sessions[req.params.token];
+    const requestedToken = req.params.token;
+    console.log(`X endpoint called with token: ${requestedToken}`);
+    console.log(`Available sessions: ${Object.keys(sessions)}`);
     
-    if (session && Date.now() - session.ts < 60000) {
-        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
-        console.log(`X endpoint returning: ${movement}`);
-        res.set('Content-Type', 'text/plain');
-        res.end(movement.toString());
-    } else {
-        console.log(`X endpoint returning default: 0`);
+    const session = sessions[requestedToken];
+    
+    if (!session) {
+        console.log(`❌ No session found for token: ${requestedToken}`);
         res.set('Content-Type', 'text/plain');
         res.end('0');
+        return;
     }
+    
+    const age = Date.now() - session.ts;
+    console.log(`Session age: ${age}ms`);
+    
+    if (age >= 60000) {
+        console.log(`❌ Session expired for token: ${requestedToken}`);
+        delete sessions[requestedToken];
+        res.set('Content-Type', 'text/plain');
+        res.end('0');
+        return;
+    }
+    
+    const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
+    console.log(`✅ X endpoint returning: ${movement} (from session.x: ${session.x})`);
+    res.set('Content-Type', 'text/plain');
+    res.end(movement.toString());
+});
+
+// Debug endpoint to see all sessions
+app.get('/debug/:token', (req, res) => {
+    const requestedToken = req.params.token;
+    const session = sessions[requestedToken];
+    
+    const debugInfo = {
+        requestedToken,
+        sessionExists: !!session,
+        sessionData: session,
+        allTokens: Object.keys(sessions),
+        currentTime: Date.now()
+    };
+    
+    console.log('Debug info:', debugInfo);
+    res.json(debugInfo);
 });
 
 // Get Y movement for PictoBlox  
