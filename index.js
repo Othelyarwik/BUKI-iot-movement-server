@@ -182,9 +182,29 @@ app.get('/latest/:token', (req, res) => {
             // Increment request counter
             session.requests = (session.requests || 0) + 1;
             
+            // Convert raw sensor values to 1-9 scale
+            // X and Y typically range from -10 to +10, we'll map this to 1-9
+            const mapToScale = (value) => {
+                // Clamp value between -10 and +10
+                const clamped = Math.max(-10, Math.min(10, value));
+                // Map -10 to +10 range to 1-9 range
+                // -10 = 1, 0 = 5, +10 = 9
+                const scaled = Math.round(((clamped + 10) / 20) * 8) + 1;
+                return Math.max(1, Math.min(9, scaled));
+            };
+            
+            const xScaled = mapToScale(session.x);
+            const yScaled = mapToScale(session.y);
+            
+            // Create a simple string format: "X5Y7" where X=5, Y=7
+            const simpleFormat = `X${xScaled}Y${yScaled}`;
+            
             const responseData = {
+                simple: simpleFormat,
                 x: session.x,
                 y: session.y,
+                xScaled: xScaled,
+                yScaled: yScaled,
                 timestamp: new Date(session.ts).toISOString(),
                 age: Math.round(age/1000),
                 requests: session.requests
