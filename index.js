@@ -261,13 +261,13 @@ app.get('/sessions', (req, res) => {
     }
 });
 
-// Simple endpoint that returns just "X5Y7" format for easy parsing
+// Simple endpoint that returns movement values for PictoBlox
 app.get('/simple/:token', (req, res) => {
     try {
         const token = req.params.token;
         const session = sessions[token];
         
-        // Set aggressive caching headers for speed
+        // Set headers for speed
         res.set({
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
@@ -275,33 +275,45 @@ app.get('/simple/:token', (req, res) => {
         });
         
         if (!session) {
-            return res.status(404).send('X5Y5');  // Default no movement
+            return res.status(404).send('+00+00');  // No movement
         }
         
         const age = Date.now() - session.ts;
         if (age >= 60000) {
             delete sessions[token];
-            return res.status(404).send('X5Y5');  // Default no movement
+            return res.status(404).send('+00+00');  // No movement
         }
         
-        // Convert velocity values (-10 to +10) to 1-9 scale for PictoBlox
-        const mapVelocityToScale = (velocity) => {
-            // Map -10 to +10 velocity range to 1-9 range
-            // -10 = 1 (fast left/down), 0 = 5 (stopped), +10 = 9 (fast right/up)
-            const scaled = Math.round(((velocity + 10) / 20) * 8) + 1;
-            return Math.max(1, Math.min(9, scaled));
+        // Convert velocity to movement values suitable for PictoBlox
+        // Input: velocity -10 to +10
+        // Output: movement -99 to +99 (but we'll limit to -20 to +20 for reasonable sprite speed)
+        
+        const formatNumber = (num) => {
+            // Clamp to reasonable movement range
+            const clamped = Math.max(-20, Math.min(20, Math.round(num * 2))); // Scale and clamp
+            
+            // Format as +XX or -XX (always 3 characters)
+            if (clamped >= 0) {
+                return '+' + String(clamped).padStart(2, '0');
+            } else {
+                return String(clamped).padStart(3, '0'); // Negative sign counts as one character
+            }
         };
         
-        const xScaled = mapVelocityToScale(session.x);
-        const yScaled = mapVelocityToScale(session.y);
+        const xFormatted = formatNumber(session.x);
+        const yFormatted = formatNumber(session.y);
         
-        // Return simple format: "X5Y7" - just 4 characters for speed
-        const result = `X${xScaled}Y${yScaled}`;
+        // Return format: "+05-03" (6 characters total)
+        // First 3 chars = X movement (+05 = move right 5)
+        // Last 3 chars = Y movement (-03 = move down 3)
+        const result = xFormatted + yFormatted;
+        
+        console.log(`📡 Movement for ${token}: X=${session.x} Y=${session.y} → ${result}`);
         res.send(result);
         
     } catch (error) {
         console.error('❌ Error in /simple:', error);
-        res.status(500).send('X5Y5');  // Default no movement
+        res.status(500).send('+00+00');  // No movement on error
     }
 });
 
