@@ -265,11 +265,56 @@ app.get('/debug/:token', (req, res) => {
     }
 });
 
-// Test endpoint to verify server is working
-app.get('/test', (req, res) => {
-    console.log('🧪 Test endpoint called');
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).end('Server is working!');
+// Simple string endpoint for PictoBlox (returns format like "X05Y03")
+app.get('/simple/:token', (req, res) => {
+    try {
+        const requestedToken = req.params.token;
+        console.log(`🎮 Simple endpoint request for token: ${requestedToken}`);
+        
+        const session = sessions[requestedToken];
+        
+        if (!session) {
+            console.log(`❌ No session found for token: ${requestedToken}`);
+            res.setHeader('Content-Type', 'text/plain');
+            res.status(200).end('X05Y05'); // Center position when no session
+            return;
+        }
+        
+        const age = Date.now() - session.ts;
+        console.log(`⏰ Session age: ${Math.round(age/1000)}s`);
+        
+        if (age >= 60000) { // 1 minute expiry
+            console.log(`❌ Session expired for token: ${requestedToken}`);
+            delete sessions[requestedToken];
+            res.setHeader('Content-Type', 'text/plain');
+            res.status(200).end('X05Y05'); // Center position when expired
+            return;
+        }
+        
+        // Convert velocity to 1-9 scale for PictoBlox
+        const mapToScale = (velocity) => {
+            // Map -10 to +10 velocity range to 1-9 range
+            // -10 = 1 (fast left/down), 0 = 5 (stopped), +10 = 9 (fast right/up)
+            const scaled = Math.round(((velocity + 10) / 20) * 8) + 1;
+            return Math.max(1, Math.min(9, scaled));
+        };
+        
+        const xScaled = mapToScale(session.x);
+        const yScaled = mapToScale(session.y);
+        
+        // Format as X05Y07 (always 6 characters)
+        const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
+        
+        console.log(`✅ Simple endpoint returning: ${result} (from x=${session.x}, y=${session.y})`);
+        
+        res.setHeader('Content-Type', 'text/plain');
+        res.status(200).end(result);
+        
+    } catch (error) {
+        console.error('❌ Error in simple endpoint:', error);
+        res.setHeader('Content-Type', 'text/plain');
+        res.status(500).end('X05Y05'); // Center position on error
+    }
 });
 
 // Health check endpoint
