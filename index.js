@@ -46,10 +46,15 @@ app.post('/start', (req, res) => {
 // Update phone movement data
 app.post('/update', (req, res) => {
     const { token, x, y } = req.body;
+    console.log(`Update received - Token: ${token}, X: ${x}, Y: ${y}`);
+    
     if (sessions[token]) {
         sessions[token] = { x: parseFloat(x) || 0, y: parseFloat(y) || 0, ts: Date.now() };
+        console.log(`✅ Session updated for ${token}: x=${x}, y=${y}`);
         res.json({ ok: true });
     } else {
+        console.log(`❌ Invalid token in update: ${token}`);
+        console.log(`Available tokens: ${Object.keys(sessions)}`);
         res.status(400).json({ error: 'Invalid token' });
     }
 });
