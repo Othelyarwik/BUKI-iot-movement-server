@@ -51,9 +51,11 @@ app.get('/x/:token', (req, res) => {
     const session = sessions[req.params.token];
     if (session && Date.now() - session.ts < 60000) {
         const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
-        res.send(movement.toString());
+        res.set('Content-Type', 'text/plain');
+        res.end(movement.toString()); // Send raw number, no JSON quotes
     } else {
-        res.send('0');
+        res.set('Content-Type', 'text/plain');
+        res.end('0'); // Send raw number, no JSON quotes
     }
 });
 
@@ -62,9 +64,11 @@ app.get('/y/:token', (req, res) => {
     const session = sessions[req.params.token];
     if (session && Date.now() - session.ts < 60000) {
         const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.5)));
-        res.send(movement.toString());
+        res.set('Content-Type', 'text/plain');
+        res.end(movement.toString()); // Send raw number, no JSON quotes
     } else {
-        res.send('0');
+        res.set('Content-Type', 'text/plain');
+        res.end('0'); // Send raw number, no JSON quotes
     }
 });
 
