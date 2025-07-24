@@ -14,39 +14,62 @@
     <button id="start">Start & Connect</button>
     <p>Your token: <span id="token">-</span></p>
     <script>
-        let token = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded'); // Debug step 1
+            let token = '';
 
-        document.getElementById('start').onclick = async () => {
-            alert('Button clicked, initiating connection...'); // Debug step 1
-            try {
-                const res = await fetch('/start', { method: 'POST' });
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                const data = await res.json();
-                alert(`Fetch succeeded, data: ${JSON.stringify(data)}`); // Debug step 2
-                token = data.token;
-                document.getElementById('token').innerText = token;
-                alert(`Token set to: ${token}`); // Debug step 3
-
-                // Setup motion listener after token is received
-                if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
+            const startButton = document.getElementById('start');
+            if (startButton) {
+                console.log('Start button found'); // Debug step 2
+                startButton.onclick = async () => {
+                    console.log('Button clicked'); // Debug step 3
+                    alert('Initiating connection...');
                     try {
-                        const permissionState = await DeviceMotionEvent.requestPermission();
-                        if (permissionState === 'granted') {
-                            window.addEventListener('devicemotion', handleMotion);
+                        const res = await fetch('/start', {
+                            method: 'POST',
+                            mode: 'cors' // Explicitly set CORS mode
+                        });
+                        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                        const data = await res.json();
+                        console.log('Fetch response:', data); // Debug step 4
+                        alert(`Fetch succeeded, data: ${JSON.stringify(data)}`);
+                        token = data.token;
+                        document.getElementById('token').innerText = token;
+                        alert(`Token set to: ${token}`);
+
+                        // Setup motion listener
+                        if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
+                            try {
+                                const permissionState = await DeviceMotionEvent.requestPermission();
+                                if (permissionState === 'granted') {
+                                    window.addEventListener('devicemotion', handleMotion);
+                                } else {
+                                    alert('Motion sensor permission denied. Please allow access in browser settings.');
+                                }
+                            } catch (error) {
+                                alert('Error requesting permission: ' + error);
+                                window.addEventListener('devicemotion', handleMotion); // Fallback
+                            }
                         } else {
-                            alert('Motion sensor permission denied. Please allow access in browser settings.');
+                            window.addEventListener('devicemotion', handleMotion); // For browsers without prompt
                         }
                     } catch (error) {
-                        alert('Error requesting permission: ' + error);
-                        window.addEventListener('devicemotion', handleMotion); // Fallback
+                        console.error('Fetch error:', error); // Debug step 5
+                        alert(`Error: ${error.message}`);
                     }
-                } else {
-                    window.addEventListener('devicemotion', handleMotion); // For browsers without prompt
-                }
-            } catch (error) {
-                alert(`Error: ${error.message}`); // Debug step 4
+                };
+            } else {
+                console.error('Start button not found in DOM'); // Debug step 6
+                alert('Error: Start button not found!');
             }
-        };
+
+            // Fallback to check server status
+            fetch('/').then(res => {
+                console.log('Server status check:', res.status);
+            }).catch(err => {
+                console.error('Server unreachable:', err);
+            });
+        });
 
         function handleMotion(e) {
             const accel = e.accelerationIncludingGravity || e.acceleration || {};
