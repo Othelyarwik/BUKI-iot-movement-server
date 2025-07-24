@@ -94,6 +94,7 @@
 
         let lastX = 0, lastY = 0;
         let velocityX = 0, velocityY = 0;
+        let isInitialized = false;
 
         function handleMotion(event) {
             if (!connected) return;
@@ -102,25 +103,40 @@
             const currentX = parseFloat(accel.x) || 0;
             const currentY = parseFloat(accel.y) || 0;
             
-            // Calculate velocity (change in acceleration)
+            // Initialize baseline on first reading
+            if (!isInitialized) {
+                lastX = currentX;
+                lastY = currentY;
+                isInitialized = true;
+                return;
+            }
+            
+            // Calculate change in acceleration (indicates movement)
             const deltaX = currentX - lastX;
             const deltaY = currentY - lastY;
             
-            // Apply smoothing and thresholds
-            if (Math.abs(deltaX) > 0.1) {
-                velocityX = Math.max(-10, Math.min(10, deltaX * 50));
+            // Higher threshold to avoid noise when stationary
+            const threshold = 0.3;
+            const decay = 0.7; // Faster decay when not moving
+            
+            // Only update velocity if there's significant movement
+            if (Math.abs(deltaX) > threshold) {
+                velocityX = Math.max(-10, Math.min(10, deltaX * 30));
             } else {
-                velocityX *= 0.8; // Decay
-                if (Math.abs(velocityX) < 0.5) velocityX = 0;
+                // Decay velocity when no movement detected
+                velocityX *= decay;
+                if (Math.abs(velocityX) < 0.8) velocityX = 0;
             }
             
-            if (Math.abs(deltaY) > 0.1) {
-                velocityY = Math.max(-10, Math.min(10, deltaY * 50));
+            if (Math.abs(deltaY) > threshold) {
+                velocityY = Math.max(-10, Math.min(10, deltaY * 30));
             } else {
-                velocityY *= 0.8; // Decay
-                if (Math.abs(velocityY) < 0.5) velocityY = 0;
+                // Decay velocity when no movement detected  
+                velocityY *= decay;
+                if (Math.abs(velocityY) < 0.8) velocityY = 0;
             }
             
+            // Update baseline for next calculation
             lastX = currentX;
             lastY = currentY;
             
