@@ -98,31 +98,12 @@
         <p>Вашият токен: <span id="token">-</span></p>
         
         <div class="motion-data" id="motion-data" style="display: none;">
-            <h3>📱 Данни за Движение</h3>
-            <div style="margin: 10px 0; font-size: 11px;">
-                <div><strong>Сурови данни:</strong></div>
-                <div class="axis">Raw X: <span id="motion-x">0</span></div>
-                <div class="axis">Raw Y: <span id="motion-y">0</span></div>
-            </div>
-            <div style="margin: 10px 0; font-size: 11px;">
-                <div><strong>Движение:</strong></div>
-                <div class="axis">Mov X: <span id="mov-x">0</span></div>
-                <div class="axis">Mov Y: <span id="mov-y">0</span></div>
-            </div>
-            <div style="margin: 10px 0; font-size: 12px;">
-                <div><strong>Изпращане:</strong></div>
-                <div class="axis">X: <span id="x-val">0</span></div>
-                <div class="axis">Y: <span id="y-val">0</span></div>
-            </div>
-            <div style="margin-top: 10px; font-size: 12px;">
+            <h3>📱 Позиция</h3>
+            <div class="axis">X: <span id="x-val">0</span></div>
+            <div class="axis">Y: <span id="y-val">0</span></div>
+            <div style="margin-top: 15px; font-size: 12px;">
                 Последна актуализация: <span id="last-update">Никога</span>
             </div>
-            <div style="margin-top: 10px; font-size: 10px; opacity: 0.8;">
-                Движете телефона хоризонтално и вертикално
-            </div>
-            <button onclick="resetMovement()" style="margin-top: 10px; padding: 5px 10px; font-size: 12px;">
-                🎯 Нулиране
-            </button>
         </div>
     </div>
 
@@ -145,25 +126,14 @@
             document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
         }
 
+        // Remove the complex sensor display function
         function updateSensorDisplay(motion, orientation) {
-            if (motion) {
-                document.getElementById('motion-x').textContent = motion.x.toFixed(3);
-                document.getElementById('motion-y').textContent = motion.y.toFixed(3);
-                
-                if (motion.movX !== undefined) {
-                    document.getElementById('mov-x').textContent = motion.movX.toFixed(1);
-                    document.getElementById('mov-y').textContent = motion.movY.toFixed(1);
-                }
-            }
+            // Simplified - no longer needed
         }
 
-        // Reset movement tracking
+        // Remove reset function
         function resetMovement() {
-            movementX = 0;
-            movementY = 0;
-            isCalibrated = false;
-            updateStatus('🎯 Движението е нулирано', 'info');
-            console.log('Movement reset');
+            // No longer needed
         }
 
         // Server communication functions
@@ -268,79 +238,71 @@
             console.log('Motion event listener added - movement tracking enabled');
         }
 
-        // Movement tracking variables
-        let baselineX = 0;
-        let baselineY = 0;
-        let isCalibrated = false;
-        let movementX = 0;
-        let movementY = 0;
+        // Simple position tracking
+        let positionX = 0;  // Current sprite position (-100 to +100)
+        let positionY = 0;  // Current sprite position (-100 to +100)
+        let baselineX = null;
+        let baselineY = null;
+        let lastUpdate = Date.now();
+
+        function updateMotionDisplay(x, y) {
+            document.getElementById('x-val').textContent = x.toFixed(0);
+            document.getElementById('y-val').textContent = y.toFixed(0);
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        }
 
         async function handleMotion(event) {
             if (!isConnected || !token) return;
 
-            // Get acceleration data - this measures movement forces
             const accel = event.accelerationIncludingGravity || event.acceleration || {};
-            let rawX = parseFloat(accel.x) || 0;
-            let rawY = parseFloat(accel.y) || 0;
-            let rawZ = parseFloat(accel.z) || 0;
+            const rawX = parseFloat(accel.x) || 0;
+            const rawY = parseFloat(accel.y) || 0;
 
-            // For horizontal/vertical movement, we need to interpret the acceleration differently
-            // When phone is held upright (portrait), we use:
-            // X-axis acceleration for left/right movement
-            // Y-axis acceleration for forward/back movement (but we'll map this to up/down on screen)
-
-            // Calibrate baseline on first few readings
-            if (!isCalibrated) {
+            // Set baseline on first reading
+            if (baselineX === null || baselineY === null) {
                 baselineX = rawX;
                 baselineY = rawY;
-                isCalibrated = true;
-                console.log('Calibrated baseline:', { baselineX, baselineY });
+                console.log('Baseline set:', { baselineX, baselineY });
+                return;
             }
 
-            // Calculate movement relative to baseline
+            // Calculate acceleration difference from baseline
             const deltaX = rawX - baselineX;
             const deltaY = rawY - baselineY;
 
-            // Integrate acceleration to get movement (simplified)
-            // We'll use a threshold-based approach for more responsive control
-            const threshold = 0.5; // Minimum acceleration to register movement
-            const sensitivity = 5; // Movement sensitivity multiplier
+            // Only move if there's significant acceleration (phone is moving)
+            const threshold = 0.3;
+            const now = Date.now();
+            const timeDelta = (now - lastUpdate) / 1000; // Convert to seconds
+            lastUpdate = now;
 
             if (Math.abs(deltaX) > threshold) {
-                movementX += deltaX * sensitivity;
+                // Move based on acceleration direction and magnitude
+                const moveX = deltaX * 15 * timeDelta; // 15 = sensitivity
+                positionX += moveX;
             }
+
             if (Math.abs(deltaY) > threshold) {
-                movementY += deltaY * sensitivity;
+                // Move based on acceleration direction and magnitude  
+                const moveY = deltaY * 15 * timeDelta; // 15 = sensitivity
+                positionY += moveY;
             }
 
-            // Clamp movement to reasonable bounds
-            movementX = Math.max(-50, Math.min(50, movementX));
-            movementY = Math.max(-50, Math.min(50, movementY));
-
-            // Map to -10 to +10 range for server
-            const x = Math.max(-10, Math.min(10, movementX / 5));
-            const y = Math.max(-10, Math.min(10, movementY / 5));
-
-            // Update sensor display
-            updateSensorDisplay({ 
-                x: rawX, 
-                y: rawY, 
-                deltaX: deltaX, 
-                deltaY: deltaY,
-                movX: movementX,
-                movY: movementY
-            }, null);
+            // Keep position in bounds (-100 to +100)
+            positionX = Math.max(-100, Math.min(100, positionX));
+            positionY = Math.max(-100, Math.min(100, positionY));
 
             // Update display
-            updateMotionDisplay(x, y);
+            updateMotionDisplay(positionX, positionY);
 
+            // Send to server
             try {
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ token, x, y }),
+                    body: JSON.stringify({ token, x: positionX, y: positionY }),
                     mode: 'cors'
                 });
 
@@ -348,17 +310,13 @@
                     console.error('Update failed:', response.status, response.statusText);
                 }
                 
-                const result = await response.json();
-                console.log('Movement update sent:', { x, y, movementX, movementY }, 'Response:', result);
-                
             } catch (error) {
                 console.error('Motion update error:', error);
             }
         }
 
-        // Remove orientation handler since we only want movement
+        // Remove orientation handler
         async function handleOrientation(event) {
-            // Disabled - we only want movement tracking
             return;
         }
 
