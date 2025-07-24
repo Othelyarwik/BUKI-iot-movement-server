@@ -275,25 +275,25 @@ app.get('/simple/:token', (req, res) => {
         });
         
         if (!session) {
-            return res.status(404).send('X5Y5');  // Default center position
+            return res.status(404).send('X5Y5');  // Default no movement
         }
         
         const age = Date.now() - session.ts;
         if (age >= 60000) {
             delete sessions[token];
-            return res.status(404).send('X5Y5');  // Default center position
+            return res.status(404).send('X5Y5');  // Default no movement
         }
         
-        // Convert position values (-100 to +100) to 1-9 scale for PictoBlox
-        const mapToScale = (value) => {
-            // Map -100 to +100 range to 1-9 range
-            // -100 = 1, 0 = 5, +100 = 9
-            const scaled = Math.round(((value + 100) / 200) * 8) + 1;
+        // Convert velocity values (-10 to +10) to 1-9 scale for PictoBlox
+        const mapVelocityToScale = (velocity) => {
+            // Map -10 to +10 velocity range to 1-9 range
+            // -10 = 1 (fast left/down), 0 = 5 (stopped), +10 = 9 (fast right/up)
+            const scaled = Math.round(((velocity + 10) / 20) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
         };
         
-        const xScaled = mapToScale(session.x);
-        const yScaled = mapToScale(session.y);
+        const xScaled = mapVelocityToScale(session.x);
+        const yScaled = mapVelocityToScale(session.y);
         
         // Return simple format: "X5Y7" - just 4 characters for speed
         const result = `X${xScaled}Y${yScaled}`;
@@ -301,7 +301,7 @@ app.get('/simple/:token', (req, res) => {
         
     } catch (error) {
         console.error('❌ Error in /simple:', error);
-        res.status(500).send('X5Y5');  // Default center position
+        res.status(500).send('X5Y5');  // Default no movement
     }
 });
 
