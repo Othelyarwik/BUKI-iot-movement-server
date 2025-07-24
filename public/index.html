@@ -17,26 +17,34 @@
         let token = '';
 
         document.getElementById('start').onclick = async () => {
-            const res = await fetch('/start', { method: 'POST' });
-            const data = await res.json();
-            token = data.token;
-            document.getElementById('token').innerText = token;
+            alert('Button clicked, initiating connection...'); // Debug step 1
+            try {
+                const res = await fetch('/start', { method: 'POST' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const data = await res.json();
+                alert(`Fetch succeeded, data: ${JSON.stringify(data)}`); // Debug step 2
+                token = data.token;
+                document.getElementById('token').innerText = token;
+                alert(`Token set to: ${token}`); // Debug step 3
 
-            // Request motion sensor permission
-            if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
-                try {
-                    const permissionState = await DeviceMotionEvent.requestPermission();
-                    if (permissionState === 'granted') {
-                        window.addEventListener('devicemotion', handleMotion);
-                    } else {
-                        alert('Motion sensor permission denied. Please allow access in Brave settings.');
+                // Setup motion listener after token is received
+                if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
+                    try {
+                        const permissionState = await DeviceMotionEvent.requestPermission();
+                        if (permissionState === 'granted') {
+                            window.addEventListener('devicemotion', handleMotion);
+                        } else {
+                            alert('Motion sensor permission denied. Please allow access in browser settings.');
+                        }
+                    } catch (error) {
+                        alert('Error requesting permission: ' + error);
+                        window.addEventListener('devicemotion', handleMotion); // Fallback
                     }
-                } catch (error) {
-                    alert('Error requesting permission: ' + error);
-                    window.addEventListener('devicemotion', handleMotion); // Fallback for no permission prompt
+                } else {
+                    window.addEventListener('devicemotion', handleMotion); // For browsers without prompt
                 }
-            } else {
-                window.addEventListener('devicemotion', handleMotion); // For browsers without permission prompt
+            } catch (error) {
+                alert(`Error: ${error.message}`); // Debug step 4
             }
         };
 
