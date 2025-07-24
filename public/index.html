@@ -238,16 +238,16 @@
             console.log('Motion event listener added - movement tracking enabled');
         }
 
-        // Simple position tracking
-        let positionX = 0;  // Current sprite position (-100 to +100)
-        let positionY = 0;  // Current sprite position (-100 to +100)
-        let baselineX = null;
-        let baselineY = null;
-        let lastUpdate = Date.now();
+        // Velocity-based movement tracking
+        let velocityX = 0;  // Current movement speed (-10 to +10)
+        let velocityY = 0;  // Current movement speed (-10 to +10)
+        let lastAccelX = 0;
+        let lastAccelY = 0;
+        let isCalibrated = false;
 
         function updateMotionDisplay(x, y) {
-            document.getElementById('x-val').textContent = x.toFixed(0);
-            document.getElementById('y-val').textContent = y.toFixed(0);
+            document.getElementById('x-val').textContent = x.toFixed(1);
+            document.getElementById('y-val').textContent = y.toFixed(1);
             document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
         }
 
@@ -255,54 +255,59 @@
             if (!isConnected || !token) return;
 
             const accel = event.accelerationIncludingGravity || event.acceleration || {};
-            const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;
+            const currentX = parseFloat(accel.x) || 0;
+            const currentY = parseFloat(accel.y) || 0;
 
-            // Set baseline on first reading
-            if (baselineX === null || baselineY === null) {
-                baselineX = rawX;
-                baselineY = rawY;
-                console.log('Baseline set:', { baselineX, baselineY });
+            // Calibrate baseline (first few readings)
+            if (!isCalibrated) {
+                lastAccelX = currentX;
+                lastAccelY = currentY;
+                isCalibrated = true;
                 return;
             }
 
-            // Calculate acceleration difference from baseline
-            const deltaX = rawX - baselineX;
-            const deltaY = rawY - baselineY;
+            // Calculate acceleration change (this indicates movement)
+            const deltaX = currentX - lastAccelX;
+            const deltaY = currentY - lastAccelY;
 
-            // Only move if there's significant acceleration (phone is moving)
-            const threshold = 0.3;
-            const now = Date.now();
-            const timeDelta = (now - lastUpdate) / 1000; // Convert to seconds
-            lastUpdate = now;
+            // Update last values
+            lastAccelX = currentX;
+            lastAccelY = currentY;
+
+            // Convert acceleration changes to velocity
+            // Only significant changes indicate actual movement
+            const threshold = 0.1;
+            const damping = 0.8; // Velocity decay when not moving
 
             if (Math.abs(deltaX) > threshold) {
-                // Move based on acceleration direction and magnitude
-                const moveX = deltaX * 15 * timeDelta; // 15 = sensitivity
-                positionX += moveX;
+                // Phone is actively moving left/right
+                velocityX = Math.max(-10, Math.min(10, deltaX * 100));
+            } else {
+                // Phone stopped moving, reduce velocity
+                velocityX *= damping;
+                if (Math.abs(velocityX) < 0.5) velocityX = 0;
             }
 
             if (Math.abs(deltaY) > threshold) {
-                // Move based on acceleration direction and magnitude  
-                const moveY = deltaY * 15 * timeDelta; // 15 = sensitivity
-                positionY += moveY;
+                // Phone is actively moving up/down
+                velocityY = Math.max(-10, Math.min(10, deltaY * 100));
+            } else {
+                // Phone stopped moving, reduce velocity
+                velocityY *= damping;
+                if (Math.abs(velocityY) < 0.5) velocityY = 0;
             }
 
-            // Keep position in bounds (-100 to +100)
-            positionX = Math.max(-100, Math.min(100, positionX));
-            positionY = Math.max(-100, Math.min(100, positionY));
-
             // Update display
-            updateMotionDisplay(positionX, positionY);
+            updateMotionDisplay(velocityX, velocityY);
 
-            // Send to server
+            // Send velocity to server
             try {
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ token, x: positionX, y: positionY }),
+                    body: JSON.stringify({ token, x: velocityX, y: velocityY }),
                     mode: 'cors'
                 });
 
