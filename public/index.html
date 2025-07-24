@@ -1,32 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Motion Connect</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { font-size: 18px; padding: 10px 20px; }
-    #token { font-weight: bold; }
-  </style>
+    <title>IoT Motion Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { font-size: 18px; padding: 10px 20px; }
+        #token { font-weight: bold; }
+    </style>
 </head>
 <body>
-  <button id="start">Start &amp; Connect</button>
-  <p>Your token: <span id="token">—</span></p>
-  <script>
-    let token = '';
-    document.getElementById('start').onclick = async () => {
-      const resp = await fetch('/connect', { method: 'POST' });
-      const body = await resp.json();
-      token = body.token;
-      document.getElementById('token').textContent = token;
-      startSending();
-    };
-    function startSending() {
-      window.addEventListener('devicemotion', e => {
-        const x = e.acceleration.x || 0;
-        const y = e.acceleration.y || 0;
-        navigator.sendBeacon('/update', JSON.stringify({ token, x, y }));
-      }, true);
-    }
-  </script>
+    <h1>IoT Motion Game</h1>
+    <p>Click below to start and get your token:</p>
+    <button id="start">Start & Connect</button>
+    <p>Your token: <span id="token">-</span></p>
+    <script>
+        let token = '';
+        document.getElementById('start').onclick = async () => {
+            const res = await fetch('/start', { method: 'POST' });
+            const data = await res.json();
+            token = data.token;
+            document.getElementById('token').innerText = token;
+            window.addEventListener('devicemotion', e => {
+                const x = e.acceleration.x || 0;
+                const y = e.acceleration.y || 0;
+                const blob = new Blob([JSON.stringify({ token, x, y })], { type: 'application/json' });
+                navigator.sendBeacon('/update', blob);
+            });
+        };
+    </script>
 </body>
 </html>
