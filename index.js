@@ -261,6 +261,50 @@ app.get('/sessions', (req, res) => {
     }
 });
 
+// Simple endpoint that returns just "X5Y7" format for easy parsing
+app.get('/simple/:token', (req, res) => {
+    try {
+        const token = req.params.token;
+        const session = sessions[token];
+        
+        // Set aggressive caching headers for speed
+        res.set({
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Content-Type': 'text/plain'
+        });
+        
+        if (!session) {
+            return res.status(404).send('X5Y5');  // Default center position
+        }
+        
+        const age = Date.now() - session.ts;
+        if (age >= 60000) {
+            delete sessions[token];
+            return res.status(404).send('X5Y5');  // Default center position
+        }
+        
+        // Convert position values (-100 to +100) to 1-9 scale for PictoBlox
+        const mapToScale = (value) => {
+            // Map -100 to +100 range to 1-9 range
+            // -100 = 1, 0 = 5, +100 = 9
+            const scaled = Math.round(((value + 100) / 200) * 8) + 1;
+            return Math.max(1, Math.min(9, scaled));
+        };
+        
+        const xScaled = mapToScale(session.x);
+        const yScaled = mapToScale(session.y);
+        
+        // Return simple format: "X5Y7" - just 4 characters for speed
+        const result = `X${xScaled}Y${yScaled}`;
+        res.send(result);
+        
+    } catch (error) {
+        console.error('❌ Error in /simple:', error);
+        res.status(500).send('X5Y5');  // Default center position
+    }
+});
+
 // Test endpoint specifically for PictoBlox debugging
 app.get('/test', (req, res) => {
     res.json({
