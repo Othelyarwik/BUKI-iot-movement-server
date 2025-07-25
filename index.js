@@ -272,11 +272,13 @@ app.get('/simple/:token', (req, res) => {
             return;
         }
         
-        // Convert velocity to 1-9 scale for PictoBlox
+        // Convert velocity to 1-9 scale for PictoBlox, but with multiplication built in
         const mapToScale = (velocity) => {
-            // Map -10 to +10 velocity range to 1-9 range
-            // -10 = 1 (fast left/down), 0 = 5 (stopped), +10 = 9 (fast right/up)
-            const scaled = Math.round(((velocity + 10) / 20) * 8) + 1;
+            // Map -10 to +10 velocity range to movement values
+            // We want: -10 velocity = -12 movement, 0 velocity = 0 movement, +10 velocity = +12 movement
+            // So we map to a scale where center is still 5, but the range gives us the multiplied result
+            const movement = Math.max(-4, Math.min(4, Math.round(velocity * 0.4))); // -4 to +4 movement
+            const scaled = movement + 5; // Convert to 1-9 scale (1=move -4, 5=no move, 9=move +4)
             return Math.max(1, Math.min(9, scaled));
         };
         
