@@ -1,16 +1,26 @@
 const express = require('express');
 const cors = require('cors');
-
 const app = express();
 
-// Enhanced CORS configuration
-app.use(cors({ 
+// Enhanced CORS configuration specifically for PictoBlox
+app.use(cors({
     origin: '*',
     credentials: false,
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     exposedHeaders: ['Content-Type']
 }));
+
+// Add specific headers for PictoBlox compatibility
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+    next();
+});
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -23,15 +33,12 @@ app.use((req, res, next) => {
     console.log(`📡 ${timestamp} - ${req.method} ${req.path}`);
     console.log(`🌐 Origin: ${req.get('Origin') || 'none'}`);
     console.log(`📋 User-Agent: ${req.get('User-Agent') || 'unknown'}`);
-    
     if (req.body && Object.keys(req.body).length > 0) {
         console.log(`📝 Request Body:`, JSON.stringify(req.body));
     }
-    
     if (req.query && Object.keys(req.query).length > 0) {
         console.log(`❓ Query Params:`, JSON.stringify(req.query));
     }
-    
     next();
 });
 
@@ -59,11 +66,17 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+// Simple test endpoint for PictoBlox testing
+app.get('/test', (req, res) => {
+    console.log('🧪 Test endpoint called');
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(200).end('X05Y05');
+});
+
 // Create new session and generate token
 app.post('/start', (req, res) => {
     try {
         console.log('🎯 Creating new session...');
-        
         // Custom alphabet without confusing characters: no l, I, O, 0, 1
         const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
         
@@ -74,9 +87,9 @@ app.post('/start', (req, res) => {
         }
         
         // Create session with initial data
-        sessions[token] = { 
-            x: 0, 
-            y: 0, 
+        sessions[token] = {
+            x: 0,
+            y: 0,
             ts: Date.now(),
             created: new Date().toISOString()
         };
@@ -86,7 +99,7 @@ app.post('/start', (req, res) => {
         
         // Send JSON response with proper headers
         res.setHeader('Content-Type', 'application/json');
-        res.status(200).json({ 
+        res.status(200).json({
             token: token,
             timestamp: new Date().toISOString(),
             success: true
@@ -95,7 +108,7 @@ app.post('/start', (req, res) => {
     } catch (error) {
         console.error('❌ Error creating session:', error);
         res.setHeader('Content-Type', 'application/json');
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to create session',
             message: error.message,
             timestamp: new Date().toISOString()
@@ -107,7 +120,6 @@ app.post('/start', (req, res) => {
 app.post('/update', (req, res) => {
     try {
         const { token, x, y } = req.body;
-        
         console.log(`📲 Update request - Token: ${token}, X: ${x}, Y: ${y}`);
         
         if (!token) {
@@ -119,9 +131,9 @@ app.post('/update', (req, res) => {
         
         if (sessions[token]) {
             // Update session data
-            sessions[token] = { 
-                x: parseFloat(x) || 0, 
-                y: parseFloat(y) || 0, 
+            sessions[token] = {
+                x: parseFloat(x) || 0,
+                y: parseFloat(y) || 0,
                 ts: Date.now(),
                 lastUpdate: new Date().toISOString()
             };
@@ -129,7 +141,7 @@ app.post('/update', (req, res) => {
             console.log(`✅ Session updated for ${token}: x=${x}, y=${y}`);
             
             res.setHeader('Content-Type', 'application/json');
-            res.status(200).json({ 
+            res.status(200).json({
                 ok: true,
                 timestamp: new Date().toISOString()
             });
@@ -138,17 +150,16 @@ app.post('/update', (req, res) => {
             console.log(`📋 Available tokens: [${Object.keys(sessions).join(', ')}]`);
             
             res.setHeader('Content-Type', 'application/json');
-            res.status(400).json({ 
+            res.status(400).json({
                 error: 'Invalid or expired token',
                 providedToken: token,
                 availableTokens: Object.keys(sessions).length
             });
         }
-        
     } catch (error) {
         console.error('❌ Error in update endpoint:', error);
         res.setHeader('Content-Type', 'application/json');
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Update failed',
             message: error.message,
             timestamp: new Date().toISOString()
@@ -156,18 +167,17 @@ app.post('/update', (req, res) => {
     }
 });
 
-// Get X movement value for PictoBlox
+// Get X movement value for PictoBlox (returns -5 to +5)
 app.get('/x/:token', (req, res) => {
     try {
         const requestedToken = req.params.token;
         console.log(`🎮 X endpoint request for token: ${requestedToken}`);
         
         const session = sessions[requestedToken];
-        
         if (!session) {
             console.log(`❌ No session found for token: ${requestedToken}`);
             res.setHeader('Content-Type', 'text/plain');
-            res.status(404).end('0');
+            res.status(200).end('0');
             return;
         }
         
@@ -178,12 +188,13 @@ app.get('/x/:token', (req, res) => {
             console.log(`❌ Session expired for token: ${requestedToken}`);
             delete sessions[requestedToken];
             res.setHeader('Content-Type', 'text/plain');
-            res.status(404).end('0');
+            res.status(200).end('0');
             return;
         }
         
-        // Calculate movement value
-        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.5)));
+        // Calculate movement value (more responsive)
+        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.8)));
+        
         console.log(`✅ X endpoint returning: ${movement} (from session.x: ${session.x})`);
         
         res.setHeader('Content-Type', 'text/plain');
@@ -196,18 +207,17 @@ app.get('/x/:token', (req, res) => {
     }
 });
 
-// Get Y movement value for PictoBlox  
+// Get Y movement value for PictoBlox (returns -5 to +5)
 app.get('/y/:token', (req, res) => {
     try {
         const requestedToken = req.params.token;
         console.log(`🎮 Y endpoint request for token: ${requestedToken}`);
         
         const session = sessions[requestedToken];
-        
         if (!session) {
             console.log(`❌ No session found for token: ${requestedToken}`);
             res.setHeader('Content-Type', 'text/plain');
-            res.status(404).end('0');
+            res.status(200).end('0');
             return;
         }
         
@@ -218,12 +228,13 @@ app.get('/y/:token', (req, res) => {
             console.log(`❌ Session expired for token: ${requestedToken}`);
             delete sessions[requestedToken];
             res.setHeader('Content-Type', 'text/plain');
-            res.status(404).end('0');
+            res.status(200).end('0');
             return;
         }
         
-        // Calculate movement value
-        const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.5)));
+        // Calculate movement value (more responsive)
+        const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.8)));
+        
         console.log(`✅ Y endpoint returning: ${movement} (from session.y: ${session.y})`);
         
         res.setHeader('Content-Type', 'text/plain');
@@ -236,35 +247,6 @@ app.get('/y/:token', (req, res) => {
     }
 });
 
-// Debug endpoint to inspect sessions
-app.get('/debug/:token', (req, res) => {
-    try {
-        const requestedToken = req.params.token;
-        const session = sessions[requestedToken];
-        
-        const debugInfo = {
-            requestedToken: requestedToken,
-            sessionExists: !!session,
-            sessionData: session || null,
-            sessionAge: session ? Math.round((Date.now() - session.ts) / 1000) + 's' : 'N/A',
-            totalSessions: Object.keys(sessions).length,
-            allTokens: Object.keys(sessions),
-            currentTime: new Date().toISOString(),
-            serverUptime: Math.round(process.uptime()) + 's'
-        };
-        
-        console.log('🔍 Debug request:', debugInfo);
-        
-        res.setHeader('Content-Type', 'application/json');
-        res.status(200).json(debugInfo);
-        
-    } catch (error) {
-        console.error('❌ Error in debug endpoint:', error);
-        res.setHeader('Content-Type', 'application/json');
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Simple string endpoint for PictoBlox (returns format like "X05Y03")
 app.get('/simple/:token', (req, res) => {
     try {
@@ -272,7 +254,6 @@ app.get('/simple/:token', (req, res) => {
         console.log(`🎮 Simple endpoint request for token: ${requestedToken}`);
         
         const session = sessions[requestedToken];
-        
         if (!session) {
             console.log(`❌ No session found for token: ${requestedToken}`);
             res.setHeader('Content-Type', 'text/plain');
@@ -317,6 +298,35 @@ app.get('/simple/:token', (req, res) => {
     }
 });
 
+// Debug endpoint to inspect sessions
+app.get('/debug/:token', (req, res) => {
+    try {
+        const requestedToken = req.params.token;
+        const session = sessions[requestedToken];
+        
+        const debugInfo = {
+            requestedToken: requestedToken,
+            sessionExists: !!session,
+            sessionData: session || null,
+            sessionAge: session ? Math.round((Date.now() - session.ts) / 1000) + 's' : 'N/A',
+            totalSessions: Object.keys(sessions).length,
+            allTokens: Object.keys(sessions),
+            currentTime: new Date().toISOString(),
+            serverUptime: Math.round(process.uptime()) + 's'
+        };
+        
+        console.log('🔍 Debug request:', debugInfo);
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json(debugInfo);
+        
+    } catch (error) {
+        console.error('❌ Error in debug endpoint:', error);
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     const healthData = {
@@ -328,6 +338,7 @@ app.get('/health', (req, res) => {
     };
     
     console.log('❤️ Health check:', healthData);
+    
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(healthData);
 });
@@ -357,6 +368,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     const startTime = new Date().toISOString();
     console.log(`🚀 Server started successfully!`);
