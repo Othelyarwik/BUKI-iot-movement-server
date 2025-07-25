@@ -1,7 +1,7 @@
 {
   "name": "phone-controller",
-  "version": "2.0.0",
-  "description": "Phone motion controller for PictoBlox - Educational IoT project",
+  "version": "2.1.0",
+  "description": "Phone motion controller for PictoBlox - Educational IoT project with enhanced PictoBlox compatibility",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -24,7 +24,9 @@
     "education",
     "sensors",
     "phone",
-    "accelerometer"
+    "accelerometer",
+    "stempedia",
+    "bulgarian"
   ],
   "author": "Your Name",
   "license": "MIT",
