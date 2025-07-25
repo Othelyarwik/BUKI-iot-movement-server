@@ -5,6 +5,8 @@
     <title>Phone Controller</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,13 +14,12 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Rubik', Arial, sans-serif;
             text-align: center;
             padding: 20px;
             background: #7A74CE;
             color: white;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         .container {
@@ -29,7 +30,6 @@
             max-width: 400px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         h1 {
@@ -59,7 +59,6 @@
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .token-display {
@@ -67,13 +66,6 @@
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .token-label {
-            font-size: 14px;
-            opacity: 0.8;
-            margin-bottom: 5px;
         }
 
         .token-value {
@@ -96,12 +88,6 @@
             border-radius: 15px;
             margin: 20px 0;
             display: none;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .values h3 {
-            margin-bottom: 15px;
-            font-size: 18px;
         }
 
         .value-row {
@@ -117,18 +103,6 @@
             border-radius: 8px;
             min-width: 80px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .value-label {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .value-number {
-            font-size: 16px;
-            font-weight: normal;
         }
 
         .status {
@@ -156,20 +130,11 @@
             height: 15px;
             border-radius: 50%;
             background: #ff4444;
-            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
             transition: all 0.3s ease;
         }
 
         .connection-indicator.connected {
             background: #44ff44;
-            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
-        }
-
-        .test-button {
-            background: #6CC5A1 !important;
-            margin-top: 10px;
-            font-size: 14px !important;
-            min-width: 150px !important;
         }
     </style>
 </head>
@@ -177,14 +142,13 @@
     <div class="connection-indicator" id="connectionIndicator"></div>
     
     <div class="container">
-        <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;">Phone Controller</h1>
+        <h1>Phone Controller</h1>
         <p>Контролирайте играта с движенията на телефона</p>
 
         <button id="connect">🔗 Свържи се</button>
-        <button id="testConnection" class="test-button" style="display: none;">🧪 Тест връзка</button>
 
         <div class="token-display">
-            <div class="token-label">Код за връзка:</div>
+            <div>Код за връзка:</div>
             <div class="token-value" id="token">Няма връзка</div>
         </div>
 
@@ -192,17 +156,15 @@
             <h3>📊 Данни за движение</h3>
             <div class="value-row">
                 <div class="value">
-                    <div class="value-label">X (ляво/дясно)</div>
-                    <div class="value-number" id="x">0.0</div>
+                    <div>X (ляво/дясно)</div>
+                    <div id="x">0.0</div>
                 </div>
                 <div class="value">
-                    <div class="value-label">Y (нагоре/надолу)</div>
-                    <div class="value-number" id="y">0.0</div>
+                    <div>Y (нагоре/надолу)</div>
+                    <div id="y">0.0</div>
                 </div>
             </div>
-            <div class="status" id="status">
-                Готов за движение...
-            </div>
+            <div class="status" id="status">Готов за движение...</div>
         </div>
 
         <div class="instructions">
@@ -216,22 +178,18 @@
     </div>
 
     <script>
-        console.log('📱 Phone Controller started (Enhanced Version)');
-
-        // Global variables
+        // Core variables
         let token = '';
         let connected = false;
         let velocityX = 0;
         let velocityY = 0;
-        let baselineX = null;
-        let baselineY = null;
-        let lastDisplayUpdate = 0;
-        let updateCount = 0;
-        let connectionLost = false;
+        let motionHistory = [];
+        let calibrationSamples = [];
+        let restPositionX = 0;
+        let restPositionY = 0;
 
         // DOM elements
         const connectButton = document.getElementById('connect');
-        const testButton = document.getElementById('testConnection');
         const tokenElement = document.getElementById('token');
         const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
@@ -239,353 +197,136 @@
         const statusElement = document.getElementById('status');
         const connectionIndicator = document.getElementById('connectionIndicator');
 
-        // Update connection indicator
-        function updateConnectionIndicator(isConnected) {
-            if (isConnected) {
-                connectionIndicator.classList.add('connected');
-            } else {
-                connectionIndicator.classList.remove('connected');
-            }
-        }
-
-        // Update status display
+        // Update status and connection indicator
         function updateStatus(message, type = 'info') {
             statusElement.textContent = message;
-            console.log(`📊 Status: ${message}`);
-            
-            // Update connection indicator based on status
-            updateConnectionIndicator(type === 'success' || message.includes('успешно') || message.includes('Активен'));
+            connectionIndicator.classList.toggle('connected', type === 'success');
         }
-
-        // Test connection button
-        testButton.onclick = async () => {
-            console.log('🧪 Testing connection...');
-            testButton.disabled = true;
-            testButton.textContent = 'Тестване...';
-            
-            try {
-                const response = await fetch('/test', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/plain',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                
-                if (response.ok) {
-                    const result = await response.text();
-                    console.log('✅ Test successful:', result);
-                    updateStatus('Тест успешен - сървърът работи!', 'success');
-                } else {
-                    throw new Error(`Test failed: ${response.status}`);
-                }
-            } catch (error) {
-                console.error('❌ Test failed:', error);
-                updateStatus(`Тест неуспешен: ${error.message}`, 'error');
-            } finally {
-                testButton.disabled = false;
-                testButton.textContent = '🧪 Тест връзка';
-            }
-        };
 
         // Connect button handler
         connectButton.onclick = async () => {
-            console.log('🔗 Connect button clicked');
             connectButton.disabled = true;
             connectButton.textContent = 'Свързване...';
 
             try {
-                console.log('📡 Requesting session token...');
-                
-                // Request token from server
+                // Get session token
                 const response = await fetch('/start', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
-                console.log('📡 Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                }
-
-                const responseText = await response.text();
-                console.log('📡 Raw response:', responseText);
-
-                const data = JSON.parse(responseText);
-                console.log('📡 Parsed response:', data);
-
-                if (!data.token) {
-                    throw new Error('No token received from server');
-                }
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                
+                const data = await response.json();
+                if (!data.token) throw new Error('No token received');
 
                 token = data.token;
                 tokenElement.textContent = token;
-                console.log('✅ Token received:', token);
 
-                // Request motion sensor permission
-                console.log('📱 Requesting motion sensor permission...');
+                // Request motion sensor permission (iOS)
                 if (typeof DeviceMotionEvent !== 'undefined' && 
                     typeof DeviceMotionEvent.requestPermission === 'function') {
-                    console.log('🍎 iOS device detected, requesting permission...');
                     const permission = await DeviceMotionEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        throw new Error('Motion sensor permission denied');
-                    }
-                    console.log('✅ iOS motion permission granted');
-                } else {
-                    console.log('🤖 Android/Desktop device, no permission needed');
+                    if (permission !== 'granted') throw new Error('Motion sensor permission denied');
                 }
 
                 // Start motion tracking
-                console.log('🎯 Starting motion tracking...');
                 window.addEventListener('devicemotion', handleMotion, { passive: true });
 
                 // Update UI
                 connected = true;
-                connectionLost = false;
                 valuesElement.style.display = 'block';
-                testButton.style.display = 'inline-block';
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = '#6CC5A1';
-                updateStatus('Свързан успешно! Движете телефона.', 'success');
-
-                console.log('🎉 Connection successful!');
+                updateStatus('Свързан успешно!', 'success');
 
             } catch (error) {
-                console.error('❌ Connection failed:', error);
-                alert(`Грешка при свързване: ${error.message}`);
-                
-                // Reset UI
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
                 connectButton.style.background = '#F9AC7E';
                 tokenElement.textContent = 'Грешка при свързване';
                 updateStatus(`Грешка: ${error.message}`, 'error');
+                alert(`Грешка при свързване: ${error.message}`);
             }
         };
 
-        // Motion event handler with advanced stabilization
-        let motionHistory = [];
-        let isCalibrating = false;
-        let calibrationSamples = [];
-        let restPositionX = 0;
-        let restPositionY = 0;
-        
+        // Motion handler with stabilization
         function handleMotion(event) {
-            if (!connected || !token) {
+            if (!connected || !token) return;
+
+            const accel = event.accelerationIncludingGravity || event.acceleration || {};
+            const rawX = parseFloat(accel.x) || 0;
+            const rawY = parseFloat(accel.y) || 0;
+
+            // Auto-calibration (first 60 samples)
+            if (calibrationSamples.length < 60) {
+                calibrationSamples.push({ x: rawX, y: rawY });
+                if (calibrationSamples.length === 60) {
+                    restPositionX = calibrationSamples.reduce((sum, s) => sum + s.x, 0) / 60;
+                    restPositionY = calibrationSamples.reduce((sum, s) => sum + s.y, 0) / 60;
+                    updateStatus('Калибриране завършено - готов за движение!', 'success');
+                } else {
+                    updateStatus(`Калибриране... ${calibrationSamples.length}/60`, 'info');
+                }
                 return;
             }
 
-            try {
-                // Get acceleration data
-                const accel = event.accelerationIncludingGravity || event.acceleration || {};
-                const rawX = parseFloat(accel.x) || 0;
-                const rawY = parseFloat(accel.y) || 0;
+            // Calculate movement from rest position
+            const deltaX = rawX - restPositionX;
+            const deltaY = rawY - restPositionY;
 
-                // Auto-calibration for rest position (first 60 samples)
-                if (calibrationSamples.length < 60) {
-                    calibrationSamples.push({ x: rawX, y: rawY });
-                    if (calibrationSamples.length === 60) {
-                        // Calculate average rest position
-                        restPositionX = calibrationSamples.reduce((sum, sample) => sum + sample.x, 0) / 60;
-                        restPositionY = calibrationSamples.reduce((sum, sample) => sum + sample.y, 0) / 60;
-                        console.log('📏 Rest position calibrated:', { restPositionX, restPositionY });
-                        updateStatus('Калибриране завършено - готов за движение!', 'success');
-                    } else {
-                        updateStatus(`Калибриране... ${calibrationSamples.length}/60`, 'info');
-                    }
-                    return;
-                }
+            // Smooth with motion history (last 5 readings)
+            motionHistory.push({ x: deltaX, y: deltaY });
+            if (motionHistory.length > 5) motionHistory.shift();
 
-                // Calculate movement relative to rest position
-                const deltaX = rawX - restPositionX;
-                const deltaY = rawY - restPositionY;
+            const avgX = motionHistory.reduce((sum, r) => sum + r.x, 0) / motionHistory.length;
+            const avgY = motionHistory.reduce((sum, r) => sum + r.y, 0) / motionHistory.length;
 
-                // Add to motion history for smoothing (keep last 5 readings)
-                motionHistory.push({ x: deltaX, y: deltaY, timestamp: Date.now() });
-                if (motionHistory.length > 5) {
-                    motionHistory.shift();
-                }
+            // Dead zone and processing
+            const deadZone = 0.4;
+            let processedX = Math.abs(avgX) > deadZone ? avgX : 0;
+            let processedY = Math.abs(avgY) > deadZone ? avgY : 0;
 
-                // Calculate smoothed averages
-                const avgDeltaX = motionHistory.reduce((sum, reading) => sum + reading.x, 0) / motionHistory.length;
-                const avgDeltaY = motionHistory.reduce((sum, reading) => sum + reading.y, 0) / motionHistory.length;
+            // Convert to velocity with smooth transitions
+            const multiplier = 8;
+            const newVelX = Math.max(-10, Math.min(10, processedX * multiplier));
+            const newVelY = Math.max(-10, Math.min(10, processedY * multiplier));
 
-                // Dead zone - ignore tiny movements (phone is "stationary")
-                const deadZone = 0.4;
-                let processedX = Math.abs(avgDeltaX) > deadZone ? avgDeltaX : 0;
-                let processedY = Math.abs(avgDeltaY) > deadZone ? avgDeltaY : 0;
+            const smoothing = 0.7;
+            velocityX = velocityX * smoothing + newVelX * (1 - smoothing);
+            velocityY = velocityY * smoothing + newVelY * (1 - smoothing);
 
-                // Apply smoothing curve - smaller movements get reduced more
-                const applySmoothCurve = (value) => {
-                    if (value === 0) return 0;
-                    const sign = Math.sign(value);
-                    const abs = Math.abs(value);
-                    // Exponential curve: small movements get heavily reduced, large movements less so
-                    const curved = Math.pow(abs, 1.5) * sign;
-                    return curved;
-                };
+            // Stop when very small
+            if (Math.abs(velocityX) < 0.5) velocityX = 0;
+            if (Math.abs(velocityY) < 0.5) velocityY = 0;
 
-                processedX = applySmoothCurve(processedX);
-                processedY = applySmoothCurve(processedY);
+            // Update display
+            xElement.textContent = velocityX.toFixed(1);
+            yElement.textContent = velocityY.toFixed(1);
 
-                // Convert to velocity with controlled multiplier
-                const multiplier = 8; // Reduced for stability
-                let newVelocityX = Math.max(-10, Math.min(10, processedX * multiplier));
-                let newVelocityY = Math.max(-10, Math.min(10, processedY * multiplier));
-
-                // Smooth velocity transitions (prevents sudden jumps)
-                const smoothing = 0.7;
-                velocityX = velocityX * smoothing + newVelocityX * (1 - smoothing);
-                velocityY = velocityY * smoothing + newVelocityY * (1 - smoothing);
-
-                // Stop completely when movement is very small
-                if (Math.abs(velocityX) < 0.5) velocityX = 0;
-                if (Math.abs(velocityY) < 0.5) velocityY = 0;
-
-                // Update display (throttled to reduce visual noise)
-                const now = Date.now();
-                if (now - lastDisplayUpdate > 200) {
-                    xElement.textContent = velocityX.toFixed(1);
-                    yElement.textContent = velocityY.toFixed(1);
-                    lastDisplayUpdate = now;
-                }
-
-                // Send update to server
-                updateCount++;
-                sendUpdate(velocityX, velocityY);
-
-                // Update status periodically
-                if (updateCount % 50 === 0) {
-                    const movementStatus = (Math.abs(velocityX) < 0.5 && Math.abs(velocityY) < 0.5) ? 
-                        'Неподвижен' : 'В движение';
-                    updateStatus(`Активен - ${movementStatus} (${updateCount})`, 'success');
-                }
-
-                // Reset connection lost flag if we're getting motion data
-                if (connectionLost) {
-                    connectionLost = false;
-                    updateStatus('Връзката е възстановена', 'success');
-                }
-
-            } catch (error) {
-                console.error('❌ Motion handling error:', error);
-            }
+            // Send to server
+            sendUpdate(velocityX, velocityY);
         }
 
-        // Send motion data to server with better error handling
+        // Send motion data to server
         async function sendUpdate(x, y) {
             try {
-                const updateData = { token, x, y };
                 const response = await fetch('/update', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    body: JSON.stringify(updateData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, x, y })
                 });
 
                 if (!response.ok) {
-                    console.warn(`⚠️ Update failed: ${response.status}`);
-                    if (!connectionLost) {
-                        connectionLost = true;
-                        updateStatus('Проблем с връзката...', 'error');
-                    }
-                    return;
+                    updateStatus('Проблем с връзката...', 'error');
                 }
-
-                const result = await response.json();
-                
-                // Log successful updates occasionally
-                if (updateCount % 100 === 0) {
-                    console.log(`📤 Update ${updateCount} sent successfully:`, { x, y });
-                }
-
             } catch (error) {
-                console.error('❌ Send update error:', error);
-                
-                // Show connection error in UI
-                if (!connectionLost) {
-                    connectionLost = true;
-                    updateStatus('Връзката е загубена...', 'error');
-                }
+                updateStatus('Връзката е загубена...', 'error');
             }
         }
 
-        // Page visibility handling
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                console.log('📱 Page hidden');
-            } else {
-                console.log('📱 Page visible');
-                if (connected) {
-                    updateStatus('Връзката е активна', 'success');
-                    // Reset baseline when page becomes visible again
-                    baselineX = null;
-                    baselineY = null;
-                }
-            }
-        });
-
-        // Prevent phone from sleeping
-        let wakeLock = null;
-        
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('🔒 Screen wake lock acquired');
-                }
-            } catch (error) {
-                console.log('⚠️ Wake lock not available:', error);
-            }
-        }
-
-        // Request wake lock when connected
-        connectButton.addEventListener('click', () => {
-            setTimeout(requestWakeLock, 1000);
-        });
-
-        // Handle wake lock release
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('🔒 Screen wake lock re-acquired');
-                } catch (error) {
-                    console.log('⚠️ Wake lock re-acquisition failed:', error);
-                }
-            }
-        });
-
-        // Enhanced error handling for device orientation
-        window.addEventListener('error', (event) => {
-            console.error('💥 JavaScript error:', event.error);
-            if (connected) {
-                updateStatus('Възникна грешка, рестартирайте приложението', 'error');
-            }
-        });
-
-        // Initial page load
-        console.log('🚀 Phone Controller initialized (Enhanced Version)');
+        // Initialize
         updateStatus('Готов за свързване', 'info');
-        updateConnectionIndicator(false);
-
-        // Add helpful debug info
-        console.log('📱 Device info:', {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            hasDeviceMotion: 'DeviceMotionEvent' in window,
-            hasPermissionAPI: typeof DeviceMotionEvent !== 'undefined' && 
-                             typeof DeviceMotionEvent.requestPermission === 'function'
-        });
     </script>
 </body>
 </html>
