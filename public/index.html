@@ -787,12 +787,12 @@
             
             if (isFlipped) {
                 // Flipped mode: camera on right, charging port on left
-                rawSteering = rawY;  // Use Y-axis for steering (not X!)
-                rawThrottle = -rawZ; // Use Z-axis for throttle (inverted)
+                rawSteering = -rawY;  // Use Y-axis for steering (inverted)
+                rawThrottle = rawZ;   // Use Z-axis for throttle
             } else {
                 // Normal mode: camera on left, charging port on right  
-                rawSteering = -rawY; // Use Y-axis for steering (inverted)
-                rawThrottle = rawZ;  // Use Z-axis for throttle
+                rawSteering = rawY;   // Use Y-axis for steering (NOT inverted)
+                rawThrottle = rawZ;   // Use Z-axis for throttle
             }
 
             // Calibration phase - LONGER calibration for better baseline
