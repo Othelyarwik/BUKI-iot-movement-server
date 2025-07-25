@@ -177,7 +177,7 @@
     <div class="connection-indicator" id="connectionIndicator"></div>
     
     <div class="container">
-        <h1>📱 Phone Controller</h1>
+        <h1><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;">Phone Controller</h1>
         <p>Контролирайте играта с движенията на телефона</p>
 
         <button id="connect">🔗 Свържи се</button>
@@ -209,11 +209,9 @@
             💡 <strong>Инструкции:</strong><br>
             1. Натиснете "Свържи се"<br>
             2. Разрешете достъп до сензорите<br>
-            3. Въведете кода в PictoBlox<br>
-            4. Движете телефона за контрол<br>
-            <br>
-            <strong>За PictoBlox:</strong><br>
-            Използвайте: <code>https://buki-iot-movement-server.onrender.com/simple/[КОД]</code>
+            3. Дръжте телефона неподвижно за 3 секунди (калибриране)<br>
+            4. Въведете кода в PictoBlox<br>
+            5. Движете телефона за контрол
         </div>
     </div>
 
@@ -371,7 +369,13 @@
             }
         };
 
-        // Motion event handler with improved responsiveness
+        // Motion event handler with advanced stabilization
+        let motionHistory = [];
+        let isCalibrating = false;
+        let calibrationSamples = [];
+        let restPositionX = 0;
+        let restPositionY = 0;
+        
         function handleMotion(event) {
             if (!connected || !token) {
                 return;
@@ -383,41 +387,70 @@
                 const rawX = parseFloat(accel.x) || 0;
                 const rawY = parseFloat(accel.y) || 0;
 
-                // Set baseline on first reading
-                if (baselineX === null || baselineY === null) {
-                    baselineX = rawX;
-                    baselineY = rawY;
-                    console.log('📏 Baseline set:', { baselineX, baselineY });
+                // Auto-calibration for rest position (first 60 samples)
+                if (calibrationSamples.length < 60) {
+                    calibrationSamples.push({ x: rawX, y: rawY });
+                    if (calibrationSamples.length === 60) {
+                        // Calculate average rest position
+                        restPositionX = calibrationSamples.reduce((sum, sample) => sum + sample.x, 0) / 60;
+                        restPositionY = calibrationSamples.reduce((sum, sample) => sum + sample.y, 0) / 60;
+                        console.log('📏 Rest position calibrated:', { restPositionX, restPositionY });
+                        updateStatus('Калибриране завършено - готов за движение!', 'success');
+                    } else {
+                        updateStatus(`Калибриране... ${calibrationSamples.length}/60`, 'info');
+                    }
                     return;
                 }
 
-                // Calculate acceleration difference from baseline
-                const deltaX = rawX - baselineX;
-                const deltaY = rawY - baselineY;
+                // Calculate movement relative to rest position
+                const deltaX = rawX - restPositionX;
+                const deltaY = rawY - restPositionY;
 
-                // Motion detection with improved thresholds
-                const threshold = 0.2; // More sensitive
-                const decay = 0.85; // Smoother decay
-                const multiplier = 25; // More responsive
-
-                // Update velocities based on movement
-                if (Math.abs(deltaX) > threshold) {
-                    velocityX = Math.max(-10, Math.min(10, deltaX * multiplier));
-                } else {
-                    velocityX *= decay;
-                    if (Math.abs(velocityX) < 0.3) velocityX = 0;
+                // Add to motion history for smoothing (keep last 5 readings)
+                motionHistory.push({ x: deltaX, y: deltaY, timestamp: Date.now() });
+                if (motionHistory.length > 5) {
+                    motionHistory.shift();
                 }
 
-                if (Math.abs(deltaY) > threshold) {
-                    velocityY = Math.max(-10, Math.min(10, deltaY * multiplier));
-                } else {
-                    velocityY *= decay;
-                    if (Math.abs(velocityY) < 0.3) velocityY = 0;
-                }
+                // Calculate smoothed averages
+                const avgDeltaX = motionHistory.reduce((sum, reading) => sum + reading.x, 0) / motionHistory.length;
+                const avgDeltaY = motionHistory.reduce((sum, reading) => sum + reading.y, 0) / motionHistory.length;
+
+                // Dead zone - ignore tiny movements (phone is "stationary")
+                const deadZone = 0.4;
+                let processedX = Math.abs(avgDeltaX) > deadZone ? avgDeltaX : 0;
+                let processedY = Math.abs(avgDeltaY) > deadZone ? avgDeltaY : 0;
+
+                // Apply smoothing curve - smaller movements get reduced more
+                const applySmoothCurve = (value) => {
+                    if (value === 0) return 0;
+                    const sign = Math.sign(value);
+                    const abs = Math.abs(value);
+                    // Exponential curve: small movements get heavily reduced, large movements less so
+                    const curved = Math.pow(abs, 1.5) * sign;
+                    return curved;
+                };
+
+                processedX = applySmoothCurve(processedX);
+                processedY = applySmoothCurve(processedY);
+
+                // Convert to velocity with controlled multiplier
+                const multiplier = 8; // Reduced for stability
+                let newVelocityX = Math.max(-10, Math.min(10, processedX * multiplier));
+                let newVelocityY = Math.max(-10, Math.min(10, processedY * multiplier));
+
+                // Smooth velocity transitions (prevents sudden jumps)
+                const smoothing = 0.7;
+                velocityX = velocityX * smoothing + newVelocityX * (1 - smoothing);
+                velocityY = velocityY * smoothing + newVelocityY * (1 - smoothing);
+
+                // Stop completely when movement is very small
+                if (Math.abs(velocityX) < 0.5) velocityX = 0;
+                if (Math.abs(velocityY) < 0.5) velocityY = 0;
 
                 // Update display (throttled to reduce visual noise)
                 const now = Date.now();
-                if (now - lastDisplayUpdate > 150) { // Faster updates
+                if (now - lastDisplayUpdate > 200) {
                     xElement.textContent = velocityX.toFixed(1);
                     yElement.textContent = velocityY.toFixed(1);
                     lastDisplayUpdate = now;
@@ -428,8 +461,10 @@
                 sendUpdate(velocityX, velocityY);
 
                 // Update status periodically
-                if (updateCount % 30 === 0) {
-                    updateStatus(`Активен (${updateCount} актуализации)`, 'success');
+                if (updateCount % 50 === 0) {
+                    const movementStatus = (Math.abs(velocityX) < 0.5 && Math.abs(velocityY) < 0.5) ? 
+                        'Неподвижен' : 'В движение';
+                    updateStatus(`Активен - ${movementStatus} (${updateCount})`, 'success');
                 }
 
                 // Reset connection lost flag if we're getting motion data
