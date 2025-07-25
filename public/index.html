@@ -10,17 +10,17 @@
             margin: 0;
             padding: 0;
         }
-        
-        body { 
-            font-family: 'Arial', sans-serif; 
-            text-align: center; 
-            padding: 20px; 
+
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
             background: #7A74CE;
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
         }
-        
+
         .container {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 20px;
@@ -31,15 +31,15 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         h1 {
             margin-bottom: 20px;
             font-size: 24px;
         }
-        
-        button { 
-            font-size: 18px; 
-            padding: 15px 30px; 
+
+        button {
+            font-size: 18px;
+            padding: 15px 30px;
             border: none;
             border-radius: 10px;
             background: #F9AC7E;
@@ -50,18 +50,18 @@
             transition: all 0.3s ease;
             min-width: 200px;
         }
-        
+
         button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
         }
-        
+
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .token-display {
             background: #3F469D;
             padding: 15px;
@@ -69,13 +69,13 @@
             margin: 20px 0;
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .token-label {
             font-size: 14px;
             opacity: 0.8;
             margin-bottom: 5px;
         }
-        
+
         .token-value {
             font-family: 'Courier New', monospace;
             font-size: 18px;
@@ -89,7 +89,7 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .values {
             background: #3F469D;
             padding: 20px;
@@ -98,18 +98,18 @@
             display: none;
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .values h3 {
             margin-bottom: 15px;
             font-size: 18px;
         }
-        
+
         .value-row {
             display: flex;
             justify-content: space-around;
             margin-bottom: 15px;
         }
-        
+
         .value {
             font-family: 'Courier New', monospace;
             background: rgba(255, 255, 255, 0.15);
@@ -119,18 +119,18 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .value-label {
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .value-number {
             font-size: 16px;
             font-weight: normal;
         }
-        
+
         .status {
             margin-top: 15px;
             padding: 10px;
@@ -138,7 +138,7 @@
             font-size: 12px;
             background: rgba(255, 255, 255, 0.1);
         }
-        
+
         .instructions {
             margin-top: 15px;
             padding: 15px;
@@ -147,20 +147,47 @@
             font-size: 12px;
             line-height: 1.4;
         }
+
+        .connection-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ff4444;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .connection-indicator.connected {
+            background: #44ff44;
+            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
+        }
+
+        .test-button {
+            background: #6CC5A1 !important;
+            margin-top: 10px;
+            font-size: 14px !important;
+            min-width: 150px !important;
+        }
     </style>
 </head>
 <body>
+    <div class="connection-indicator" id="connectionIndicator"></div>
+    
     <div class="container">
         <h1>📱 Phone Controller</h1>
         <p>Контролирайте играта с движенията на телефона</p>
-        
+
         <button id="connect">🔗 Свържи се</button>
-        
+        <button id="testConnection" class="test-button" style="display: none;">🧪 Тест връзка</button>
+
         <div class="token-display">
             <div class="token-label">Код за връзка:</div>
             <div class="token-value" id="token">Няма връзка</div>
         </div>
-        
+
         <div class="values" id="values">
             <h3>📊 Данни за движение</h3>
             <div class="value-row">
@@ -177,19 +204,22 @@
                 Готов за движение...
             </div>
         </div>
-        
+
         <div class="instructions">
             💡 <strong>Инструкции:</strong><br>
             1. Натиснете "Свържи се"<br>
             2. Разрешете достъп до сензорите<br>
             3. Въведете кода в PictoBlox<br>
-            4. Движете телефона за контрол
+            4. Движете телефона за контрол<br>
+            <br>
+            <strong>За PictoBlox:</strong><br>
+            Използвайте: <code>https://buki-iot-movement-server.onrender.com/simple/[КОД]</code>
         </div>
     </div>
 
     <script>
-        console.log('📱 Phone Controller started');
-        
+        console.log('📱 Phone Controller started (Enhanced Version)');
+
         // Global variables
         let token = '';
         let connected = false;
@@ -199,69 +229,112 @@
         let baselineY = null;
         let lastDisplayUpdate = 0;
         let updateCount = 0;
+        let connectionLost = false;
 
         // DOM elements
         const connectButton = document.getElementById('connect');
+        const testButton = document.getElementById('testConnection');
         const tokenElement = document.getElementById('token');
         const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
         const yElement = document.getElementById('y');
         const statusElement = document.getElementById('status');
+        const connectionIndicator = document.getElementById('connectionIndicator');
+
+        // Update connection indicator
+        function updateConnectionIndicator(isConnected) {
+            if (isConnected) {
+                connectionIndicator.classList.add('connected');
+            } else {
+                connectionIndicator.classList.remove('connected');
+            }
+        }
 
         // Update status display
         function updateStatus(message, type = 'info') {
             statusElement.textContent = message;
             console.log(`📊 Status: ${message}`);
+            
+            // Update connection indicator based on status
+            updateConnectionIndicator(type === 'success' || message.includes('успешно') || message.includes('Активен'));
         }
+
+        // Test connection button
+        testButton.onclick = async () => {
+            console.log('🧪 Testing connection...');
+            testButton.disabled = true;
+            testButton.textContent = 'Тестване...';
+            
+            try {
+                const response = await fetch('/test', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/plain',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.text();
+                    console.log('✅ Test successful:', result);
+                    updateStatus('Тест успешен - сървърът работи!', 'success');
+                } else {
+                    throw new Error(`Test failed: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                updateStatus(`Тест неуспешен: ${error.message}`, 'error');
+            } finally {
+                testButton.disabled = false;
+                testButton.textContent = '🧪 Тест връзка';
+            }
+        };
 
         // Connect button handler
         connectButton.onclick = async () => {
             console.log('🔗 Connect button clicked');
             connectButton.disabled = true;
             connectButton.textContent = 'Свързване...';
-            
+
             try {
                 console.log('📡 Requesting session token...');
                 
                 // Request token from server
-                const response = await fetch('/start', { 
+                const response = await fetch('/start', {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
                     }
                 });
-                
+
                 console.log('📡 Response status:', response.status);
-                console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-                
+
                 if (!response.ok) {
                     throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 }
-                
+
                 const responseText = await response.text();
                 console.log('📡 Raw response:', responseText);
-                
+
                 const data = JSON.parse(responseText);
                 console.log('📡 Parsed response:', data);
-                
+
                 if (!data.token) {
                     throw new Error('No token received from server');
                 }
-                
+
                 token = data.token;
                 tokenElement.textContent = token;
                 console.log('✅ Token received:', token);
-                
+
                 // Request motion sensor permission
                 console.log('📱 Requesting motion sensor permission...');
-                
-                if (typeof DeviceMotionEvent !== 'undefined' &&
+                if (typeof DeviceMotionEvent !== 'undefined' && 
                     typeof DeviceMotionEvent.requestPermission === 'function') {
-                    
                     console.log('🍎 iOS device detected, requesting permission...');
                     const permission = await DeviceMotionEvent.requestPermission();
-                    
                     if (permission !== 'granted') {
                         throw new Error('Motion sensor permission denied');
                     }
@@ -269,20 +342,22 @@
                 } else {
                     console.log('🤖 Android/Desktop device, no permission needed');
                 }
-                
+
                 // Start motion tracking
                 console.log('🎯 Starting motion tracking...');
                 window.addEventListener('devicemotion', handleMotion, { passive: true });
-                
+
                 // Update UI
                 connected = true;
+                connectionLost = false;
                 valuesElement.style.display = 'block';
+                testButton.style.display = 'inline-block';
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = '#6CC5A1';
                 updateStatus('Свързан успешно! Движете телефона.', 'success');
-                
+
                 console.log('🎉 Connection successful!');
-                
+
             } catch (error) {
                 console.error('❌ Connection failed:', error);
                 alert(`Грешка при свързване: ${error.message}`);
@@ -296,12 +371,12 @@
             }
         };
 
-        // Motion event handler
+        // Motion event handler with improved responsiveness
         function handleMotion(event) {
             if (!connected || !token) {
                 return;
             }
-            
+
             try {
                 // Get acceleration data
                 const accel = event.accelerationIncludingGravity || event.acceleration || {};
@@ -320,79 +395,91 @@
                 const deltaX = rawX - baselineX;
                 const deltaY = rawY - baselineY;
 
-                // Motion detection with threshold
-                const threshold = 0.3;
-                const decay = 0.8;
+                // Motion detection with improved thresholds
+                const threshold = 0.2; // More sensitive
+                const decay = 0.85; // Smoother decay
+                const multiplier = 25; // More responsive
 
                 // Update velocities based on movement
                 if (Math.abs(deltaX) > threshold) {
-                    velocityX = Math.max(-10, Math.min(10, deltaX * 20));
+                    velocityX = Math.max(-10, Math.min(10, deltaX * multiplier));
                 } else {
                     velocityX *= decay;
-                    if (Math.abs(velocityX) < 0.5) velocityX = 0;
+                    if (Math.abs(velocityX) < 0.3) velocityX = 0;
                 }
 
                 if (Math.abs(deltaY) > threshold) {
-                    velocityY = Math.max(-10, Math.min(10, deltaY * 20));
+                    velocityY = Math.max(-10, Math.min(10, deltaY * multiplier));
                 } else {
                     velocityY *= decay;
-                    if (Math.abs(velocityY) < 0.5) velocityY = 0;
+                    if (Math.abs(velocityY) < 0.3) velocityY = 0;
                 }
 
                 // Update display (throttled to reduce visual noise)
                 const now = Date.now();
-                if (now - lastDisplayUpdate > 200) {
+                if (now - lastDisplayUpdate > 150) { // Faster updates
                     xElement.textContent = velocityX.toFixed(1);
                     yElement.textContent = velocityY.toFixed(1);
                     lastDisplayUpdate = now;
                 }
-                
+
                 // Send update to server
                 updateCount++;
                 sendUpdate(velocityX, velocityY);
-                
+
                 // Update status periodically
-                if (updateCount % 50 === 0) {
-                    updateStatus(`Активен (${updateCount} актуализации)`, 'info');
+                if (updateCount % 30 === 0) {
+                    updateStatus(`Активен (${updateCount} актуализации)`, 'success');
                 }
-                
+
+                // Reset connection lost flag if we're getting motion data
+                if (connectionLost) {
+                    connectionLost = false;
+                    updateStatus('Връзката е възстановена', 'success');
+                }
+
             } catch (error) {
                 console.error('❌ Motion handling error:', error);
             }
         }
 
-        // Send motion data to server
+        // Send motion data to server with better error handling
         async function sendUpdate(x, y) {
             try {
                 const updateData = { token, x, y };
-                
                 const response = await fetch('/update', {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
                     },
                     body: JSON.stringify(updateData)
                 });
-                
+
                 if (!response.ok) {
                     console.warn(`⚠️ Update failed: ${response.status}`);
+                    if (!connectionLost) {
+                        connectionLost = true;
+                        updateStatus('Проблем с връзката...', 'error');
+                    }
                     return;
                 }
-                
+
                 const result = await response.json();
                 
                 // Log successful updates occasionally
                 if (updateCount % 100 === 0) {
                     console.log(`📤 Update ${updateCount} sent successfully:`, { x, y });
                 }
-                
+
             } catch (error) {
                 console.error('❌ Send update error:', error);
                 
                 // Show connection error in UI
-                if (updateCount % 20 === 0) {
-                    updateStatus('Проблем с връзката...', 'error');
+                if (!connectionLost) {
+                    connectionLost = true;
+                    updateStatus('Връзката е загубена...', 'error');
                 }
             }
         }
@@ -405,13 +492,65 @@
                 console.log('📱 Page visible');
                 if (connected) {
                     updateStatus('Връзката е активна', 'success');
+                    // Reset baseline when page becomes visible again
+                    baselineX = null;
+                    baselineY = null;
                 }
             }
         });
 
+        // Prevent phone from sleeping
+        let wakeLock = null;
+        
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('🔒 Screen wake lock acquired');
+                }
+            } catch (error) {
+                console.log('⚠️ Wake lock not available:', error);
+            }
+        }
+
+        // Request wake lock when connected
+        connectButton.addEventListener('click', () => {
+            setTimeout(requestWakeLock, 1000);
+        });
+
+        // Handle wake lock release
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('🔒 Screen wake lock re-acquired');
+                } catch (error) {
+                    console.log('⚠️ Wake lock re-acquisition failed:', error);
+                }
+            }
+        });
+
+        // Enhanced error handling for device orientation
+        window.addEventListener('error', (event) => {
+            console.error('💥 JavaScript error:', event.error);
+            if (connected) {
+                updateStatus('Възникна грешка, рестартирайте приложението', 'error');
+            }
+        });
+
         // Initial page load
-        console.log('🚀 Phone Controller initialized');
+        console.log('🚀 Phone Controller initialized (Enhanced Version)');
         updateStatus('Готов за свързване', 'info');
+        updateConnectionIndicator(false);
+
+        // Add helpful debug info
+        console.log('📱 Device info:', {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            hasDeviceMotion: 'DeviceMotionEvent' in window,
+            hasPermissionAPI: typeof DeviceMotionEvent !== 'undefined' && 
+                             typeof DeviceMotionEvent.requestPermission === 'function'
+        });
     </script>
 </body>
 </html>
