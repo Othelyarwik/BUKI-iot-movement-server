@@ -50,6 +50,66 @@
             margin-top: 20px; /* Additional top margin */
         }
 
+        /* Setup screen landscape mode */
+        @media (orientation: landscape) {
+            .setup-screen {
+                display: grid;
+                grid-template-columns: 1fr 300px 1fr;
+                grid-template-rows: auto 1fr auto;
+                gap: 20px;
+                align-items: center;
+                padding: 20px;
+                padding-top: 20px; /* Less padding in landscape */
+            }
+
+            .setup-screen h2 {
+                grid-column: 1 / -1;
+                margin: 0;
+                font-size: 24px;
+            }
+
+            .setup-instructions {
+                display: none; /* Hide detailed instructions in landscape */
+            }
+
+            .setup-center {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .setup-left {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .setup-right {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .ready-message {
+                display: block;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 16px;
+                text-align: center;
+            }
+        }
+
+        /* Portrait mode - show everything */
+        @media (orientation: portrait) {
+            .setup-left, .setup-right, .ready-message {
+                display: none;
+            }
+        }
+
         .phone-demo {
             display: flex;
             align-items: center;
@@ -408,60 +468,96 @@
     <div class="setup-screen" id="setupScreen">
         <h2>🏎️ Racing Controller Setup</h2>
 
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div>Дръжте телефона <strong>хоризонтално</strong> с две ръце като волан</div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
-            </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <div>Накланяйте телефона <strong>леко</strong> наляво/надясно за завиване</div>
-            </div>
-            <div class="step">
-                <div class="step-number">5</div>
-                <div>Накланяйте телефона <strong>леко</strong> напред/назад за газ/спирачка</div>
-            </div>
-            <div class="step">
-                <div class="step-number">6</div>
-                <div>Въведете получения код в <strong>PictoBlox</strong> и се забавлявайте!</div>
-            </div>
-        </div>
-
-        <div class="flip-toggle">
-            <div style="font-size: 16px; margin-bottom: 10px;">
-                <strong>Обърнат телефон?</strong> (камерата вдясно)
-            </div>
-            <div class="toggle-switch">
-                <span>Не</span>
-                <div class="switch" id="flipToggle">
-                    <div class="switch-slider"></div>
+        <!-- Portrait mode: Full instructions -->
+        <div class="setup-instructions">
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Дръжте телефона <strong>хоризонтално</strong> с две ръце като волан</div>
                 </div>
-                <span>Да</span>
-            </div>
-        </div>
-
-        <div class="orientation-toggle">
-            <div style="font-size: 16px; margin-bottom: 10px;">
-                <strong>Предпочитана ориентация</strong>
-            </div>
-            <div class="toggle-switch">
-                <span>📱 Портрет</span>
-                <div class="switch active" id="orientationToggle">
-                    <div class="switch-slider"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
                 </div>
-                <span>📱 Пейзаж</span>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>Накланяйте телефона <strong>леко</strong> наляво/надясно за завиване</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div>Накланяйте телефона <strong>леко</strong> напред/назад за газ/спирачка</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div>Въведете получения код в <strong>PictoBlox</strong> и се забавлявайте!</div>
+                </div>
+            </div>
+
+            <div class="flip-toggle">
+                <div style="font-size: 16px; margin-bottom: 10px;">
+                    <strong>Обърнат телефон?</strong> (камерата вдясно)
+                </div>
+                <div class="toggle-switch">
+                    <span>Не</span>
+                    <div class="switch" id="flipToggle">
+                        <div class="switch-slider"></div>
+                    </div>
+                    <span>Да</span>
+                </div>
+            </div>
+
+            <div class="orientation-toggle">
+                <div style="font-size: 16px; margin-bottom: 10px;">
+                    <strong>Предпочитана ориентация</strong>
+                </div>
+                <div class="toggle-switch">
+                    <span>📱 Портрет</span>
+                    <div class="switch active" id="orientationToggle">
+                        <div class="switch-slider"></div>
+                    </div>
+                    <span>📱 Пейзаж</span>
+                </div>
+            </div>
+
+            <button class="continue-btn" id="continueBtn">🎮 Започни играта</button>
+        </div>
+
+        <!-- Landscape mode: Game-ready layout -->
+        <div class="setup-left">
+            <div class="ready-message">
+                <strong>Готов за игра!</strong><br>
+                Дръжте телефона като волан
             </div>
         </div>
 
-        <button class="continue-btn" id="continueBtn">🎮 Започни играта</button>
+        <div class="setup-center">
+            <div style="background: #3F469D; padding: 20px; border-radius: 15px; text-align: center; min-width: 280px;">
+                <div style="font-size: 16px; margin-bottom: 10px; opacity: 0.9;">Настройки:</div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
+                    <span>Обърнат телефон:</span>
+                    <span id="flipStatus">Не</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
+                    <span>Ориентация:</span>
+                    <span id="orientationStatus">Пейзаж</span>
+                </div>
+            </div>
+            <button class="continue-btn" id="continueBtnLandscape">🎮 Започни играта</button>
+        </div>
+
+        <div class="setup-right">
+            <div style="text-align: center; font-size: 14px; opacity: 0.8;">
+                <div>🏎️ Racing Controller</div>
+                <div style="margin: 10px 0; font-size: 12px;">
+                    Завъртете телефона<br>
+                    хоризонтално за игра
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Calibration Overlay -->
@@ -534,6 +630,9 @@
         const flipToggle = document.getElementById('flipToggle');
         const orientationToggle = document.getElementById('orientationToggle');
         const continueBtn = document.getElementById('continueBtn');
+        const continueBtnLandscape = document.getElementById('continueBtnLandscape');
+        const flipStatus = document.getElementById('flipStatus');
+        const orientationStatus = document.getElementById('orientationStatus');
         const connectButton = document.getElementById('connectButton');
         const orientationBtn = document.getElementById('orientationBtn');
         const recalibrateBtn = document.getElementById('recalibrateBtn');
@@ -550,20 +649,25 @@
         flipToggle.onclick = function() {
             isFlipped = !isFlipped;
             this.classList.toggle('active', isFlipped);
+            if (flipStatus) flipStatus.textContent = isFlipped ? 'Да' : 'Не';
         };
 
         orientationToggle.onclick = function() {
             isLandscape = !isLandscape;
             this.classList.toggle('active', isLandscape);
+            if (orientationStatus) orientationStatus.textContent = isLandscape ? 'Пейзаж' : 'Портрет';
         };
 
-        // Continue to game screen
-        continueBtn.onclick = function() {
+        // Continue to game screen (both buttons)
+        function startGame() {
             setupScreen.style.display = 'none';
             gameScreen.style.display = isLandscape ? 'grid' : 'flex';
             gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
             hideAddressBar();
-        };
+        }
+
+        continueBtn.onclick = startGame;
+        continueBtnLandscape.onclick = startGame;
 
         // Orientation toggle in game
         orientationBtn.onclick = function() {
