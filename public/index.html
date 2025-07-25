@@ -250,7 +250,7 @@
             }
         };
 
-        // Motion handler with stabilization
+        // Motion handler with better stabilization
         function handleMotion(event) {
             if (!connected || !token) return;
 
@@ -275,30 +275,35 @@
             const deltaX = rawX - restPositionX;
             const deltaY = rawY - restPositionY;
 
-            // Smooth with motion history (last 5 readings)
+            // Smooth with motion history (last 3 readings - reduced for responsiveness)
             motionHistory.push({ x: deltaX, y: deltaY });
-            if (motionHistory.length > 5) motionHistory.shift();
+            if (motionHistory.length > 3) motionHistory.shift();
 
             const avgX = motionHistory.reduce((sum, r) => sum + r.x, 0) / motionHistory.length;
             const avgY = motionHistory.reduce((sum, r) => sum + r.y, 0) / motionHistory.length;
 
-            // Dead zone and processing
-            const deadZone = 0.4;
+            // Dead zone - smaller for more responsiveness
+            const deadZone = 0.3;
             let processedX = Math.abs(avgX) > deadZone ? avgX : 0;
             let processedY = Math.abs(avgY) > deadZone ? avgY : 0;
 
-            // Convert to velocity with smooth transitions
-            const multiplier = 8;
-            const newVelX = Math.max(-10, Math.min(10, processedX * multiplier));
-            const newVelY = Math.max(-10, Math.min(10, processedY * multiplier));
+            // Convert to velocity - reduced multiplier to prevent getting stuck at extremes
+            const multiplier = 6;
+            let newVelX = Math.max(-8, Math.min(8, processedX * multiplier));
+            let newVelY = Math.max(-8, Math.min(8, processedY * multiplier));
 
-            const smoothing = 0.7;
+            // Smooth velocity transitions - less aggressive smoothing
+            const smoothing = 0.5;
             velocityX = velocityX * smoothing + newVelX * (1 - smoothing);
             velocityY = velocityY * smoothing + newVelY * (1 - smoothing);
 
-            // Stop when very small
-            if (Math.abs(velocityX) < 0.5) velocityX = 0;
-            if (Math.abs(velocityY) < 0.5) velocityY = 0;
+            // Stop when very small - stricter stopping
+            if (Math.abs(velocityX) < 0.8) velocityX = 0;
+            if (Math.abs(velocityY) < 0.8) velocityY = 0;
+
+            // Prevent extreme values from sticking
+            if (Math.abs(velocityX) > 9) velocityX = Math.sign(velocityX) * 9;
+            if (Math.abs(velocityY) > 9) velocityY = Math.sign(velocityY) * 9;
 
             // Update display
             xElement.textContent = velocityX.toFixed(1);
