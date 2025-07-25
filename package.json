@@ -1,38 +1,19 @@
 {
   "name": "phone-controller",
   "version": "2.1.0",
-  "description": "Phone motion controller for PictoBlox - Educational IoT project with enhanced PictoBlox compatibility",
+  "description": "Phone motion controller for PictoBlox",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
-    "test": "echo \"No tests specified\" && exit 0"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"
   },
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=6.0.0"
+    "node": ">=14.0.0"
   },
-  "keywords": [
-    "iot",
-    "motion",
-    "controller",
-    "pictoblox",
-    "education",
-    "sensors",
-    "phone",
-    "accelerometer",
-    "stempedia",
-    "bulgarian"
-  ],
+  "keywords": ["pictoblox", "motion", "controller", "phone"],
   "author": "Your Name",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/OThelyarwk/BUKI-iot-movement-server"
-  },
-  "homepage": "https://buki-iot-movement-server.onrender.com"
+  "license": "MIT"
 }
