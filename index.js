@@ -108,7 +108,7 @@ app.get('/y/:token', (req, res) => {
     }
 });
 
-// Simple endpoint for PictoBlox (returns "X05Y05" format)
+// Simple endpoint for PictoBlox (returns "X05Y05" format) with improved filtering
 app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
@@ -116,18 +116,37 @@ app.get('/simple/:token', (req, res) => {
             return res.status(200).end('X05Y05'); // Center position
         }
 
-        // Map -10 to +10 velocity to 1-9 scale with built-in multiplication
+        // FIXED: Prevent Y-axis sticking by adding range validation
+        let validX = session.x;
+        let validY = session.y;
+        
+        // Range validation - if values are extreme, reset to center
+        if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+            console.log(`⚠️ Extreme values detected X:${validX} Y:${validY}, resetting to center`);
+            validX = 0;
+            validY = 0;
+        }
+
+        // IMPROVED: Map -8 to +8 velocity to 1-9 scale with better distribution
         const mapToScale = (velocity) => {
-            const movement = Math.max(-4, Math.min(4, Math.round(velocity * 0.4)));
-            return movement + 5; // Convert to 1-9 scale
+            // Clamp to safe range first
+            const clamped = Math.max(-8, Math.min(8, velocity));
+            // Map to 1-9 scale: -8 = 1, 0 = 5, +8 = 9
+            const scaled = Math.round(((clamped + 8) / 16) * 8) + 1;
+            return Math.max(1, Math.min(9, scaled));
         };
 
-        const xScaled = mapToScale(session.x);
-        const yScaled = mapToScale(session.y);
+        const xScaled = mapToScale(validX);
+        const yScaled = mapToScale(validY);
 
+        // Always return exactly 6 characters
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
+        
+        console.log(`📤 Sending: ${result} (from x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
         res.status(200).end(result);
+        
     } catch (error) {
+        console.error('❌ Error in simple endpoint:', error);
         res.status(200).end('X05Y05');
     }
 });
