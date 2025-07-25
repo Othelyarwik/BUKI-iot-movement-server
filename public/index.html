@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>Phone Racing Controller</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7A74CE">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
         
@@ -18,13 +22,21 @@
             background: #7A74CE;
             color: white;
             min-height: 100vh;
+            min-height: 100dvh; /* Dynamic viewport height */
             overflow: hidden;
             
             /* Force landscape orientation display */
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 5px;
+            
+            /* Hide address bar */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
 
         .container {
@@ -210,16 +222,106 @@
             justify-content: center;
             text-align: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 30px 20px;
         }
 
         .orientation-warning.show {
             display: flex;
         }
 
-        .rotate-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
+        .phone-demo {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            font-size: 50px;
+        }
+
+        .hand-left, .hand-right {
+            font-size: 40px;
+        }
+
+        .arrow {
+            font-size: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .steps {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 600px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .step-number {
+            background: #F9AC7E;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .flip-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .switch.active {
+            background: #F9AC7E;
+        }
+
+        .switch-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .switch.active .switch-slider {
+            transform: translateX(30px);
         }
 
         /* Show orientation warning in portrait mode */
@@ -271,11 +373,11 @@
                 <h3>🏁 Данни за управление</h3>
                 <div class="value-row">
                     <div class="value">
-                        <div class="value-label">◀️ Ляво/Дясно</div>
+                        <div class="value-label">🏎️ Волан (X)</div>
                         <div class="value-number" id="x">0.0</div>
                     </div>
                     <div class="value">
-                        <div class="value-label">🚗 Напред/Назад</div>
+                        <div class="value-label">⚡ Газ/Спирачка (Z)</div>
                         <div class="value-number" id="y">0.0</div>
                     </div>
                 </div>
@@ -295,8 +397,8 @@
 
         <div class="instructions">
             🏎️ <strong>Инструкции за шофиране:</strong><br>
-            1. Завъртете телефона хоризонтално (камерата вляво, зарядното вдясно)<br>
-            2. Натиснете "Свържи се" и разрешете достъп до сензорите<br>
+            1. Натиснете "Свържи се" и разрешете достъп до сензорите<br>
+            2. Дръжте телефона стабилно за кратко калибриране<br>
             3. Въведете кода в PictoBlox<br>
             4. Накланяйте телефона като волан: ляво/дясно за завиване, напред/назад за скорост
         </div>
@@ -378,29 +480,71 @@
             }
         };
 
-        // LANDSCAPE TILT CONTROL: Optimized for sideways phone holding
+        // Global flip setting
+        let isFlipped = false;
+
+        // Flip toggle functionality
+        document.getElementById('flipToggle').onclick = function() {
+            isFlipped = !isFlipped;
+            this.classList.toggle('active', isFlipped);
+            console.log('📱 Flip mode:', isFlipped ? 'ON' : 'OFF');
+        };
+
+        // Hide address bar on mobile
+        function hideAddressBar() {
+            // Scroll to hide address bar
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 100);
+            
+            // Force viewport update
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        // FIXED: Use Z-axis for throttle to avoid Y-axis gravity issues
         function handleMotion(event) {
             if (!connected || !token) return;
 
             const accel = event.accelerationIncludingGravity || {};
             
-            // In landscape mode, we need to swap and invert axes appropriately
-            // When phone is sideways (camera left, charging port right):
-            // - Phone Y becomes our steering (left/right)
-            // - Phone X becomes our throttle (forward/back)
+            // Get raw values - using Z-axis for throttle to avoid Y-axis issues
+            let rawSteering, rawThrottle;
             
-            const rawSteering = parseFloat(accel.y) || 0;  // Left/right steering
-            const rawThrottle = parseFloat(accel.x) || 0;  // Forward/back speed
+            if (isFlipped) {
+                // Flipped mode: camera on right, charging port on left
+                rawSteering = -(parseFloat(accel.x) || 0);  // X-axis for steering (inverted)
+                rawThrottle = parseFloat(accel.z) || 0;     // Z-axis for throttle
+            } else {
+                // Normal mode: camera on left, charging port on right
+                rawSteering = parseFloat(accel.x) || 0;     // X-axis for steering
+                rawThrottle = parseFloat(accel.z) || 0;     // Z-axis for throttle
+            }
 
-            // Quick calibration (first 30 samples)
-            if (calibrationSamples.length < 30) {
+            // Debug: log raw values to understand what we're getting
+            if (calibrationSamples.length >= 30 && Date.now() % 1000 < 50) {
+                console.log('📊 Raw sensors:', {
+                    X: (parseFloat(accel.x) || 0).toFixed(2),
+                    Y: (parseFloat(accel.y) || 0).toFixed(2),
+                    Z: (parseFloat(accel.z) || 0).toFixed(2),
+                    'Using Steering': rawSteering.toFixed(2),
+                    'Using Throttle': rawThrottle.toFixed(2)
+                });
+            }
+
+            // Quick calibration (first 50 samples for better baseline)
+            if (calibrationSamples.length < 50) {
                 calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
-                if (calibrationSamples.length === 30) {
-                    restPositionX = calibrationSamples.reduce((sum, s) => sum + s.steering, 0) / 30;
-                    restPositionY = calibrationSamples.reduce((sum, s) => sum + s.throttle, 0) / 30;
+                if (calibrationSamples.length === 50) {
+                    restPositionX = calibrationSamples.reduce((sum, s) => sum + s.steering, 0) / 50;
+                    restPositionY = calibrationSamples.reduce((sum, s) => sum + s.throttle, 0) / 50;
                     updateStatus('Калибриране завършено - готов за шофиране!', 'success');
+                    console.log('🎯 Calibration complete:', { 
+                        restSteering: restPositionX.toFixed(2), 
+                        restThrottle: restPositionY.toFixed(2) 
+                    });
                 } else {
-                    updateStatus(`Калибриране... ${calibrationSamples.length}/30`, 'info');
+                    updateStatus(`Калибриране... ${calibrationSamples.length}/50`, 'info');
                 }
                 return;
             }
@@ -409,20 +553,20 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // Dead zone for stable center position
-            const deadZone = 1.5;
+            // Larger dead zone for more stable control
+            const deadZone = 2.0;
             
             let processedSteering = Math.abs(steeringTilt) > deadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > deadZone ? throttleTilt : 0;
 
-            // Convert to movement values
-            const multiplier = 1.2;
+            // Convert to movement values with conservative multiplier
+            const multiplier = 1.0;
             velocityX = Math.max(-6, Math.min(6, processedSteering * multiplier));   // Steering
             velocityY = Math.max(-6, Math.min(6, processedThrottle * multiplier));  // Throttle
 
-            // Update display
-            xElement.textContent = velocityX.toFixed(1);
-            yElement.textContent = velocityY.toFixed(1);
+            // Update display with debug info
+            xElement.textContent = `${velocityX.toFixed(1)} (${steeringTilt.toFixed(1)})`;
+            yElement.textContent = `${velocityY.toFixed(1)} (${throttleTilt.toFixed(1)})`;
 
             // Send to server
             sendUpdate(velocityX, velocityY);
@@ -465,11 +609,24 @@
         }
 
         // Check orientation on load and resize
-        window.addEventListener('load', checkOrientation);
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(checkOrientation, 100);
+        window.addEventListener('load', () => {
+            checkOrientation();
+            hideAddressBar();
         });
+        window.addEventListener('resize', () => {
+            checkOrientation();
+            hideAddressBar();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                checkOrientation();
+                hideAddressBar();
+            }, 200);
+        });
+
+        // Additional mobile browser optimizations
+        window.addEventListener('scroll', hideAddressBar);
+        document.addEventListener('touchstart', hideAddressBar, { passive: true });
     </script>
 </body>
 </html>
