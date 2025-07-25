@@ -592,45 +592,44 @@
         <div class="calibration-progress">
             <div class="calibration-fill" id="calibrationFill"></div>
         </div>
-        <div id="calibrationText">Калибриране... 0/50</div>
+        <div id="calibrationText">Калибриране... 0/100</div>
     </div>
 
     <div class="game-screen landscape" id="gameScreen">
-        <div class="header">
-            <h1>🏎️ Racing Controller</h1>
-        </div>
-
+        <!-- Clean layout: No title, just essentials -->
+        
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
+            <div class="game-controls">
+                <button class="orientation-btn" id="orientationBtn">📱 Ориентация</button>
+                <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Калибриране</button>
+            </div>
         </div>
 
         <div class="center-status">
             <div class="token-display">
-                <div class="token-label">Код за връзка:</div>
+                <div class="token-label">Код за връзка</div>
                 <div class="token-value" id="token">Няма връзка</div>
             </div>
 
             <div class="values" id="values">
-                <h3>🏁 Контролни данни</h3>
+                <h3>🎮 Контрол</h3>
                 <div class="value-row">
                     <div class="value">
                         <div class="value-label">🏎️ Волан</div>
                         <div class="value-number" id="x">0.0</div>
                     </div>
                     <div class="value">
-                        <div class="value-label">⚡ Газ/Спирачка</div>
+                        <div class="value-label">⚡ Газ</div>
                         <div class="value-number" id="y">0.0</div>
                     </div>
                 </div>
-                <div class="status" id="status">Готов за шофиране...</div>
+                <div class="status" id="status">Готов за шофиране</div>
             </div>
         </div>
 
         <div class="right-controls">
-            <div class="game-controls">
-                <button class="orientation-btn" id="orientationBtn">📱 Смени ориентация</button>
-                <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Рекалибриране</button>
-            </div>
+            <!-- Empty space for balance -->
         </div>
     </div>
 
@@ -716,7 +715,7 @@
             calibrationSamples = [];
             calibrationOverlay.classList.add('show');
             calibrationFill.style.width = '0%';
-            calibrationText.textContent = 'Калибриране... 0/50';
+            calibrationText.textContent = 'Калибриране... 0/100';
         }
 
         connectButton.onclick = async () => {
@@ -770,54 +769,93 @@
 
             const accel = event.accelerationIncludingGravity || {};
             
+            // DEBUG: Log all axes to understand what we're getting
+            const rawX = parseFloat(accel.x) || 0;
+            const rawY = parseFloat(accel.y) || 0;  
+            const rawZ = parseFloat(accel.z) || 0;
+            
+            if (Date.now() % 2000 < 50) { // Log every 2 seconds
+                console.log('📊 Raw accelerometer:', {
+                    X: rawX.toFixed(2),
+                    Y: rawY.toFixed(2), 
+                    Z: rawZ.toFixed(2)
+                });
+            }
+
+            // FIXED: Proper axis mapping for landscape phone
             let rawSteering, rawThrottle;
             
             if (isFlipped) {
-                rawSteering = -(parseFloat(accel.x) || 0);
-                rawThrottle = parseFloat(accel.z) || 0;
+                // Flipped mode: camera on right, charging port on left
+                rawSteering = rawY;  // Use Y-axis for steering (not X!)
+                rawThrottle = -rawZ; // Use Z-axis for throttle (inverted)
             } else {
-                rawSteering = parseFloat(accel.x) || 0;
-                rawThrottle = parseFloat(accel.z) || 0;
+                // Normal mode: camera on left, charging port on right  
+                rawSteering = -rawY; // Use Y-axis for steering (inverted)
+                rawThrottle = rawZ;  // Use Z-axis for throttle
             }
 
-            if (isCalibrating && calibrationSamples.length < 50) {
+            // Calibration phase - LONGER calibration for better baseline
+            if (isCalibrating && calibrationSamples.length < 100) {
                 calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                 
-                const progress = (calibrationSamples.length / 50) * 100;
+                const progress = (calibrationSamples.length / 100) * 100;
                 calibrationFill.style.width = progress + '%';
-                calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/50`;
+                calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/100`;
                 
-                if (calibrationSamples.length === 50) {
-                    restPositionX = calibrationSamples.reduce((sum, s) => sum + s.steering, 0) / 50;
-                    restPositionY = calibrationSamples.reduce((sum, s) => sum + s.throttle, 0) / 50;
+                if (calibrationSamples.length === 100) {
+                    // ROBUST CALIBRATION: Remove outliers and use median
+                    const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
+                    const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
+                    
+                    // Use middle 60% of samples (remove 20% from each end)
+                    const start = Math.floor(sortedSteering.length * 0.2);
+                    const end = Math.floor(sortedSteering.length * 0.8);
+                    
+                    restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+                    restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                     
                     isCalibrating = false;
                     calibrationOverlay.classList.remove('show');
                     updateStatus('Калибриране завършено - готов за шофиране!', 'success');
+                    
+                    console.log('🎯 ROBUST calibration complete:', { 
+                        restSteering: restPositionX.toFixed(3), 
+                        restThrottle: restPositionY.toFixed(3) 
+                    });
                 }
                 return;
             }
 
             if (isCalibrating) return;
 
+            // Calculate tilt from CALIBRATED neutral position
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            const steeringDeadZone = 1.2;
-            const throttleDeadZone = 2.0;
+            // LARGER dead zones for stability
+            const steeringDeadZone = 2.0;  // Larger dead zone for steering
+            const throttleDeadZone = 2.5;  // Even larger for throttle
             
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            const steeringMultiplier = 2.0;
-            const throttleMultiplier = 1.0;
+            // CONSERVATIVE multipliers
+            const steeringMultiplier = 1.5;  // Reduced sensitivity
+            const throttleMultiplier = 1.0;  // Even more conservative
             
             velocityX = Math.max(-6, Math.min(6, processedSteering * steeringMultiplier));
             velocityY = Math.max(-6, Math.min(6, processedThrottle * throttleMultiplier));
 
-            xElement.textContent = velocityX.toFixed(1);
-            yElement.textContent = velocityY.toFixed(1);
+            // FORCED ZERO when close to center
+            if (Math.abs(steeringTilt) < steeringDeadZone) velocityX = 0;
+            if (Math.abs(throttleTilt) < throttleDeadZone) velocityY = 0;
 
+            // Update display with debug info
+            xElement.textContent = `${velocityX.toFixed(1)} (${steeringTilt.toFixed(1)})`;
+            yElement.textContent = `${velocityY.toFixed(1)} (${throttleTilt.toFixed(1)})`;
+
+            // Send to server
             sendUpdate(velocityX, velocityY);
         }
 
