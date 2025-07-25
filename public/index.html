@@ -22,16 +22,8 @@
             background: #7A74CE;
             color: white;
             min-height: 100vh;
-            min-height: 100dvh; /* Dynamic viewport height */
+            min-height: 100dvh;
             overflow: hidden;
-            
-            /* Force landscape orientation display */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            
-            /* Hide address bar */
             position: fixed;
             top: 0;
             left: 0;
@@ -39,194 +31,21 @@
             bottom: 0;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
+        /* Setup Screen Styles */
+        .setup-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             padding: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            
-            /* Landscape layout */
-            width: 100%;
-            max-width: 800px;
-            max-height: 400px;
-            display: grid;
-            grid-template-columns: 1fr 300px 1fr;
-            grid-template-rows: auto 1fr auto;
-            gap: 15px;
-            align-items: center;
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        .header {
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-
-        h1 {
+        .setup-screen h2 {
             font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .left-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .center-status {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .right-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        button {
-            font-size: 16px;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            background: #F9AC7E;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            min-width: 140px;
-        }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .token-display {
-            background: #3F469D;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            min-width: 250px;
-        }
-
-        .token-value {
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin-top: 8px;
-        }
-
-        .values {
-            background: #3F469D;
-            padding: 15px;
-            border-radius: 15px;
-            display: none;
-            min-width: 200px;
-        }
-
-        .values h3 {
-            margin-bottom: 10px;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        .value-row {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 10px;
-        }
-
-        .value {
-            font-family: 'Courier New', monospace;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 12px;
-            border-radius: 8px;
-            text-align: center;
-            min-width: 60px;
-        }
-
-        .value-label {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-
-        .value-number {
-            font-size: 16px;
-            font-weight: normal;
-        }
-
-        .status {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .instructions {
-            grid-column: 1 / -1;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            font-size: 13px;
-            line-height: 1.4;
-            text-align: center;
-        }
-
-        .connection-indicator {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background: #ff4444;
-            transition: all 0.3s ease;
-        }
-
-        .connection-indicator.connected {
-            background: #44ff44;
-        }
-
-        .orientation-warning {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #7A74CE;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 1000;
-            padding: 30px 20px;
-        }
-
-        .orientation-warning.show {
-            display: flex;
+            margin-bottom: 20px;
         }
 
         .phone-demo {
@@ -254,7 +73,7 @@
         .steps {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             margin: 20px 0;
             max-width: 600px;
         }
@@ -262,16 +81,17 @@
         .step {
             display: flex;
             align-items: center;
-            margin: 15px 0;
+            margin: 18px 0;
             font-size: 16px;
+            text-align: left;
         }
 
         .step-number {
             background: #F9AC7E;
             color: white;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -280,11 +100,12 @@
             flex-shrink: 0;
         }
 
-        .flip-toggle {
+        .flip-toggle, .orientation-toggle {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             padding: 15px;
-            margin: 20px 0;
+            margin: 15px 0;
+            max-width: 500px;
         }
 
         .toggle-switch {
@@ -324,60 +145,366 @@
             transform: translateX(30px);
         }
 
-        /* Show orientation warning in portrait mode */
-        @media (orientation: portrait) {
-            .orientation-warning {
-                display: flex;
-            }
-            .container {
-                display: none;
-            }
+        .continue-btn {
+            background: #F9AC7E;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
         }
 
-        .steering-wheel {
-            font-size: 60px;
-            margin: 10px 0;
-            opacity: 0.7;
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+        }
+
+        /* Game Screen Styles */
+        .game-screen {
+            display: none;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .game-screen.portrait {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-screen.landscape {
+            display: grid;
+            grid-template-columns: 1fr 300px 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .left-controls, .right-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .center-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .connect-button {
+            font-size: 18px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            background: #F9AC7E;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .connect-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+        }
+
+        .connect-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .token-display {
+            background: #3F469D;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 280px;
+        }
+
+        .token-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .token-value {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .values {
+            background: #3F469D;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+            min-width: 280px;
+        }
+
+        .values h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .value-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .value {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px 16px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .value-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .value-number {
+            font-size: 20px;
+            font-weight: normal;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .orientation-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .orientation-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .connection-indicator {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff4444;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .connection-indicator.connected {
+            background: #44ff44;
+        }
+
+        .calibration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(122, 116, 206, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .calibration-overlay.show {
+            display: flex;
+        }
+
+        .calibration-progress {
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .calibration-fill {
+            height: 100%;
+            background: #F9AC7E;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Portrait mode adjustments for game screen */
+        .game-screen.portrait .center-status {
+            order: 1;
+        }
+
+        .game-screen.portrait .left-controls {
+            order: 2;
+            margin-top: 20px;
+        }
+
+        .game-screen.portrait .header {
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="orientation-warning">
-        <div class="rotate-icon">📱➡️📱</div>
-        <h2>Завъртете телефона!</h2>
-        <p>Държете телефона хоризонтално като волан<br>
-        Камерата в лявата ръка, зарядното в дясната ръка</p>
-        <div class="steering-wheel">🏎️</div>
+    <div class="connection-indicator" id="connectionIndicator"></div>
+
+    <!-- Setup Screen -->
+    <div class="setup-screen" id="setupScreen">
+        <h2>🏎️ Racing Controller Setup</h2>
+        
+        <div class="phone-demo">
+            <span class="hand-left">🤚</span>
+            <span class="arrow">➡️</span>
+            <span style="font-size: 60px;">📱</span>
+            <span class="arrow">⬅️</span>
+            <span class="hand-right">🤚</span>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Дръжте телефона <strong>хоризонтално</strong> с две ръце като волан</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>Накланяйте телефона <strong>леко</strong> наляво/надясно за завиване</div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div>Накланяйте телефона <strong>леко</strong> напред/назад за газ/спирачка</div>
+            </div>
+            <div class="step">
+                <div class="step-number">6</div>
+                <div>Въведете получения код в <strong>PictoBlox</strong> и се забавлявайте!</div>
+            </div>
+        </div>
+
+        <div class="flip-toggle">
+            <div style="font-size: 16px; margin-bottom: 10px;">
+                <strong>Обърнат телефон?</strong> (камерата вдясно)
+            </div>
+            <div class="toggle-switch">
+                <span>Не</span>
+                <div class="switch" id="flipToggle">
+                    <div class="switch-slider"></div>
+                </div>
+                <span>Да</span>
+            </div>
+        </div>
+
+        <div class="orientation-toggle">
+            <div style="font-size: 16px; margin-bottom: 10px;">
+                <strong>Предпочитана ориентация</strong>
+            </div>
+            <div class="toggle-switch">
+                <span>📱 Портрет</span>
+                <div class="switch active" id="orientationToggle">
+                    <div class="switch-slider"></div>
+                </div>
+                <span>📱 Пейзаж</span>
+            </div>
+        </div>
+
+        <button class="continue-btn" id="continueBtn">🎮 Започни играта</button>
     </div>
 
-    <div class="connection-indicator" id="connectionIndicator"></div>
-    
-    <div class="container">
+    <!-- Calibration Overlay -->
+    <div class="calibration-overlay" id="calibrationOverlay">
+        <h2>🎯 Калибриране</h2>
+        <p>Дръжте телефона стабилно в игрова позиция</p>
+        <div class="calibration-progress">
+            <div class="calibration-fill" id="calibrationFill"></div>
+        </div>
+        <div id="calibrationText">Калибриране... 0/50</div>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="game-screen landscape" id="gameScreen">
         <div class="header">
             <h1>🏎️ Racing Controller</h1>
-            <div class="subtitle">Управлявайте играта като волан на кола</div>
         </div>
 
         <div class="left-controls">
-            <button id="connect">🔗 Свържи се</button>
-            <div class="steering-wheel">🎮</div>
+            <button class="connect-button" id="connectButton">🔗 Свържи се</button>
         </div>
 
         <div class="center-status">
             <div class="token-display">
-                <div>Код за връзка:</div>
+                <div class="token-label">Код за връзка:</div>
                 <div class="token-value" id="token">Няма връзка</div>
             </div>
 
             <div class="values" id="values">
-                <h3>🏁 Данни за управление</h3>
+                <h3>🏁 Контролни данни</h3>
                 <div class="value-row">
                     <div class="value">
-                        <div class="value-label">🏎️ Волан (X)</div>
+                        <div class="value-label">🏎️ Волан</div>
                         <div class="value-number" id="x">0.0</div>
                     </div>
                     <div class="value">
-                        <div class="value-label">⚡ Газ/Спирачка (Z)</div>
+                        <div class="value-label">⚡ Газ/Спирачка</div>
                         <div class="value-number" id="y">0.0</div>
                     </div>
                 </div>
@@ -386,47 +513,97 @@
         </div>
 
         <div class="right-controls">
-            <div style="text-align: center; font-size: 14px; opacity: 0.8;">
-                <div>📷 Камера</div>
-                <div>⬅️ Лява ръка</div>
-                <div style="margin: 10px 0;">VS</div>
-                <div>🔌 Зарядно</div>
-                <div>➡️ Дясна ръка</div>
+            <div class="game-controls">
+                <button class="orientation-btn" id="orientationBtn">📱 Смени ориентация</button>
+                <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Рекалибриране</button>
             </div>
-        </div>
-
-        <div class="instructions">
-            🏎️ <strong>Инструкции за шофиране:</strong><br>
-            1. Натиснете "Свържи се" и разрешете достъп до сензорите<br>
-            2. Дръжте телефона стабилно за кратко калибриране<br>
-            3. Въведете кода в PictoBlox<br>
-            4. Накланяйте телефона като волан: ляво/дясно за завиване, напред/назад за скорост
         </div>
     </div>
 
     <script>
-        // Core variables
-        let token = '';
+        // Global settings
+        let isFlipped = false;
+        let isLandscape = true;
         let connected = false;
+        let token = '';
         let velocityX = 0;
         let velocityY = 0;
         let calibrationSamples = [];
         let restPositionX = 0;
         let restPositionY = 0;
+        let isCalibrating = false;
 
         // DOM elements
-        const connectButton = document.getElementById('connect');
+        const setupScreen = document.getElementById('setupScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const calibrationOverlay = document.getElementById('calibrationOverlay');
+        const flipToggle = document.getElementById('flipToggle');
+        const orientationToggle = document.getElementById('orientationToggle');
+        const continueBtn = document.getElementById('continueBtn');
+        const connectButton = document.getElementById('connectButton');
+        const orientationBtn = document.getElementById('orientationBtn');
+        const recalibrateBtn = document.getElementById('recalibrateBtn');
         const tokenElement = document.getElementById('token');
         const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
         const yElement = document.getElementById('y');
         const statusElement = document.getElementById('status');
         const connectionIndicator = document.getElementById('connectionIndicator');
+        const calibrationFill = document.getElementById('calibrationFill');
+        const calibrationText = document.getElementById('calibrationText');
 
-        // Update status and connection indicator
+        // Setup screen toggles
+        flipToggle.onclick = function() {
+            isFlipped = !isFlipped;
+            this.classList.toggle('active', isFlipped);
+        };
+
+        orientationToggle.onclick = function() {
+            isLandscape = !isLandscape;
+            this.classList.toggle('active', isLandscape);
+        };
+
+        // Continue to game screen
+        continueBtn.onclick = function() {
+            setupScreen.style.display = 'none';
+            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
+            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
+            hideAddressBar();
+        };
+
+        // Orientation toggle in game
+        orientationBtn.onclick = function() {
+            isLandscape = !isLandscape;
+            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
+            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
+            this.textContent = isLandscape ? '📱 Смени ориентация' : '📱 Смени ориентация';
+        };
+
+        // Recalibrate button
+        recalibrateBtn.onclick = function() {
+            startCalibration();
+        };
+
+        // Hide address bar
+        function hideAddressBar() {
+            setTimeout(() => window.scrollTo(0, 1), 100);
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        // Update status
         function updateStatus(message, type = 'info') {
             statusElement.textContent = message;
             connectionIndicator.classList.toggle('connected', type === 'success');
+        }
+
+        // Start calibration
+        function startCalibration() {
+            isCalibrating = true;
+            calibrationSamples = [];
+            calibrationOverlay.classList.add('show');
+            calibrationFill.style.width = '0%';
+            calibrationText.textContent = 'Калибриране... 0/50';
         }
 
         // Connect button handler
@@ -450,14 +627,12 @@
                 tokenElement.textContent = token;
 
                 // Request motion sensor permission
-                console.log('📱 Requesting motion sensor permission...');
                 if (typeof DeviceMotionEvent !== 'undefined' && 
                     typeof DeviceMotionEvent.requestPermission === 'function') {
                     const permission = await DeviceMotionEvent.requestPermission();
                     if (permission !== 'granted') {
                         throw new Error('Motion sensor permission denied');
                     }
-                    console.log('✅ Motion permission granted');
                 }
 
                 // Start motion tracking
@@ -466,9 +641,12 @@
                 // Update UI
                 connected = true;
                 valuesElement.style.display = 'block';
+                recalibrateBtn.style.display = 'block';
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = '#6CC5A1';
-                updateStatus('Готов за шофиране! Накланяйте телефона.', 'success');
+                
+                // Start calibration
+                startCalibration();
 
             } catch (error) {
                 connectButton.disabled = false;
@@ -480,93 +658,65 @@
             }
         };
 
-        // Global flip setting
-        let isFlipped = false;
-
-        // Flip toggle functionality
-        document.getElementById('flipToggle').onclick = function() {
-            isFlipped = !isFlipped;
-            this.classList.toggle('active', isFlipped);
-            console.log('📱 Flip mode:', isFlipped ? 'ON' : 'OFF');
-        };
-
-        // Hide address bar on mobile
-        function hideAddressBar() {
-            // Scroll to hide address bar
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-            }, 100);
-            
-            // Force viewport update
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-
-        // FIXED: Use Z-axis for throttle to avoid Y-axis gravity issues
+        // Motion handler
         function handleMotion(event) {
             if (!connected || !token) return;
 
             const accel = event.accelerationIncludingGravity || {};
             
-            // Get raw values - using Z-axis for throttle to avoid Y-axis issues
+            // Get raw values with flip support
             let rawSteering, rawThrottle;
             
             if (isFlipped) {
-                // Flipped mode: camera on right, charging port on left
-                rawSteering = -(parseFloat(accel.x) || 0);  // X-axis for steering (inverted)
-                rawThrottle = parseFloat(accel.z) || 0;     // Z-axis for throttle
+                rawSteering = -(parseFloat(accel.x) || 0);
+                rawThrottle = parseFloat(accel.z) || 0;
             } else {
-                // Normal mode: camera on left, charging port on right
-                rawSteering = parseFloat(accel.x) || 0;     // X-axis for steering
-                rawThrottle = parseFloat(accel.z) || 0;     // Z-axis for throttle
+                rawSteering = parseFloat(accel.x) || 0;
+                rawThrottle = parseFloat(accel.z) || 0;
             }
 
-            // Debug: log raw values to understand what we're getting
-            if (calibrationSamples.length >= 30 && Date.now() % 1000 < 50) {
-                console.log('📊 Raw sensors:', {
-                    X: (parseFloat(accel.x) || 0).toFixed(2),
-                    Y: (parseFloat(accel.y) || 0).toFixed(2),
-                    Z: (parseFloat(accel.z) || 0).toFixed(2),
-                    'Using Steering': rawSteering.toFixed(2),
-                    'Using Throttle': rawThrottle.toFixed(2)
-                });
-            }
-
-            // Quick calibration (first 50 samples for better baseline)
-            if (calibrationSamples.length < 50) {
+            // Calibration phase
+            if (isCalibrating && calibrationSamples.length < 50) {
                 calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
+                
+                const progress = (calibrationSamples.length / 50) * 100;
+                calibrationFill.style.width = progress + '%';
+                calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/50`;
+                
                 if (calibrationSamples.length === 50) {
                     restPositionX = calibrationSamples.reduce((sum, s) => sum + s.steering, 0) / 50;
                     restPositionY = calibrationSamples.reduce((sum, s) => sum + s.throttle, 0) / 50;
+                    
+                    isCalibrating = false;
+                    calibrationOverlay.classList.remove('show');
                     updateStatus('Калибриране завършено - готов за шофиране!', 'success');
-                    console.log('🎯 Calibration complete:', { 
-                        restSteering: restPositionX.toFixed(2), 
-                        restThrottle: restPositionY.toFixed(2) 
-                    });
-                } else {
-                    updateStatus(`Калибриране... ${calibrationSamples.length}/50`, 'info');
                 }
                 return;
             }
+
+            if (isCalibrating) return;
 
             // Calculate tilt from neutral position
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // Larger dead zone for more stable control
-            const deadZone = 2.0;
+            // Sensitive steering, stable throttle
+            const steeringDeadZone = 1.2;
+            const throttleDeadZone = 2.0;
             
-            let processedSteering = Math.abs(steeringTilt) > deadZone ? steeringTilt : 0;
-            let processedThrottle = Math.abs(throttleTilt) > deadZone ? throttleTilt : 0;
+            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
+            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            // Convert to movement values with conservative multiplier
-            const multiplier = 1.0;
-            velocityX = Math.max(-6, Math.min(6, processedSteering * multiplier));   // Steering
-            velocityY = Math.max(-6, Math.min(6, processedThrottle * multiplier));  // Throttle
+            // More sensitive steering
+            const steeringMultiplier = 2.0;
+            const throttleMultiplier = 1.0;
+            
+            velocityX = Math.max(-6, Math.min(6, processedSteering * steeringMultiplier));
+            velocityY = Math.max(-6, Math.min(6, processedThrottle * throttleMultiplier));
 
-            // Update display with debug info
-            xElement.textContent = `${velocityX.toFixed(1)} (${steeringTilt.toFixed(1)})`;
-            yElement.textContent = `${velocityY.toFixed(1)} (${throttleTilt.toFixed(1)})`;
+            // Update display
+            xElement.textContent = velocityX.toFixed(1);
+            yElement.textContent = velocityY.toFixed(1);
 
             // Send to server
             sendUpdate(velocityX, velocityY);
@@ -590,42 +740,8 @@
         }
 
         // Initialize
-        updateStatus('Завъртете телефона и натиснете "Свържи се"', 'info');
-
-        // Force landscape orientation check
-        function checkOrientation() {
-            const orientationWarning = document.querySelector('.orientation-warning');
-            const container = document.querySelector('.container');
-            
-            if (window.innerWidth < window.innerHeight) {
-                // Portrait mode - show warning
-                orientationWarning.classList.add('show');
-                container.style.display = 'none';
-            } else {
-                // Landscape mode - show app
-                orientationWarning.classList.remove('show');
-                container.style.display = 'grid';
-            }
-        }
-
-        // Check orientation on load and resize
-        window.addEventListener('load', () => {
-            checkOrientation();
-            hideAddressBar();
-        });
-        window.addEventListener('resize', () => {
-            checkOrientation();
-            hideAddressBar();
-        });
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                checkOrientation();
-                hideAddressBar();
-            }, 200);
-        });
-
-        // Additional mobile browser optimizations
-        window.addEventListener('scroll', hideAddressBar);
+        window.addEventListener('load', hideAddressBar);
+        window.addEventListener('resize', hideAddressBar);
         document.addEventListener('touchstart', hideAddressBar, { passive: true });
     </script>
 </body>
