@@ -440,7 +440,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(122, 116, 206, 0.95);
+            background: rgba(122, 116, 206, 0.90);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -454,19 +454,53 @@
             display: flex;
         }
 
-        .calibration-progress {
-            width: 200px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
+        .calibration-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .calibration-token {
+            background: #3F469D;
+            padding: 20px;
+            border-radius: 15px;
             margin: 20px 0;
+            text-align: center;
+        }
+
+        .calibration-token .token-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .calibration-token .token-value {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            color: #F9AC7E;
+        }
+
+        .calibration-progress {
+            width: 250px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            margin: 25px 0;
             overflow: hidden;
         }
 
         .calibration-fill {
             height: 100%;
             background: #F9AC7E;
-            border-radius: 5px;
+            border-radius: 6px;
             transition: width 0.3s ease;
             width: 0%;
         }
@@ -600,12 +634,24 @@
     </div>
 
     <div class="calibration-overlay" id="calibrationOverlay">
-        <h2>🎯 Калибриране</h2>
-        <p>Дръжте телефона стабилно в игрова позиция</p>
-        <div class="calibration-progress">
-            <div class="calibration-fill" id="calibrationFill"></div>
+        <div class="calibration-content">
+            <h2>🎯 Калибриране</h2>
+            <p>Дръжте телефона стабилно в игрова позиция</p>
+            
+            <div class="calibration-token">
+                <div class="token-label">Код за PictoBlox</div>
+                <div class="token-value" id="calibrationToken">--------</div>
+            </div>
+            
+            <div class="calibration-progress">
+                <div class="calibration-fill" id="calibrationFill"></div>
+            </div>
+            <div id="calibrationText">Калибриране... 0/120</div>
+            
+            <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
+                💡 Можете да въведете кода в PictoBlox докато калибрирате
+            </p>
         </div>
-        <div id="calibrationText">Калибриране... 0/120</div>
     </div>
 
     <div class="game-screen landscape" id="gameScreen">
@@ -641,7 +687,11 @@
         </div>
 
         <div class="right-controls">
-            <!-- Empty space for balance -->
+            <div style="text-align: center; font-size: 13px; opacity: 0.7; line-height: 1.4;">
+                <div>📱 Racing Controller</div>
+                <div style="margin: 8px 0;">v2.2 Enhanced</div>
+                <div>🎮 Ultra Smooth</div>
+            </div>
         </div>
     </div>
 
@@ -868,6 +918,12 @@
             calibrationFill.style.width = '0%';
             calibrationText.textContent = 'Калибриране... 0/120';
             
+            // Show token during calibration
+            const calibrationTokenElement = document.getElementById('calibrationToken');
+            if (calibrationTokenElement && token) {
+                calibrationTokenElement.textContent = token;
+            }
+            
             // Reset smoother during calibration
             clientSmoother = new ClientMotionSmoother();
         }
@@ -1023,12 +1079,12 @@
                     processedThrottle * 0.9
                 );
                 
-                velocityX = Math.max(-8, Math.min(8, smoothed.x));
-                velocityY = Math.max(-8, Math.min(8, smoothed.y));
+                velocityX = Math.max(-10, Math.min(10, smoothed.x));
+                velocityY = Math.max(-10, Math.min(10, smoothed.y));
             } else {
                 // Direct values without smoothing
-                velocityX = Math.max(-8, Math.min(8, processedSteering * 1.1));
-                velocityY = Math.max(-8, Math.min(8, processedThrottle * 0.9));
+                velocityX = Math.max(-10, Math.min(10, processedSteering * 1.1));
+                velocityY = Math.max(-10, Math.min(10, processedThrottle * 0.9));
             }
 
             // Update display more frequently for responsive feedback
