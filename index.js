@@ -9,10 +9,12 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Accept'],
 }));
 
-// Additional headers for PictoBlox
+// Additional headers for maximum speed
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.header('Connection', 'keep-alive'); // Keep connections alive
+    res.header('Keep-Alive', 'timeout=5, max=1000'); // Optimize connection reuse
     next();
 });
 
@@ -106,8 +108,8 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // Faster movement within safe range: -6 to +6
-        const movement = Math.max(-6, Math.min(6, Math.round(session.x * 1.5)));
+        // 1/3 more sensitive and faster: -4 to +4
+        const movement = Math.max(-4, Math.min(4, Math.round(session.x * 1.0)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
@@ -122,8 +124,8 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // Faster movement within safe range: -6 to +6
-        const movement = Math.max(-6, Math.min(6, Math.round(session.y * 1.5)));
+        // 1/3 more sensitive and faster: -4 to +4
+        const movement = Math.max(-4, Math.min(4, Math.round(session.y * 1.0)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
