@@ -213,7 +213,6 @@
             height: 100vh;
         }
 
-        /* Portrait Game Screen */
         .game-screen.portrait {
             display: flex;
             flex-direction: column;
@@ -223,7 +222,6 @@
             text-align: center;
         }
 
-        /* Landscape Game Screen */
         .game-screen.landscape {
             display: grid;
             grid-template-columns: 1fr 280px 1fr;
@@ -232,7 +230,6 @@
             align-items: center;
         }
 
-        /* Hide header completely in game screen */
         .game-screen .header {
             display: none;
         }
@@ -380,7 +377,6 @@
             transform: translateY(-1px);
         }
 
-        /* Portrait specific adjustments */
         @media (orientation: portrait) {
             .game-screen.portrait .token-display {
                 min-width: 320px;
@@ -399,7 +395,6 @@
             }
         }
 
-        /* Landscape specific adjustments */
         @media (orientation: landscape) {
             .game-screen.landscape .center-status {
                 gap: 20px;
@@ -493,7 +488,7 @@
             position: fixed;
             top: 15px;
             left: 15px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 255, 0, 0.7);
             color: white;
             padding: 5px 10px;
             border-radius: 8px;
@@ -610,12 +605,10 @@
         <div class="calibration-progress">
             <div class="calibration-fill" id="calibrationFill"></div>
         </div>
-        <div id="calibrationText">Калибриране... 0/100</div>
+        <div id="calibrationText">Калибриране... 0/120</div>
     </div>
 
     <div class="game-screen landscape" id="gameScreen">
-        <!-- Clean layout: No title, just essentials -->
-        
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
             <div class="game-controls">
@@ -657,7 +650,7 @@
         class ClientMotionSmoother {
             constructor() {
                 this.samples = [];
-                this.maxSamples = 6; // Increased for better smoothing
+                this.maxSamples = 6;
                 this.smoothedX = 0;
                 this.smoothedY = 0;
                 this.velocityX = 0;
@@ -665,10 +658,10 @@
                 this.lastTime = Date.now();
                 
                 // Racing-optimized smoothing parameters
-                this.outlierThreshold = 2.5; // Smaller for better outlier detection
-                this.blendFactor = 0.25; // How much outlier blending to apply
-                this.velocitySmoothing = 0.82; // Higher = smoother transitions
-                this.accelerationLimit = 15.0; // Max acceleration for stability
+                this.outlierThreshold = 2.5;
+                this.blendFactor = 0.25;
+                this.velocitySmoothing = 0.82;
+                this.accelerationLimit = 15.0;
             }
 
             addSample(rawX, rawY) {
@@ -732,7 +725,7 @@
 
                 // Exponential weighting - much higher weight for recent samples
                 this.samples.forEach((sample, index) => {
-                    const weight = Math.pow(2.5, index); // Strong exponential weighting
+                    const weight = Math.pow(2.5, index);
                     weightedX += sample.x * weight;
                     weightedY += sample.y * weight;
                     totalWeight += weight;
@@ -873,7 +866,7 @@
             calibrationSamples = [];
             calibrationOverlay.classList.add('show');
             calibrationFill.style.width = '0%';
-            calibrationText.textContent = 'Калибриране... 0/100';
+            calibrationText.textContent = 'Калибриране... 0/120';
             
             // Reset smoother during calibration
             clientSmoother = new ClientMotionSmoother();
@@ -950,7 +943,7 @@
             const rawZ = parseFloat(accel.z) || 0;
             
             updateCounter++;
-            if (updateCounter % 100 === 0) { // Reduced logging frequency
+            if (updateCounter % 100 === 0) {
                 console.log(`📊 Motion update #${updateCounter} - Smoothing: ${smoothingEnabled ? 'ON' : 'OFF'}`);
             }
 
@@ -966,7 +959,7 @@
 
             // Calibration phase
             if (isCalibrating) {
-                if (calibrationSamples.length < 120) { // Extended calibration
+                if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                     
                     const progress = (calibrationSamples.length / 120) * 100;
