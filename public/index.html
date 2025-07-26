@@ -764,103 +764,122 @@
             }
         };
 
+        // Motion handling with memory optimization
+        let lastMotionTime = 0;
+        let sendTimeout;
+        let updateCounter = 0;
+        
         function handleMotion(event) {
             if (!connected || !token) return;
 
+            // CRITICAL FIX: Throttle motion events to prevent memory overload
+            const now = Date.now();
+            if (now - lastMotionTime < 100) return; // Only process every 100ms
+            lastMotionTime = now;
+
             const accel = event.accelerationIncludingGravity || {};
             
-            // DEBUG: Log all axes to understand what we're getting
             const rawX = parseFloat(accel.x) || 0;
             const rawY = parseFloat(accel.y) || 0;  
             const rawZ = parseFloat(accel.z) || 0;
             
-            if (Date.now() % 2000 < 50) { // Log every 2 seconds
-                console.log('📊 Raw accelerometer:', {
-                    X: rawX.toFixed(2),
-                    Y: rawY.toFixed(2), 
-                    Z: rawZ.toFixed(2)
-                });
+            // CRITICAL FIX: Reduced logging to prevent memory buildup
+            updateCounter++;
+            if (updateCounter % 50 === 0) { // Only log every 5 seconds
+                console.log('📊 Motion update #' + updateCounter);
             }
 
-            // FIXED: Proper axis mapping for landscape phone
             let rawSteering, rawThrottle;
             
             if (isFlipped) {
-                // Flipped mode: camera on right, charging port on left
-                rawSteering = -rawY;  // Use Y-axis for steering (inverted)
-                rawThrottle = rawZ;   // Use Z-axis for throttle
+                rawSteering = -rawY;
+                rawThrottle = rawZ;
             } else {
-                // Normal mode: camera on left, charging port on right  
-                rawSteering = rawY;   // Use Y-axis for steering (NOT inverted)
-                rawThrottle = rawZ;   // Use Z-axis for throttle
+                rawSteering = rawY;
+                rawThrottle = rawZ;
             }
 
-            // Calibration phase - LONGER calibration for better baseline
-            if (isCalibrating && calibrationSamples.length < 100) {
-                calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
-                
-                const progress = (calibrationSamples.length / 100) * 100;
-                calibrationFill.style.width = progress + '%';
-                calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/100`;
-                
-                if (calibrationSamples.length === 100) {
-                    // ROBUST CALIBRATION: Remove outliers and use median
-                    const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
-                    const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
+            // Calibration phase - CRITICAL FIX: Prevent array overflow
+            if (isCalibrating) {
+                if (calibrationSamples.length < 100) {
+                    calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                     
-                    // Use middle 60% of samples (remove 20% from each end)
-                    const start = Math.floor(sortedSteering.length * 0.2);
-                    const end = Math.floor(sortedSteering.length * 0.8);
+                    const progress = (calibrationSamples.length / 100) * 100;
+                    calibrationFill.style.width = progress + '%';
+                    calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/100`;
                     
-                    restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                    restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                    
-                    isCalibrating = false;
-                    calibrationOverlay.classList.remove('show');
-                    updateStatus('Калибриране завършено - готов за шофиране!', 'success');
-                    
-                    console.log('🎯 ROBUST calibration complete:', { 
-                        restSteering: restPositionX.toFixed(3), 
-                        restThrottle: restPositionY.toFixed(3) 
-                    });
+                    if (calibrationSamples.length === 100) {
+                        // MEMORY SAFE: Process calibration and clear array
+                        const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
+                        const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
+                        
+                        const start = Math.floor(sortedSteering.length * 0.2);
+                        const end = Math.floor(sortedSteering.length * 0.8);
+                        
+                        restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+                        restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+                        
+                        // CRITICAL FIX: Clear calibration data to free memory
+                        calibrationSamples = null;
+                        
+                        isCalibrating = false;
+                        calibrationOverlay.classList.remove('show');
+                        updateStatus('Калибриране завършено - готов за шофиране!', 'success');
+                        
+                        console.log('🎯 Calibration complete - memory cleared');
+                    }
                 }
                 return;
             }
 
             if (isCalibrating) return;
 
-            // Calculate tilt from CALIBRATED neutral position
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // LARGER dead zones for stability
-            const steeringDeadZone = 2.0;  // Larger dead zone for steering
-            const throttleDeadZone = 2.5;  // Even larger for throttle
+            const steeringDeadZone = 2.0;
+            const throttleDeadZone = 2.5;
             
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            // CONSERVATIVE multipliers
-            const steeringMultiplier = 1.5;  // Reduced sensitivity
-            const throttleMultiplier = 1.0;  // Even more conservative
+            const steeringMultiplier = 1.5;
+            const throttleMultiplier = 1.0;
             
             velocityX = Math.max(-6, Math.min(6, processedSteering * steeringMultiplier));
             velocityY = Math.max(-6, Math.min(6, processedThrottle * throttleMultiplier));
 
-            // FORCED ZERO when close to center
             if (Math.abs(steeringTilt) < steeringDeadZone) velocityX = 0;
             if (Math.abs(throttleTilt) < throttleDeadZone) velocityY = 0;
 
-            // Update display with debug info
-            xElement.textContent = `${velocityX.toFixed(1)} (${steeringTilt.toFixed(1)})`;
-            yElement.textContent = `${velocityY.toFixed(1)} (${throttleTilt.toFixed(1)})`;
+            // CRITICAL FIX: Throttled display updates
+            if (updateCounter % 3 === 0) { // Update display every 300ms
+                xElement.textContent = velocityX.toFixed(1);
+                yElement.textContent = velocityY.toFixed(1);
+            }
 
-            // Send to server
-            sendUpdate(velocityX, velocityY);
+            // CRITICAL FIX: Debounced server requests
+            debouncedSendUpdate(velocityX, velocityY);
         }
 
+        // CRITICAL FIX: Debounced send function to prevent request spam
+        function debouncedSendUpdate(x, y) {
+            clearTimeout(sendTimeout);
+            sendTimeout = setTimeout(() => {
+                sendUpdate(x, y);
+            }, 80); // Send at most every 80ms
+        }
+
+        // CRITICAL FIX: Memory-safe server communication
+        let requestInProgress = false;
+        
         async function sendUpdate(x, y) {
+            // Prevent request pileup
+            if (requestInProgress) return;
+            
             try {
+                requestInProgress = true;
+                
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -872,6 +891,8 @@
                 }
             } catch (error) {
                 updateStatus('Връзката е загубена...', 'error');
+            } finally {
+                requestInProgress = false;
             }
         }
 
