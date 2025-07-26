@@ -151,7 +151,6 @@ app.get('/simple/:token', (req, res) => {
         // Enhanced mapping for racing games: 1-11 scale (center=6)
         const mapToScale = (velocity) => {
             const clamped = Math.max(-12, Math.min(12, velocity));
-            // Power curve for racing sensitivity
             const normalized = clamped / 12;
             const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.6);
             const scaled = Math.round(((curved + 1) / 2) * 10) + 1;
