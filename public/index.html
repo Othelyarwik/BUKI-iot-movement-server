@@ -488,10 +488,28 @@
         .game-screen.portrait .header {
             margin-bottom: 20px;
         }
+
+        .smoothing-indicator {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .smoothing-indicator.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
+    <div class="smoothing-indicator" id="smoothingIndicator">Smoothing: ON</div>
 
     <div class="setup-screen" id="setupScreen">
         <h2>🏎️ Racing Controller Setup</h2>
@@ -603,6 +621,7 @@
             <div class="game-controls">
                 <button class="orientation-btn" id="orientationBtn">📱 Ориентация</button>
                 <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Калибриране</button>
+                <button class="orientation-btn" id="smoothingBtn" style="display: none;">✨ Плавност</button>
             </div>
         </div>
 
@@ -634,6 +653,127 @@
     </div>
 
     <script>
+        // Enhanced Client-Side Motion Smoother for Ultra-Smooth Racing
+        class ClientMotionSmoother {
+            constructor() {
+                this.samples = [];
+                this.maxSamples = 6; // Increased for better smoothing
+                this.smoothedX = 0;
+                this.smoothedY = 0;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.lastTime = Date.now();
+                
+                // Racing-optimized smoothing parameters
+                this.outlierThreshold = 2.5; // Smaller for better outlier detection
+                this.blendFactor = 0.25; // How much outlier blending to apply
+                this.velocitySmoothing = 0.82; // Higher = smoother transitions
+                this.accelerationLimit = 15.0; // Max acceleration for stability
+            }
+
+            addSample(rawX, rawY) {
+                const now = Date.now();
+                const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
+                this.lastTime = now;
+
+                // Step 1: Outlier detection and filtering
+                const filtered = this.filterOutliers(rawX, rawY);
+                
+                // Step 2: Add to sample history
+                this.samples.push({ x: filtered.x, y: filtered.y, time: now });
+                if (this.samples.length > this.maxSamples) {
+                    this.samples.shift();
+                }
+
+                // Step 3: Calculate weighted average
+                const averaged = this.getExponentialAverage();
+                
+                // Step 4: Apply velocity smoothing for natural movement
+                const smoothed = this.applyVelocitySmoothing(averaged.x, averaged.y, deltaTime);
+                
+                this.smoothedX = smoothed.x;
+                this.smoothedY = smoothed.y;
+
+                return { x: this.smoothedX, y: this.smoothedY };
+            }
+
+            filterOutliers(x, y) {
+                if (this.samples.length === 0) return { x, y };
+
+                // Get recent average for comparison
+                const recentSamples = this.samples.slice(-3);
+                const avgX = recentSamples.reduce((sum, s) => sum + s.x, 0) / recentSamples.length;
+                const avgY = recentSamples.reduce((sum, s) => sum + s.y, 0) / recentSamples.length;
+
+                // Check for outliers
+                const deltaX = Math.abs(x - avgX);
+                const deltaY = Math.abs(y - avgY);
+
+                let filteredX = x;
+                let filteredY = y;
+
+                // Blend outliers with recent average
+                if (deltaX > this.outlierThreshold) {
+                    filteredX = avgX * (1 - this.blendFactor) + x * this.blendFactor;
+                }
+                if (deltaY > this.outlierThreshold) {
+                    filteredY = avgY * (1 - this.blendFactor) + y * this.blendFactor;
+                }
+
+                return { x: filteredX, y: filteredY };
+            }
+
+            getExponentialAverage() {
+                if (this.samples.length === 0) return { x: 0, y: 0 };
+
+                let totalWeight = 0;
+                let weightedX = 0;
+                let weightedY = 0;
+
+                // Exponential weighting - much higher weight for recent samples
+                this.samples.forEach((sample, index) => {
+                    const weight = Math.pow(2.5, index); // Strong exponential weighting
+                    weightedX += sample.x * weight;
+                    weightedY += sample.y * weight;
+                    totalWeight += weight;
+                });
+
+                return {
+                    x: weightedX / totalWeight,
+                    y: weightedY / totalWeight
+                };
+            }
+
+            applyVelocitySmoothing(targetX, targetY, deltaTime) {
+                // Calculate acceleration toward target
+                const accelX = (targetX - this.smoothedX) / deltaTime;
+                const accelY = (targetY - this.smoothedY) / deltaTime;
+
+                // Limit acceleration for stability
+                const limitedAccelX = Math.max(-this.accelerationLimit, Math.min(this.accelerationLimit, accelX));
+                const limitedAccelY = Math.max(-this.accelerationLimit, Math.min(this.accelerationLimit, accelY));
+
+                // Update velocity with smoothing
+                this.velocityX = this.velocityX * this.velocitySmoothing + limitedAccelX * deltaTime * (1 - this.velocitySmoothing);
+                this.velocityY = this.velocityY * this.velocitySmoothing + limitedAccelY * deltaTime * (1 - this.velocitySmoothing);
+
+                // Update position
+                const newX = this.smoothedX + this.velocityX * deltaTime;
+                const newY = this.smoothedY + this.velocityY * deltaTime;
+
+                return { x: newX, y: newY };
+            }
+
+            getDebugInfo() {
+                return {
+                    samples: this.samples.length,
+                    velocity: { x: this.velocityX.toFixed(2), y: this.velocityY.toFixed(2) },
+                    smoothed: { x: this.smoothedX.toFixed(2), y: this.smoothedY.toFixed(2) }
+                };
+            }
+        }
+
+        // Global variables
         let isFlipped = false;
         let isLandscape = true;
         let connected = false;
@@ -644,7 +784,10 @@
         let restPositionX = 0;
         let restPositionY = 0;
         let isCalibrating = false;
+        let smoothingEnabled = true;
+        let clientSmoother = new ClientMotionSmoother();
 
+        // DOM elements
         const setupScreen = document.getElementById('setupScreen');
         const gameScreen = document.getElementById('gameScreen');
         const calibrationOverlay = document.getElementById('calibrationOverlay');
@@ -657,6 +800,7 @@
         const connectButton = document.getElementById('connectButton');
         const orientationBtn = document.getElementById('orientationBtn');
         const recalibrateBtn = document.getElementById('recalibrateBtn');
+        const smoothingBtn = document.getElementById('smoothingBtn');
         const tokenElement = document.getElementById('token');
         const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
@@ -665,7 +809,9 @@
         const connectionIndicator = document.getElementById('connectionIndicator');
         const calibrationFill = document.getElementById('calibrationFill');
         const calibrationText = document.getElementById('calibrationText');
+        const smoothingIndicator = document.getElementById('smoothingIndicator');
 
+        // Setup event handlers
         flipToggle.onclick = function() {
             isFlipped = !isFlipped;
             this.classList.toggle('active', isFlipped);
@@ -699,6 +845,18 @@
             startCalibration();
         };
 
+        smoothingBtn.onclick = function() {
+            smoothingEnabled = !smoothingEnabled;
+            this.textContent = smoothingEnabled ? '✨ Плавност: ВКЛ' : '✨ Плавност: ИЗКЛ';
+            smoothingIndicator.textContent = smoothingEnabled ? 'Smoothing: ON' : 'Smoothing: OFF';
+            smoothingIndicator.style.background = smoothingEnabled ? 'rgba(0, 255, 0, 0.7)' : 'rgba(255, 0, 0, 0.7)';
+            
+            // Reset smoother when toggling
+            if (smoothingEnabled) {
+                clientSmoother = new ClientMotionSmoother();
+            }
+        };
+
         function hideAddressBar() {
             setTimeout(() => window.scrollTo(0, 1), 100);
             const vh = window.innerHeight * 0.01;
@@ -716,6 +874,9 @@
             calibrationOverlay.classList.add('show');
             calibrationFill.style.width = '0%';
             calibrationText.textContent = 'Калибриране... 0/100';
+            
+            // Reset smoother during calibration
+            clientSmoother = new ClientMotionSmoother();
         }
 
         connectButton.onclick = async () => {
@@ -749,8 +910,13 @@
                 connected = true;
                 valuesElement.style.display = 'block';
                 recalibrateBtn.style.display = 'block';
+                smoothingBtn.style.display = 'block';
+                smoothingIndicator.classList.add('show');
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = '#6CC5A1';
+                
+                // Initialize smoothing button
+                smoothingBtn.textContent = '✨ Плавност: ВКЛ';
                 
                 startCalibration();
 
@@ -764,7 +930,7 @@
             }
         };
 
-        // Motion handling with memory optimization
+        // Enhanced motion handling with client-side smoothing
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
@@ -772,9 +938,9 @@
         function handleMotion(event) {
             if (!connected || !token) return;
 
-            // CRITICAL FIX: Throttle motion events to prevent memory overload
+            // Higher frequency for smoother client processing
             const now = Date.now();
-            if (now - lastMotionTime < 100) return; // Only process every 100ms
+            if (now - lastMotionTime < 40) return; // 25 FPS processing
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
@@ -783,10 +949,9 @@
             const rawY = parseFloat(accel.y) || 0;  
             const rawZ = parseFloat(accel.z) || 0;
             
-            // CRITICAL FIX: Reduced logging to prevent memory buildup
             updateCounter++;
-            if (updateCounter % 50 === 0) { // Only log every 5 seconds
-                console.log('📊 Motion update #' + updateCounter);
+            if (updateCounter % 100 === 0) { // Reduced logging frequency
+                console.log(`📊 Motion update #${updateCounter} - Smoothing: ${smoothingEnabled ? 'ON' : 'OFF'}`);
             }
 
             let rawSteering, rawThrottle;
@@ -799,34 +964,34 @@
                 rawThrottle = rawZ;
             }
 
-            // Calibration phase - CRITICAL FIX: Prevent array overflow
+            // Calibration phase
             if (isCalibrating) {
-                if (calibrationSamples.length < 100) {
+                if (calibrationSamples.length < 120) { // Extended calibration
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                     
-                    const progress = (calibrationSamples.length / 100) * 100;
+                    const progress = (calibrationSamples.length / 120) * 100;
                     calibrationFill.style.width = progress + '%';
-                    calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/100`;
+                    calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/120`;
                     
-                    if (calibrationSamples.length === 100) {
-                        // MEMORY SAFE: Process calibration and clear array
+                    if (calibrationSamples.length === 120) {
+                        // More robust calibration calculation
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
                         
-                        const start = Math.floor(sortedSteering.length * 0.2);
-                        const end = Math.floor(sortedSteering.length * 0.8);
+                        // Use middle 50% of samples for more stable calibration
+                        const start = Math.floor(sortedSteering.length * 0.25);
+                        const end = Math.floor(sortedSteering.length * 0.75);
                         
                         restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         
-                        // CRITICAL FIX: Clear calibration data to free memory
-                        calibrationSamples = null;
+                        calibrationSamples = null; // Free memory
                         
                         isCalibrating = false;
                         calibrationOverlay.classList.remove('show');
                         updateStatus('Калибриране завършено - готов за шофиране!', 'success');
                         
-                        console.log('🎯 Calibration complete - memory cleared');
+                        console.log(`🎯 Enhanced calibration complete - Rest position: X=${restPositionX.toFixed(2)}, Y=${restPositionY.toFixed(2)}`);
                     }
                 }
                 return;
@@ -837,44 +1002,64 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            const steeringDeadZone = 2.0;
-            const throttleDeadZone = 2.5;
+            // Enhanced smooth dead zone function
+            function applySmoothDeadZone(value, deadZone, transitionZone = 0.8) {
+                const absValue = Math.abs(value);
+                if (absValue <= deadZone) return 0;
+                
+                if (absValue <= deadZone + transitionZone) {
+                    const factor = (absValue - deadZone) / transitionZone;
+                    // Smooth hermite interpolation
+                    const smoothFactor = factor * factor * (3 - 2 * factor);
+                    return Math.sign(value) * deadZone * smoothFactor;
+                }
+                
+                return value - Math.sign(value) * deadZone;
+            }
+
+            const steeringDeadZone = 1.2; // Smaller for more responsive steering
+            const throttleDeadZone = 1.8;
             
-            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
-            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
+            let processedSteering = applySmoothDeadZone(steeringTilt, steeringDeadZone, 0.6);
+            let processedThrottle = applySmoothDeadZone(throttleTilt, throttleDeadZone, 0.8);
 
-            const steeringMultiplier = 1.5;
-            const throttleMultiplier = 1.0;
-            
-            velocityX = Math.max(-6, Math.min(6, processedSteering * steeringMultiplier));
-            velocityY = Math.max(-6, Math.min(6, processedThrottle * throttleMultiplier));
+            // Apply client-side smoothing if enabled
+            if (smoothingEnabled) {
+                const smoothed = clientSmoother.addSample(
+                    processedSteering * 1.1, // Optimized multipliers for racing
+                    processedThrottle * 0.9
+                );
+                
+                velocityX = Math.max(-8, Math.min(8, smoothed.x));
+                velocityY = Math.max(-8, Math.min(8, smoothed.y));
+            } else {
+                // Direct values without smoothing
+                velocityX = Math.max(-8, Math.min(8, processedSteering * 1.1));
+                velocityY = Math.max(-8, Math.min(8, processedThrottle * 0.9));
+            }
 
-            if (Math.abs(steeringTilt) < steeringDeadZone) velocityX = 0;
-            if (Math.abs(throttleTilt) < throttleDeadZone) velocityY = 0;
-
-            // CRITICAL FIX: Throttled display updates
-            if (updateCounter % 3 === 0) { // Update display every 300ms
+            // Update display more frequently for responsive feedback
+            if (updateCounter % 2 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
             }
 
-            // CRITICAL FIX: Faster updates for smoother movement
+            // Send updates more frequently for ultra-smooth server-side processing
             debouncedSendUpdate(velocityX, velocityY);
         }
 
-        // CRITICAL FIX: Faster debounced send function for smoother movement
+        // Ultra-fast debounced send for maximum smoothness
         function debouncedSendUpdate(x, y) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
-            }, 50); // Faster updates - was 80ms, now 50ms
+            }, 25); // Even faster - 40 FPS updates to server
         }
 
-        // CRITICAL FIX: Memory-safe server communication
+        // Memory-optimized server communication
         let requestInProgress = false;
         
         async function sendUpdate(x, y) {
-            // Prevent request pileup
             if (requestInProgress) return;
             
             try {
@@ -896,9 +1081,18 @@
             }
         }
 
+        // Initialize app
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
         document.addEventListener('touchstart', hideAddressBar, { passive: true });
+        
+        // Debug logging for development
+        setInterval(() => {
+            if (connected && smoothingEnabled) {
+                const debugInfo = clientSmoother.getDebugInfo();
+                console.log(`🎮 Smoothing Debug: Samples=${debugInfo.samples}, Vel=(${debugInfo.velocity.x},${debugInfo.velocity.y}), Pos=(${debugInfo.smoothed.x},${debugInfo.smoothed.y})`);
+            }
+        }, 5000);
     </script>
 </body>
 </html>
