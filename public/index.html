@@ -858,16 +858,16 @@
                 yElement.textContent = velocityY.toFixed(1);
             }
 
-            // CRITICAL FIX: Debounced server requests
+            // CRITICAL FIX: Faster updates for smoother movement
             debouncedSendUpdate(velocityX, velocityY);
         }
 
-        // CRITICAL FIX: Debounced send function to prevent request spam
+        // CRITICAL FIX: Faster debounced send function for smoother movement
         function debouncedSendUpdate(x, y) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
-            }, 80); // Send at most every 80ms
+            }, 50); // Faster updates - was 80ms, now 50ms
         }
 
         // CRITICAL FIX: Memory-safe server communication
