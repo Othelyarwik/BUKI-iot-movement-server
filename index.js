@@ -106,7 +106,8 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        const movement = Math.max(-7, Math.min(7, Math.round(session.x * 1.0)));
+        // Faster movement for racing: -8 to +8
+        const movement = Math.max(-8, Math.min(8, Math.round(session.x * 1.2)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
@@ -121,7 +122,8 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        const movement = Math.max(-7, Math.min(7, Math.round(session.y * 1.0)));
+        // Faster movement for racing: -8 to +8
+        const movement = Math.max(-8, Math.min(8, Math.round(session.y * 1.2)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
@@ -133,7 +135,7 @@ app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
         if (!session || Date.now() - session.ts > 60000) {
-            return         res.status(200).end('X07Y07'); // Center position
+            return         res.status(200).end('X06Y06'); // Center position
         }
 
         // Range validation with smoothed values
@@ -146,13 +148,14 @@ app.get('/simple/:token', (req, res) => {
         }
 
         // Smoother mapping to 1-9 scale
+        // Enhanced mapping for racing games: 1-11 scale (center=6)
         const mapToScale = (velocity) => {
-            const clamped = Math.max(-10, Math.min(10, velocity));
-            // Smooth curve for better feel
-            const normalized = clamped / 10;
-            const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.7);
-            const scaled = Math.round(((curved + 1) / 2) * 12) + 1;
-            return Math.max(1, Math.min(13, scaled));
+            const clamped = Math.max(-12, Math.min(12, velocity));
+            // Power curve for racing sensitivity
+            const normalized = clamped / 12;
+            const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.6);
+            const scaled = Math.round(((curved + 1) / 2) * 10) + 1;
+            return Math.max(1, Math.min(11, scaled));
         };
 
         const xScaled = mapToScale(validX);
