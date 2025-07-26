@@ -106,8 +106,8 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // Much faster movement for racing: -12 to +12
-        const movement = Math.max(-12, Math.min(12, Math.round(session.x * 1.8)));
+        // Faster movement within safe range: -6 to +6
+        const movement = Math.max(-6, Math.min(6, Math.round(session.x * 1.5)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
@@ -122,8 +122,8 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // Much faster movement for racing: -12 to +12
-        const movement = Math.max(-12, Math.min(12, Math.round(session.y * 1.8)));
+        // Faster movement within safe range: -6 to +6
+        const movement = Math.max(-6, Math.min(6, Math.round(session.y * 1.5)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
@@ -135,7 +135,7 @@ app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
         if (!session || Date.now() - session.ts > 60000) {
-            return         res.status(200).end('X08Y08'); // Center position
+            return         res.status(200).end('X05Y05'); // Center position
         }
 
         // Range validation with smoothed values
@@ -148,13 +148,13 @@ app.get('/simple/:token', (req, res) => {
         }
 
         // Smoother mapping to 1-9 scale
-        // Racing optimized: 1-15 scale (center=8) for maximum speed
+        // Revert to center=5, but keep enhanced smoothing
         const mapToScale = (velocity) => {
-            const clamped = Math.max(-15, Math.min(15, velocity));
-            const normalized = clamped / 15;
+            const clamped = Math.max(-10, Math.min(10, velocity));
+            const normalized = clamped / 10;
             const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5); // More responsive
-            const scaled = Math.round(((curved + 1) / 2) * 14) + 1;
-            return Math.max(1, Math.min(15, scaled));
+            const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
+            return Math.max(1, Math.min(9, scaled));
         };
 
         const xScaled = mapToScale(validX);
