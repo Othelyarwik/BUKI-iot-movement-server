@@ -187,10 +187,33 @@
         .game-screen.active {
             display: grid;
             grid-template-columns: 150px 1fr 150px;
-            grid-template-rows: 1fr;
+            grid-template-rows: auto 1fr;
             gap: 20px;
             align-items: center;
             padding: 20px;
+        }
+
+        /* Status indicator at the top center */
+        .status-indicator {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.success {
+            color: #44ff44;
+        }
+
+        .status-indicator.error {
+            color: #ff4444;
+        }
+
+        .status-indicator.info {
+            color: #ffaa44;
         }
 
         .left-controls, .right-controls {
@@ -199,6 +222,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
+            gap: 20px;
         }
 
         .center-display {
@@ -210,22 +234,28 @@
             height: 100%;
         }
 
-        .connect-button {
+        .connect-button, .recalibrate-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
             border-radius: 12px;
-            padding: 12px 20px;
-            font-size: 14px;
+            padding: 15px 25px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            min-width: 120px;
+            min-width: 140px;
+            min-height: 50px;
             font-family: 'Orbitron', monospace;
         }
 
         .connect-button:disabled {
             background: rgba(0, 255, 136, 0.3);
             cursor: not-allowed;
+        }
+
+        .recalibrate-button {
+            background: linear-gradient(135deg, #ff8800, #ff4400);
+            color: white;
         }
 
         .token-display, .values-display {
@@ -291,6 +321,7 @@
             font-size: 14px;
             color: #ffaaaa;
             font-weight: 600;
+            margin-bottom: 15px;
         }
 
         .calibration-progress {
@@ -308,19 +339,6 @@
             border-radius: 3px;
             transition: width 0.3s ease;
             width: 0%;
-        }
-
-        .recalibrate-button {
-            background: linear-gradient(135deg, #ff8800, #ff4400);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Orbitron', monospace;
-            min-width: 80px;
         }
 
         .connection-indicator {
@@ -467,6 +485,8 @@
     </div>
 
     <div class="game-screen" id="gameScreen">
+        <div class="status-indicator" id="statusIndicator">🔌</div>
+        
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
         </div>
@@ -583,6 +603,7 @@
         const connectionIndicator = document.getElementById('connectionIndicator');
         const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
         const calibrationText = document.getElementById('calibrationText');
+        const statusIndicator = document.getElementById('statusIndicator');
 
         // Simple fullscreen function
         function enterFullscreen() {
@@ -650,19 +671,30 @@
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
                 
+                updateStatus('', 'success');
                 startCalibration();
 
             } catch (error) {
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
                 tokenElement.textContent = 'Грешка при свързване';
-                updateStatus(`Грешка: ${error.message}`, 'error');
+                updateStatus('', 'error');
                 alert(`Грешка при свързване: ${error.message}`);
             }
         }
 
         function updateStatus(message, type = 'info') {
-            statusText.textContent = message;
+            // Update the central status indicator with icons
+            const icons = {
+                'success': '✅',
+                'error': '❌', 
+                'info': '🔌',
+                'calibrating': '🎯'
+            };
+            
+            statusIndicator.textContent = icons[type] || '🔌';
+            statusIndicator.className = `status-indicator ${type}`;
+            
             connectionIndicator.classList.toggle('connected', type === 'success');
         }
 
@@ -670,7 +702,10 @@
             isCalibrating = true;
             calibrationSamples = [];
             
-            // NO MORE FULL SCREEN OVERLAY - just update the status area
+            // Update central status indicator
+            updateStatus('', 'calibrating');
+            
+            // Update status area
             statusText.textContent = 'Калибриране...';
             calibrationProgress.style.display = 'block';
             recalibrateButton.style.display = 'none';
@@ -726,7 +761,7 @@
                         calibrationProgress.style.display = 'none';
                         recalibrateButton.style.display = 'block';
                         
-                        updateStatus('Готов за навигация!', 'success');
+                        updateStatus('', 'success');
                     }
                 }
                 return;
@@ -781,10 +816,10 @@
                 });
 
                 if (!response.ok) {
-                    updateStatus('Проблем с връзката...', 'error');
+                    updateStatus('', 'error');
                 }
             } catch (error) {
-                updateStatus('Връзката е загубена...', 'error');
+                updateStatus('', 'error');
             } finally {
                 requestInProgress = false;
             }
