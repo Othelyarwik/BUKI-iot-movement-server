@@ -3,139 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <title>Spaceship Controller</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a1f">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
         
+        /* RESET & BASE */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        /* MOBILE PERFORMANCE OPTIMIZATIONS */
         body {
             font-family: 'Orbitron', monospace;
             background: 
-                radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
-                radial-gradient(ellipse at 40% 60%, rgba(120, 255, 198, 0.1) 0%, transparent 50%),
+                url('wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
             color: #e0e0ff;
-            min-height: 100vh;
-            min-height: 100dvh;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            animation: backgroundShift 20s ease-in-out infinite;
+            /* Hardware acceleration */
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
-        @keyframes backgroundShift {
-            0%, 100% {
-                background: 
-                    radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                    radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
-                    radial-gradient(ellipse at 40% 60%, rgba(120, 255, 198, 0.1) 0%, transparent 50%),
-                    linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
-            }
-            50% {
-                background: 
-                    radial-gradient(ellipse at 80% 10%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                    radial-gradient(ellipse at 10% 90%, rgba(120, 255, 198, 0.2) 0%, transparent 50%),
-                    radial-gradient(ellipse at 60% 30%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                    linear-gradient(45deg, #0f0f2f 0%, #2a1a3a 50%, #1a1a4f 100%);
-            }
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
-                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
-                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.9), transparent),
-                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.7), transparent),
-                radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.5), transparent);
-            background-repeat: repeat;
-            background-size: 200px 100px;
-            animation: starsMove 30s linear infinite;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        @keyframes starsMove {
-            from { transform: translateY(0); }
-            to { transform: translateY(-100px); }
-        }
-
+        /* MAIN LAYOUT CONTAINER */
         .setup-screen {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            padding: 40px 20px 60px 20px;
             height: 100vh;
-            position: relative;
+            padding: 20px;
         }
 
+        /* CONTENT AREA */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-top: 40px;
+            text-align: center;
         }
 
-        .setup-screen h1 {
-            font-size: 36px;
+        /* TYPOGRAPHY */
+        .main-content h1 {
+            font-size: 32px;
             font-weight: 900;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            letter-spacing: 2px;
-            animation: titleGlow 3s ease-in-out infinite alternate;
+            letter-spacing: 1px;
         }
 
-        @keyframes titleGlow {
-            from { text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
-            to { text-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.3); }
-        }
-
-        .setup-screen h2 {
-            font-size: 18px;
-            margin-bottom: 40px;
+        .main-content h2 {
+            font-size: 16px;
+            margin-bottom: 32px;
             color: #b0b0ff;
             font-weight: 500;
         }
 
+        /* INSTRUCTIONS CARD */
         .instructions {
             background: rgba(0, 20, 40, 0.8);
             border: 2px solid rgba(0, 255, 255, 0.3);
             border-radius: 20px;
-            padding: 30px;
-            margin: 20px 0;
-            max-width: 380px;
+            padding: 24px;
+            max-width: 400px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
         }
 
         .instruction {
             display: flex;
-            align-items: center;
-            margin: 20px 0;
-            font-size: 15px;
+            align-items: flex-start;
+            margin: 16px 0;
+            font-size: 14px;
             text-align: left;
             line-height: 1.4;
         }
@@ -144,36 +99,47 @@
             background: linear-gradient(135deg, #00ffff, #0080ff);
             color: #001122;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 15px;
+            margin-right: 12px;
             flex-shrink: 0;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+            font-size: 12px;
+        }
+
+        .sub-instructions {
+            margin-left: 40px;
+            margin-top: 12px;
+        }
+
+        .sub-instruction {
+            margin: 6px 0;
+            font-size: 13px;
+            color: #e0e0ff;
+            line-height: 1.4;
         }
 
         .portrait-reminder {
             background: rgba(0, 20, 40, 0.6);
             border: 1px solid rgba(0, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 25px 0;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0 0 0;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .portrait-icon {
-            width: 30px;
-            height: 45px;
+            width: 24px;
+            height: 36px;
             border: 2px solid #8090ff;
-            border-radius: 6px;
+            border-radius: 4px;
             position: relative;
             background: rgba(128, 144, 255, 0.1);
         }
@@ -181,40 +147,53 @@
         .portrait-icon::after {
             content: '';
             position: absolute;
-            bottom: -8px;
-            left: -6px;
-            right: -6px;
+            bottom: -6px;
+            left: -4px;
+            right: -4px;
             height: 2px;
             background: #8090ff;
         }
 
         .portrait-text {
             color: #8090ff;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
-            opacity: 0.9;
         }
 
+        /* BUTTON - MOBILE OPTIMIZED */
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
-            border-radius: 15px;
-            padding: 20px 40px;
-            font-size: 20px;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
             font-family: 'Orbitron', monospace;
             letter-spacing: 1px;
+            min-width: 200px;
+            min-height: 56px;
+            margin-top: auto;
+            margin-bottom: 20px;
+            align-self: center;
+            transition: transform 0.2s ease;
+            /* Mobile touch optimization */
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        .start-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(0, 255, 136, 0.5);
+        .start-button:hover, .start-button:active {
+            transform: translateY(-2px);
         }
 
+        .start-button:active {
+            transform: translateY(1px);
+        }
+
+        /* GAME SCREEN WITH FLIPPED BACKGROUND */
         .game-screen {
             display: none;
             width: 100vw;
@@ -228,6 +207,9 @@
             height: 100vw;
             left: calc((100vw - 100vh) / 2);
             top: calc((100vh - 100vw) / 2);
+            background: 
+                url('flipped wallpaper.png') center/cover no-repeat,
+                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
         }
 
         .game-screen.active {
@@ -239,15 +221,7 @@
             padding: 20px;
         }
 
-        .left-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .right-controls {
+        .left-controls, .right-controls {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -269,28 +243,20 @@
             color: #001122;
             border: none;
             border-radius: 12px;
-            padding: 15px 25px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
             min-width: 120px;
             font-family: 'Orbitron', monospace;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-        }
-
-        .connect-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
         }
 
         .connect-button:disabled {
             background: rgba(0, 255, 136, 0.3);
             cursor: not-allowed;
-            transform: none;
         }
 
-        .token-display {
+        .token-display, .values-display {
             background: rgba(0, 20, 40, 0.9);
             border: 2px solid rgba(0, 255, 255, 0.4);
             border-radius: 15px;
@@ -300,32 +266,22 @@
             backdrop-filter: blur(10px);
         }
 
-        .token-label {
-            font-size: 14px;
-            margin-bottom: 10px;
+        .token-label, .value-label {
+            font-size: 12px;
+            margin-bottom: 8px;
             color: #b0b0ff;
             font-weight: 500;
         }
 
         .token-value {
             font-family: 'Orbitron', monospace;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
-            letter-spacing: 3px;
-            padding: 15px;
+            letter-spacing: 2px;
+            padding: 12px;
             background: rgba(0, 255, 255, 0.1);
             border-radius: 8px;
             color: #00ffff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
-
-        .values-display {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 15px;
-            padding: 20px;
-            min-width: 280px;
-            backdrop-filter: blur(10px);
         }
 
         .values-row {
@@ -336,21 +292,14 @@
 
         .value-item {
             background: rgba(0, 255, 255, 0.1);
-            padding: 12px 16px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
             flex: 1;
         }
 
-        .value-label {
-            font-size: 12px;
-            margin-bottom: 5px;
-            color: #b0b0ff;
-            font-weight: 500;
-        }
-
         .value-number {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #00ffff;
             font-family: 'Orbitron', monospace;
@@ -374,17 +323,17 @@
 
         .calibration-progress {
             width: 100px;
-            height: 8px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            margin: 15px 0;
+            border-radius: 3px;
+            margin: 12px 0;
             overflow: hidden;
         }
 
         .calibration-fill {
             height: 100%;
             background: linear-gradient(90deg, #00ff88, #00ffff);
-            border-radius: 4px;
+            border-radius: 3px;
             transition: width 0.3s ease;
             width: 0%;
         }
@@ -394,18 +343,12 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            transition: all 0.3s ease;
-            min-width: 100px;
-        }
-
-        .recalibrate-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
+            min-width: 80px;
         }
 
         .connection-indicator {
@@ -418,12 +361,10 @@
             background: #ff4444;
             transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
         }
 
         .connection-indicator.connected {
             background: #44ff44;
-            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
         }
 
         .calibration-overlay {
@@ -465,10 +406,72 @@
             text-align: center;
         }
 
-        .calibration-token .token-value {
-            color: #00ffff;
-            font-size: 20px;
-            letter-spacing: 2px;
+        /* RESPONSIVE DESIGN FOR DIFFERENT SCREEN SIZES */
+        @media screen and (max-width: 480px) {
+            .main-content h1 {
+                font-size: 28px;
+                margin-bottom: 12px;
+            }
+            
+            .main-content h2 {
+                font-size: 14px;
+                margin-bottom: 24px;
+            }
+            
+            .instructions {
+                padding: 20px;
+                max-width: 360px;
+            }
+            
+            .instruction {
+                font-size: 13px;
+                margin: 12px 0;
+            }
+            
+            .start-button {
+                padding: 14px 28px;
+                font-size: 16px;
+                min-width: 180px;
+            }
+        }
+
+        @media screen and (max-height: 640px) {
+            .setup-screen {
+                padding: 15px;
+            }
+            
+            .main-content h1 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+            
+            .instructions {
+                padding: 16px;
+            }
+            
+            .instruction {
+                margin: 10px 0;
+            }
+        }
+
+        /* LANDSCAPE ORIENTATION OPTIMIZATION */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .setup-screen {
+                flex-direction: row;
+                align-items: center;
+                padding: 10px;
+            }
+            
+            .main-content {
+                flex: 1;
+                margin-right: 20px;
+            }
+            
+            .start-button {
+                margin-top: 0;
+                margin-bottom: 0;
+                align-self: center;
+            }
         }
     </style>
 </head>
@@ -477,33 +480,33 @@
 
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
-            <h1>SPACESHIP CONTROLLER</h1>
-            <h2>Antigravity Navigation System</h2>
+            <h1>КОСМИЧЕСКА МИСИЯ Ω</h1>
+            <h2>Система за Антигравитационна Навигация</h2>
 
             <div class="instructions">
                 <div class="instruction">
                     <div class="instruction-number">1</div>
-                    <div>Дръжте телефона <strong>вертикално</strong> с две ръце</div>
+                    <div>Смартфона трябва да се държи хоризонтално в <u>заключен</u> портретен режим</div>
                 </div>
                 <div class="instruction">
                     <div class="instruction-number">2</div>
-                    <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
+                    <div>Лявата ръка държи страната с камерата</div>
                 </div>
                 <div class="instruction">
                     <div class="instruction-number">3</div>
-                    <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
+                    <div>Дясната ръка държи страната със зарядното</div>
                 </div>
                 <div class="instruction">
                     <div class="instruction-number">4</div>
-                    <div>След натискане на START, <strong>завъртете телефона хоризонтално</strong></div>
+                    <div>След натискане на "СТАРТИРАЙ МИСИЯТА":</div>
                 </div>
-                <div class="instruction">
-                    <div class="instruction-number">5</div>
-                    <div>Накланяйте телефона <strong>леко</strong> за навигация на космическия кораб</div>
-                </div>
-                <div class="instruction">
-                    <div class="instruction-number">6</div>
-                    <div>Въведете получения код в <strong>PictoBlox</strong> и започнете мисията!</div>
+                
+                <div class="sub-instructions">
+                    <div class="sub-instruction">• Натиснете бутона "СВЪРЖИ СЕ"</div>
+                    <div class="sub-instruction">• Позволете на смартфона да се калибрира</div>
+                    <div class="sub-instruction">• Въведете генерирания код в PictoBlox</div>
+                    <div class="sub-instruction">• Използвайте смартфона като волан с накланяне за да управлявате космическия кораб</div>
+                    <div class="sub-instruction">• Можете да рекалибрирате смартфона с бутон в дясно</div>
                 </div>
 
                 <div class="portrait-reminder">
@@ -638,21 +641,240 @@
         const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
         const calibrationText = document.getElementById('calibrationText');
 
-        // Start mission button
-        startButton.onclick = function() {
-            setupScreen.style.display = 'none';
-            gameScreen.classList.add('active');
-            hideAddressBar();
-        };
+        // PERFORMANCE MONITORING AND ERROR HANDLING
+        class PerformanceMonitor {
+            constructor() {
+                this.startTime = performance.now();
+                this.errors = [];
+                this.setupErrorHandling();
+            }
 
-        // Recalibrate button
-        recalibrateButton.onclick = function() {
-            startCalibration();
-        };
+            setupErrorHandling() {
+                window.addEventListener('error', (e) => {
+                    this.logError('JavaScript Error', e.error);
+                });
 
-        function hideAddressBar() {
-            setTimeout(() => window.scrollTo(0, 1), 100);
+                window.addEventListener('unhandledrejection', (e) => {
+                    this.logError('Promise Rejection', e.reason);
+                });
+            }
+
+            logError(type, error) {
+                const errorInfo = {
+                    type,
+                    message: error?.message || error,
+                    timestamp: Date.now(),
+                    userAgent: navigator.userAgent
+                };
+                this.errors.push(errorInfo);
+                console.warn('Controller Error:', errorInfo);
+            }
+
+            getMetrics() {
+                return {
+                    loadTime: performance.now() - this.startTime,
+                    errors: this.errors,
+                    connected: connected,
+                    orientation: screen.orientation?.type || 'unknown'
+                };
+            }
         }
+
+        // MEMORY MANAGEMENT
+        function cleanupResources() {
+            // Clear any intervals or timeouts
+            if (sendTimeout) clearTimeout(sendTimeout);
+            
+            // Remove event listeners when not needed
+            if (connected && window.DeviceMotionEvent) {
+                window.removeEventListener('devicemotion', handleMotion);
+            }
+        }
+
+        // NETWORK CONNECTIVITY MONITORING
+        function setupNetworkMonitoring() {
+            if ('navigator' in window && 'onLine' in navigator) {
+                window.addEventListener('online', () => {
+                    updateStatus('Връзката е възстановена', 'success');
+                });
+
+                window.addEventListener('offline', () => {
+                    updateStatus('Няма интернет връзка', 'error');
+                });
+            }
+        }
+
+        // ENHANCED DEBUGGING FOR PRODUCTION
+        function initializeDebugging() {
+            // Add debug info to global scope for troubleshooting
+            window.controllerDebug = {
+                getState: () => ({
+                    connected,
+                    token,
+                    isCalibrating,
+                    velocityX,
+                    velocityY,
+                    restPositionX,
+                    restPositionY
+                }),
+                forceCalibration: () => startCalibration(),
+                clearToken: () => {
+                    token = '';
+                    connected = false;
+                    tokenElement.textContent = 'Няма връзка';
+                },
+                testButton: () => {
+                    console.log('Button test - should show start screen');
+                    setupScreen.style.display = 'flex';
+                    gameScreen.classList.remove('active');
+                }
+            };
+        }
+
+        // Initialize performance monitoring
+        const perfMonitor = new PerformanceMonitor();
+        function initializeMobileEvents() {
+            // Unified touch/click handling to prevent 300ms delay
+            const buttons = [startButton, connectButton, recalibrateButton];
+            
+            buttons.forEach(button => {
+                if (button) {
+                    // Remove any existing listeners
+                    button.onclick = null;
+                    
+                    // Use touchstart for immediate response on mobile
+                    if ('ontouchstart' in window) {
+                        button.addEventListener('touchstart', function(e) {
+                            e.preventDefault();
+                            handleButtonPress(this);
+                        }, { passive: false });
+                    } else {
+                        button.addEventListener('click', function(e) {
+                            handleButtonPress(this);
+                        });
+                    }
+                }
+            });
+        }
+
+        function handleButtonPress(button) {
+            if (button === startButton) {
+                setupScreen.style.display = 'none';
+                gameScreen.classList.add('active');
+                hideAddressBar();
+            } else if (button === connectButton) {
+                handleConnect();
+            } else if (button === recalibrateButton) {
+                startCalibration();
+            }
+        }
+
+        async function handleConnect() {
+            connectButton.disabled = true;
+            connectButton.textContent = 'Свързване...';
+
+            try {
+                const response = await fetch('/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                
+                const data = await response.json();
+                if (!data.token) throw new Error('No token received');
+
+                token = data.token;
+                tokenElement.textContent = token;
+
+                // Enhanced device motion permission handling
+                if (typeof DeviceMotionEvent !== 'undefined') {
+                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                        // iOS 13+ permission request
+                        const permission = await DeviceMotionEvent.requestPermission();
+                        if (permission !== 'granted') {
+                            throw new Error('Motion sensor permission denied');
+                        }
+                    }
+                    // Add motion event listener with enhanced options
+                    window.addEventListener('devicemotion', handleMotion, { 
+                        passive: true,
+                        capture: false 
+                    });
+                } else {
+                    throw new Error('Device motion not supported');
+                }
+
+                connected = true;
+                connectButton.textContent = '✅ Свързан';
+                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
+                
+                startCalibration();
+
+            } catch (error) {
+                connectButton.disabled = false;
+                connectButton.textContent = '🔗 Свържи се';
+                tokenElement.textContent = 'Грешка при свързване';
+                updateStatus(`Грешка: ${error.message}`, 'error');
+                alert(`Грешка при свързване: ${error.message}`);
+            }
+        }
+
+        // Enhanced orientation change handling
+        function handleOrientationChange() {
+            // Modern orientation API
+            if (screen.orientation) {
+                screen.orientation.addEventListener('change', () => {
+                    setTimeout(() => {
+                        hideAddressBar();
+                        // Trigger layout recalculation
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
+                });
+            } else {
+                // Fallback for older browsers
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        hideAddressBar();
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
+                });
+            }
+        }
+
+        // Enhanced address bar hiding for mobile
+        function hideAddressBar() {
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+                // Set CSS custom property for viewport height
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }, 100);
+        }
+
+        // Initialize all systems when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                initializeMobileEvents();
+                handleOrientationChange();
+                setupNetworkMonitoring();
+                initializeDebugging();
+                hideAddressBar();
+                
+                console.log('🚀 Spaceship Controller initialized successfully');
+                console.log('Debug tools available at: window.controllerDebug');
+                
+            } catch (error) {
+                perfMonitor.logError('Initialization Error', error);
+                console.error('Failed to initialize controller:', error);
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            cleanupResources();
+            console.log('🧹 Resources cleaned up');
+        });
 
         function updateStatus(message, type = 'info') {
             statusText.textContent = message;
@@ -682,46 +904,7 @@
         }
 
         connectButton.onclick = async () => {
-            connectButton.disabled = true;
-            connectButton.textContent = 'Свързване...';
-
-            try {
-                const response = await fetch('/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                
-                const data = await response.json();
-                if (!data.token) throw new Error('No token received');
-
-                token = data.token;
-                tokenElement.textContent = token;
-
-                if (typeof DeviceMotionEvent !== 'undefined' && 
-                    typeof DeviceMotionEvent.requestPermission === 'function') {
-                    const permission = await DeviceMotionEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        throw new Error('Motion sensor permission denied');
-                    }
-                }
-
-                window.addEventListener('devicemotion', handleMotion, { passive: true });
-
-                connected = true;
-                connectButton.textContent = '✅ Свързан';
-                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
-                
-                startCalibration();
-
-            } catch (error) {
-                connectButton.disabled = false;
-                connectButton.textContent = '🔗 Свържи се';
-                tokenElement.textContent = 'Грешка при свързване';
-                updateStatus(`Грешка: ${error.message}`, 'error');
-                alert(`Грешка при свързване: ${error.message}`);
-            }
+            // This will be handled by the new mobile event system
         };
 
         // Spaceship motion handling
@@ -783,4 +966,76 @@
                 return;
             }
 
-            if (is
+            if (isCalibrating) return;
+
+            const steeringTilt = rawSteering - restPositionX;
+            const throttleTilt = rawThrottle - restPositionY;
+
+            // Apply dead zones
+            const steeringDeadZone = 1.5;
+            const throttleDeadZone = 2.0;
+
+            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
+            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
+
+            // Process through spaceship motion processor
+            const processed = spaceshipProcessor.addSample(
+                processedSteering * 1.5,
+                processedThrottle * 1.0
+            );
+
+            velocityX = Math.max(-6, Math.min(6, processed.x));
+            velocityY = Math.max(-6, Math.min(6, processed.y));
+
+            // Update display every few frames
+            if (updateCounter % 3 === 0) {
+                xElement.textContent = velocityX.toFixed(1);
+                yElement.textContent = velocityY.toFixed(1);
+            }
+
+            // Send updates to server
+            debouncedSendUpdate(velocityX, velocityY);
+        }
+
+        // Debounced send function for smoother movement
+        function debouncedSendUpdate(x, y) {
+            clearTimeout(sendTimeout);
+            sendTimeout = setTimeout(() => {
+                sendUpdate(x, y);
+            }, 50);
+        }
+
+        // Memory-safe server communication
+        let requestInProgress = false;
+        
+        async function sendUpdate(x, y) {
+            if (requestInProgress) return;
+            
+            try {
+                requestInProgress = true;
+                
+                const response = await fetch('/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, x, y })
+                });
+
+                if (!response.ok) {
+                    updateStatus('Проблем с връзката...', 'error');
+                }
+            } catch (error) {
+                updateStatus('Връзката е загубена...', 'error');
+            } finally {
+                requestInProgress = false;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            hideAddressBar();
+            initializeMobileEvents();
+        });
+        window.addEventListener('resize', hideAddressBar);
+        document.addEventListener('touchstart', hideAddressBar, { passive: true });
+    </script>
+</body>
+</html>
