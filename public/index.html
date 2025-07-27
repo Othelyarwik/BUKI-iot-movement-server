@@ -72,15 +72,15 @@
             overflow-y: auto;
         }
 
-        /* CONTENT AREA - MOVED UP */
+        /* CONTENT AREA - BETTER CENTERED */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center; /* Changed back to center for better balance */
             text-align: center;
-            padding-top: 10px; /* Reduced top padding to move content up */
+            padding-top: 0px; /* Removed top padding */
         }
 
         /* TYPOGRAPHY - SMALLER SIZES */
@@ -94,10 +94,11 @@
         }
 
         .main-content h2 {
-            font-size: 14px; /* Reduced from 16px */
-            margin-bottom: 24px; /* Reduced from 32px */
+            font-size: 16px; /* Increased from 14px for better readability */
+            margin-bottom: 28px; /* Slightly increased spacing */
             color: #b0b0ff;
             font-weight: 700; /* Made bold - was 500 */
+            text-shadow: 0 0 8px rgba(176, 176, 255, 0.3); /* Added subtle glow for readability */
         }
 
         /* INSTRUCTIONS CARD */
@@ -953,9 +954,25 @@
                     tokenElement.textContent = 'Няма връзка';
                 },
                 testButton: () => {
-                    console.log('Button test - should show start screen');
+                    console.log('🧪 Testing button functionality');
+                    console.log('Setup screen display:', setupScreen.style.display);
+                    console.log('Game screen classes:', gameScreen.className);
+                    
+                    // Force switch to game screen
+                    setupScreen.style.display = 'none';
+                    gameScreen.classList.add('active');
+                    console.log('✅ Switched to game screen');
+                },
+                testStartButton: () => {
+                    console.log('🧪 Manually triggering start button');
+                    handleButtonPress(startButton);
+                },
+                resetInterface: () => {
+                    console.log('🔄 Resetting interface');
                     setupScreen.style.display = 'flex';
                     gameScreen.classList.remove('active');
+                    document.body.classList.remove('fullscreen-mode', 'hide-controls');
+                    fullscreenManager.stopControllerMonitoring();
                 }
             };
         }
@@ -988,15 +1005,11 @@
 
         function handleButtonPress(button) {
             if (button === startButton) {
+                console.log('🚀 Start button pressed - switching to game screen');
                 setupScreen.style.display = 'none';
                 gameScreen.classList.add('active');
-                
-                // Enter fullscreen mode for clean UI
-                setTimeout(() => {
-                    fullscreenManager.enterFullscreen();
-                }, 100);
-                
                 hideAddressBar();
+                // No immediate fullscreen - let user get oriented first
             } else if (button === connectButton) {
                 handleConnect();
             } else if (button === recalibrateButton) {
@@ -1044,6 +1057,9 @@
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
                 
+                // Start controller monitoring for fullscreen after connection
+                fullscreenManager.startControllerMonitoring();
+                
                 startCalibration();
 
             } catch (error) {
@@ -1089,7 +1105,14 @@
 
         // Initialize all systems when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 DOM Content Loaded - Initializing controller');
+            
             try {
+                // Check if elements exist
+                console.log('Start button found:', !!startButton);
+                console.log('Connect button found:', !!connectButton);
+                console.log('Recalibrate button found:', !!recalibrateButton);
+                
                 initializeMobileEvents();
                 handleOrientationChange();
                 setupNetworkMonitoring();
