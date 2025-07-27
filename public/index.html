@@ -8,11 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a1f">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="format-detection" content="telephone=no">
-    <!-- Samsung specific meta tags -->
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0a0a1f">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
         
@@ -23,27 +18,22 @@
             padding: 0;
         }
 
-        /* MOBILE PERFORMANCE OPTIMIZATIONS */
         body {
             font-family: 'Orbitron', monospace;
             color: #e0e0ff;
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            /* Hardware acceleration */
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            /* Samsung Galaxy navigation bar compensation */
-            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* FULLSCREEN WALLPAPER BACKGROUND */
         body::before {
             content: '';
             position: fixed;
@@ -55,53 +45,46 @@
                 url('wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
             z-index: -1;
-            /* Hardware acceleration for smooth rendering */
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
         }
 
-        /* MAIN LAYOUT CONTAINER - ADJUSTED FOR PHONE NAVIGATION */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            height: calc(100vh - env(safe-area-inset-bottom, 60px)); /* Reserve space for navigation */
-            padding: 15px 20px 80px 20px; /* Extra bottom padding for phone buttons */
+            padding: 15px 20px 80px 20px;
             max-height: 100vh;
             overflow-y: auto;
         }
 
-        /* CONTENT AREA - BETTER CENTERED */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Changed back to center for better balance */
+            justify-content: center;
             text-align: center;
-            padding-top: 0px; /* Removed top padding */
         }
 
-        /* TYPOGRAPHY - SMALLER SIZES */
         .main-content h1 {
-            font-size: 28px; /* Reduced from 32px */
+            font-size: 28px;
             font-weight: 900;
-            margin-bottom: 12px; /* Reduced from 16px */
+            margin-bottom: 12px;
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
             letter-spacing: 1px;
         }
 
         .main-content h2 {
-            font-size: 16px; /* Increased from 14px for better readability */
-            margin-bottom: 28px; /* Slightly increased spacing */
+            font-size: 16px;
+            margin-bottom: 28px;
             color: #b0b0ff;
-            font-weight: 700; /* Made bold - was 500 */
-            text-shadow: 0 0 8px rgba(176, 176, 255, 0.3); /* Added subtle glow for readability */
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
         }
 
-        /* INSTRUCTIONS CARD */
         .instructions {
             background: rgba(0, 20, 40, 0.8);
             border: 2px solid rgba(0, 255, 255, 0.3);
@@ -149,38 +132,27 @@
             text-align: left;
         }
 
-        .portrait-text {
-            color: #8090ff;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* REMOVED PORTRAIT REMINDER STYLES */
-
-        /* BUTTON - SMALLER AND POSITIONED ABOVE NAVIGATION */
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
             border-radius: 12px;
-            padding: 14px 28px; /* Reduced from 16px 32px */
-            font-size: 16px; /* Reduced from 18px */
+            padding: 14px 28px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
             letter-spacing: 1px;
-            min-width: 180px; /* Reduced from 200px */
-            min-height: 52px; /* Reduced from 56px */
-            margin-top: 30px; /* Added space from instructions - was auto */
-            margin-bottom: 15px; /* Reduced from 20px */
+            min-width: 180px;
+            min-height: 52px;
+            margin-top: 30px;
+            margin-bottom: 15px;
             align-self: center;
             transition: transform 0.2s ease;
-            /* Mobile touch optimization */
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-            /* Ensure button stays above navigation */
             position: relative;
             z-index: 100;
         }
@@ -193,7 +165,7 @@
             transform: translateY(1px);
         }
 
-        /* GAME SCREEN WITH FLIPPED BACKGROUND */
+        /* GAME SCREEN WITH ROTATED LAYOUT */
         .game-screen {
             display: none;
             width: 100vw;
@@ -406,7 +378,7 @@
             text-align: center;
         }
 
-        /* RESPONSIVE DESIGN FOR DIFFERENT SCREEN SIZES */
+        /* RESPONSIVE DESIGN */
         @media screen and (max-width: 480px) {
             .main-content h1 {
                 font-size: 28px;
@@ -453,32 +425,10 @@
                 margin: 10px 0;
             }
         }
-
-        /* LANDSCAPE ORIENTATION OPTIMIZATION */
-        @media screen and (orientation: landscape) and (max-height: 500px) {
-            .setup-screen {
-                flex-direction: row;
-                align-items: center;
-                padding: 10px;
-            }
-            
-            .main-content {
-                flex: 1;
-                margin-right: 20px;
-            }
-            
-            .start-button {
-                margin-top: 0;
-                margin-bottom: 0;
-                align-self: center;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
-
-    <!-- Exit button removed - tap screen to show/hide system UI -->
 
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
@@ -575,7 +525,7 @@
     </div>
 
     <script>
-        // Enhanced Client-Side Motion Smoother for Spaceship Navigation
+        // Simple Motion Processor for Spaceship Navigation
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
@@ -590,13 +540,11 @@
                 const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
                 this.lastTime = now;
 
-                // Simple averaging for spaceship controls
                 this.samples.push({ x: rawX, y: rawY });
                 if (this.samples.length > this.maxSamples) {
                     this.samples.shift();
                 }
 
-                // Calculate simple average
                 const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
                 const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
 
@@ -636,411 +584,38 @@
         const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
         const calibrationText = document.getElementById('calibrationText');
 
-        // FULLSCREEN MANAGEMENT FOR CLEAN UI
-        class FullscreenManager {
-            constructor() {
-                this.isFullscreen = false;
-                this.hideTimeout = null;
-                this.setupFullscreenAPI();
-            }
-
-            setupFullscreenAPI() {
-                // Listen for fullscreen changes
-                document.addEventListener('fullscreenchange', () => {
-                    this.isFullscreen = !!document.fullscreenElement;
-                });
-
-                document.addEventListener('webkitfullscreenchange', () => {
-                    this.isFullscreen = !!document.webkitFullscreenElement;
-                });
-            }
-
-            async enterFullscreen() {
-                // Use Samsung-specific fullscreen for Galaxy devices
-                if (navigator.userAgent.includes('Samsung') || navigator.userAgent.includes('Galaxy')) {
-                    return await enterFullscreenSamsung();
-                }
-                
-                // Original fullscreen logic for other devices
-                try {
-                    const element = document.documentElement;
-                    
-                    if (element.requestFullscreen) {
-                        await element.requestFullscreen();
-                    } else if (element.webkitRequestFullscreen) {
-                        await element.webkitRequestFullscreen();
-                    } else if (element.mozRequestFullScreen) {
-                        await element.mozRequestFullScreen();
-                    } else if (element.msRequestFullscreen) {
-                        await element.msRequestFullscreen();
-                    }
-                    
-                    // Add fullscreen class for additional styling
-                    document.body.classList.add('fullscreen-mode');
-                    this.setupAutoHide();
-                    
-                    console.log('🖥️ Entered fullscreen mode');
-                    return true;
-                    
-                } catch (error) {
-                    console.warn('Fullscreen not supported or denied:', error);
-                    // Fallback to manual address bar hiding
-                    this.fallbackFullscreen();
-                    return false;
-                }
-            }
-
-            fallbackFullscreen() {
-                // Enhanced fallback for Samsung Galaxy devices
-                document.body.classList.add('fullscreen-mode');
-                forceHideSystemUI();
-                this.setupAutoHide();
-                
-                // Prevent scrolling to keep UI hidden
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
-                document.body.style.height = '100%';
-                
-                // Samsung specific adjustments
-                if (navigator.userAgent.includes('Samsung')) {
-                    document.body.style.paddingBottom = '0px';
-                    setTimeout(() => forceHideSystemUI(), 100);
-                }
-            }
-
-        // Enhanced address bar and navigation hiding for Samsung Galaxy
-        function forceHideSystemUI() {
-            // Multiple aggressive attempts to hide system UI
-            const hideSequence = () => {
-                // Scroll methods
-                window.scrollTo(0, 1);
-                setTimeout(() => window.scrollTo(0, 0), 50);
-                setTimeout(() => window.scrollTo(0, 1), 100);
-                
-                // Samsung specific viewport adjustments
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-                
-                // Force layout recalculation
-                document.body.style.height = window.innerHeight + 'px';
-                
-                // Additional Samsung Galaxy specific tricks
-                if (navigator.userAgent.includes('Samsung')) {
-                    // Force immediate layout
-                    document.body.offsetHeight;
-                    window.dispatchEvent(new Event('resize'));
-                }
-            };
-            
-            // Execute hiding sequence multiple times
-            hideSequence();
-            setTimeout(hideSequence, 100);
-            setTimeout(hideSequence, 300);
-            setTimeout(hideSequence, 500);
-            setTimeout(hideSequence, 1000);
-        }
-
-        // Enhanced fullscreen for Samsung Galaxy devices
-        async function enterFullscreenSamsung() {
+        // Simple fullscreen function
+        function enterFullscreen() {
             try {
                 const element = document.documentElement;
                 
-                // Request fullscreen first
                 if (element.requestFullscreen) {
-                    await element.requestFullscreen();
+                    element.requestFullscreen();
                 } else if (element.webkitRequestFullscreen) {
-                    await element.webkitRequestFullscreen();
+                    element.webkitRequestFullscreen();
                 } else if (element.mozRequestFullScreen) {
-                    await element.mozRequestFullScreen();
+                    element.mozRequestFullScreen();
                 } else if (element.msRequestFullscreen) {
-                    await element.msRequestFullscreen();
+                    element.msRequestFullscreen();
                 }
                 
-                // Samsung specific UI hiding
-                if ('Samsung' in window || navigator.userAgent.includes('Samsung')) {
-                    // Hide Samsung's navigation bar
-                    document.body.style.paddingBottom = '0px';
-                    document.body.style.height = '100vh';
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                forceHideSystemUI();
-                document.body.classList.add('fullscreen-mode');
-                
-                console.log('🖥️ Samsung fullscreen mode activated');
-                return true;
+                console.log('🖥️ Entered fullscreen mode');
                 
             } catch (error) {
-                console.warn('Fullscreen failed, using fallback:', error);
-                // Enhanced fallback for Samsung
-                forceHideSystemUI();
-                document.body.classList.add('fullscreen-mode');
-                return false;
+                console.warn('Fullscreen not supported:', error);
             }
         }
 
-            setupAutoHide() {
-                // Listen for screen taps to toggle system UI
-                let tapCount = 0;
-                
-                document.addEventListener('touchstart', (e) => {
-                    tapCount++;
-                    
-                    // Single tap toggles system UI visibility
-                    setTimeout(() => {
-                        if (tapCount === 1) {
-                            this.toggleSystemUI();
-                        }
-                        tapCount = 0;
-                    }, 300);
-                }, { passive: true });
-
-                // Also listen for clicks (desktop/mouse)
-                document.addEventListener('click', () => {
-                    this.toggleSystemUI();
-                }, { passive: true });
-            }
-
-            toggleSystemUI() {
-                if (document.body.classList.contains('hide-controls')) {
-                    this.showSystemUI();
-                } else {
-                    this.hideSystemUI();
-                }
-            }
-
-            showSystemUI() {
-                document.body.classList.remove('hide-controls');
-                
-                // Force show address bar and navigation
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                
-                // Samsung specific: restore system UI
-                if (navigator.userAgent.includes('Samsung')) {
-                    document.body.style.overflow = '';
-                    document.body.style.position = '';
-                    document.body.style.height = '';
-                    window.scrollTo(0, 0);
-                }
-                
-                // Auto-hide again after 5 seconds
-                setTimeout(() => {
-                    this.hideSystemUI();
-                }, 5000);
-            }
-
-            hideSystemUI() {
-                document.body.classList.add('hide-controls');
-                
-                // Re-enter fullscreen mode
-                setTimeout(() => {
-                    this.enterFullscreen();
-                }, 100);
-            }
-
-            exitFullscreen() {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                
-                document.body.classList.remove('fullscreen-mode', 'hide-controls');
-                
-                // Restore normal scrolling
-                document.body.style.overflow = '';
-                document.body.style.position = '';
-                document.body.style.width = '';
-                document.body.style.height = '';
-                
-                clearTimeout(this.hideTimeout);
-            }
+        // Simple address bar hiding
+        function hideAddressBar() {
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }, 100);
         }
 
-        // Initialize fullscreen manager
-        const fullscreenManager = new FullscreenManager();
-        
-        class PerformanceMonitor {
-            constructor() {
-                this.startTime = performance.now();
-                this.errors = [];
-                this.setupErrorHandling();
-            }
-
-            setupErrorHandling() {
-                window.addEventListener('error', (e) => {
-                    this.logError('JavaScript Error', e.error);
-                });
-
-                window.addEventListener('unhandledrejection', (e) => {
-                    this.logError('Promise Rejection', e.reason);
-                });
-            }
-
-            logError(type, error) {
-                const errorInfo = {
-                    type,
-                    message: error?.message || error,
-                    timestamp: Date.now(),
-                    userAgent: navigator.userAgent
-                };
-                this.errors.push(errorInfo);
-                console.warn('Controller Error:', errorInfo);
-            }
-
-            getMetrics() {
-                return {
-                    loadTime: performance.now() - this.startTime,
-                    errors: this.errors,
-                    connected: connected,
-                    orientation: screen.orientation?.type || 'unknown'
-                };
-            }
-        }
-
-        // MEMORY MANAGEMENT
-        function cleanupResources() {
-            // Clear any intervals or timeouts
-            if (sendTimeout) clearTimeout(sendTimeout);
-            
-            // Remove event listeners when not needed
-            if (connected && window.DeviceMotionEvent) {
-                window.removeEventListener('devicemotion', handleMotion);
-            }
-        }
-
-        // NETWORK CONNECTIVITY MONITORING
-        function setupNetworkMonitoring() {
-            if ('navigator' in window && 'onLine' in navigator) {
-                window.addEventListener('online', () => {
-                    updateStatus('Връзката е възстановена', 'success');
-                });
-
-                window.addEventListener('offline', () => {
-                    updateStatus('Няма интернет връзка', 'error');
-                });
-            }
-        }
-
-        // ENHANCED DEBUGGING FOR PRODUCTION
-        function initializeDebugging() {
-            // Add debug info to global scope for troubleshooting
-            window.controllerDebug = {
-                getState: () => ({
-                    connected,
-                    token,
-                    isCalibrating,
-                    velocityX,
-                    velocityY,
-                    restPositionX,
-                    restPositionY
-                }),
-                forceCalibration: () => startCalibration(),
-                clearToken: () => {
-                    token = '';
-                    connected = false;
-                    tokenElement.textContent = 'Няма връзка';
-                },
-                testButton: () => {
-                    console.log('🧪 Testing button functionality');
-                    console.log('Setup screen display:', setupScreen.style.display);
-                    console.log('Game screen classes:', gameScreen.className);
-                    
-                    // Force switch to game screen
-                    setupScreen.style.display = 'none';
-                    gameScreen.classList.add('active');
-                    console.log('✅ Switched to game screen');
-                },
-                testStartButton: () => {
-                    console.log('🧪 Manually triggering start button');
-                    handleButtonPress(startButton);
-                },
-                resetInterface: () => {
-                    console.log('🔄 Resetting interface');
-                    setupScreen.style.display = 'flex';
-                    gameScreen.classList.remove('active');
-                    document.body.classList.remove('fullscreen-mode', 'hide-controls');
-                }
-            };
-        }
-
-        // Initialize performance monitoring
-        const perfMonitor = new PerformanceMonitor();
-        
-        function initializeMobileEvents() {
-            // Unified touch/click handling to prevent 300ms delay
-            const buttons = [startButton, connectButton, recalibrateButton];
-            
-            buttons.forEach(button => {
-                if (button) {
-                    // Remove any existing listeners
-                    button.onclick = null;
-                    
-                    // Use touchstart for immediate response on mobile
-                    if ('ontouchstart' in window) {
-                        button.addEventListener('touchstart', function(e) {
-                            e.preventDefault();
-                            handleButtonPress(this);
-                        }, { passive: false });
-                    } else {
-                        button.addEventListener('click', function(e) {
-                            handleButtonPress(this);
-                        });
-                    }
-                }
-            });
-        }
-
-        // FIXED: Add the missing startButton handler
-        function handleButtonPress(button) {
-            if (button === startButton) {
-                handleStartMission();
-            } else if (button === connectButton) {
-                handleConnect();
-            } else if (button === recalibrateButton) {
-                startCalibration();
-            }
-        }
-
-        // FIXED: Add the missing start mission function
-        function handleStartMission() {
-            try {
-                console.log('🚀 Starting mission...');
-                
-                // Hide setup screen
-                setupScreen.style.display = 'none';
-                
-                // Show game screen
-                gameScreen.style.display = 'grid';
-                gameScreen.classList.add('active');
-                
-                // Enter fullscreen mode
-                fullscreenManager.enterFullscreen();
-                
-                // Hide address bar
-                hideAddressBar();
-                
-                console.log('✅ Mission started successfully');
-                
-            } catch (error) {
-                console.error('❌ Mission start failed:', error);
-                alert('Failed to start mission: ' + error.message);
-            }
-        }
-
+        // Connect button handler
         async function handleConnect() {
             connectButton.disabled = true;
             connectButton.textContent = 'Свързване...';
@@ -1059,20 +634,14 @@
                 token = data.token;
                 tokenElement.textContent = token;
 
-                // Enhanced device motion permission handling
                 if (typeof DeviceMotionEvent !== 'undefined') {
                     if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                        // iOS 13+ permission request
                         const permission = await DeviceMotionEvent.requestPermission();
                         if (permission !== 'granted') {
                             throw new Error('Motion sensor permission denied');
                         }
                     }
-                    // Add motion event listener with enhanced options
-                    window.addEventListener('devicemotion', handleMotion, { 
-                        passive: true,
-                        capture: false 
-                    });
+                    window.addEventListener('devicemotion', handleMotion, { passive: true });
                 } else {
                     throw new Error('Device motion not supported');
                 }
@@ -1092,69 +661,6 @@
             }
         }
 
-        // Enhanced orientation change handling
-        function handleOrientationChange() {
-            // Modern orientation API
-            if (screen.orientation) {
-                screen.orientation.addEventListener('change', () => {
-                    setTimeout(() => {
-                        hideAddressBar();
-                        // Trigger layout recalculation
-                        window.dispatchEvent(new Event('resize'));
-                    }, 100);
-                });
-            } else {
-                // Fallback for older browsers
-                window.addEventListener('orientationchange', () => {
-                    setTimeout(() => {
-                        hideAddressBar();
-                        window.dispatchEvent(new Event('resize'));
-                    }, 100);
-                });
-            }
-        }
-
-        // Enhanced address bar hiding for mobile
-        function hideAddressBar() {
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-                // Set CSS custom property for viewport height
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            }, 100);
-        }
-
-        // Initialize all systems when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 DOM Content Loaded - Initializing controller');
-            
-            try {
-                // Check if elements exist
-                console.log('Start button found:', !!startButton);
-                console.log('Connect button found:', !!connectButton);
-                console.log('Recalibrate button found:', !!recalibrateButton);
-                
-                initializeMobileEvents();
-                handleOrientationChange();
-                setupNetworkMonitoring();
-                initializeDebugging();
-                hideAddressBar();
-                
-                console.log('🚀 Spaceship Controller initialized successfully');
-                console.log('Debug tools available at: window.controllerDebug');
-                
-            } catch (error) {
-                perfMonitor.logError('Initialization Error', error);
-                console.error('Failed to initialize controller:', error);
-            }
-        });
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
-            cleanupResources();
-            console.log('🧹 Resources cleaned up');
-        });
-
         function updateStatus(message, type = 'info') {
             statusText.textContent = message;
             connectionIndicator.classList.toggle('connected', type === 'success');
@@ -1167,13 +673,11 @@
             calibrationFillOverlay.style.width = '0%';
             calibrationText.textContent = 'Калибриране... 0/120';
 
-            // Show calibration progress in status area
             statusText.textContent = 'Калибриране...';
             calibrationProgress.style.display = 'block';
             recalibrateButton.style.display = 'none';
             calibrationFill.style.width = '0%';
 
-            // Show token during calibration
             const calibrationTokenElement = document.getElementById('calibrationToken');
             if (calibrationTokenElement && token) {
                 calibrationTokenElement.textContent = token;
@@ -1182,7 +686,7 @@
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
 
-        // Spaceship motion handling
+        // Motion handling
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
@@ -1201,11 +705,9 @@
 
             updateCounter++;
 
-            // Always use landscape orientation (phone held horizontally)
-            let rawSteering = rawY; // Left/right tilt
-            let rawThrottle = rawZ; // Forward/back tilt
+            let rawSteering = rawY;
+            let rawThrottle = rawZ;
 
-            // Calibration phase
             if (isCalibrating) {
                 if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
@@ -1216,7 +718,6 @@
                     calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/120`;
                     
                     if (calibrationSamples.length === 120) {
-                        // Calculate rest position
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
                         
@@ -1230,7 +731,6 @@
                         isCalibrating = false;
                         calibrationOverlay.classList.remove('show');
                         
-                        // Update status area
                         statusText.textContent = 'Калибриран';
                         calibrationProgress.style.display = 'none';
                         recalibrateButton.style.display = 'block';
@@ -1246,14 +746,12 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // Apply dead zones
             const steeringDeadZone = 1.5;
             const throttleDeadZone = 2.0;
 
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            // Process through spaceship motion processor
             const processed = spaceshipProcessor.addSample(
                 processedSteering * 1.5,
                 processedThrottle * 1.0
@@ -1262,17 +760,14 @@
             velocityX = Math.max(-6, Math.min(6, processed.x));
             velocityY = Math.max(-6, Math.min(6, processed.y));
 
-            // Update display every few frames
             if (updateCounter % 3 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
             }
 
-            // Send updates to server
             debouncedSendUpdate(velocityX, velocityY);
         }
 
-        // Debounced send function for smoother movement
         function debouncedSendUpdate(x, y) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
@@ -1280,7 +775,6 @@
             }, 50);
         }
 
-        // Memory-safe server communication
         let requestInProgress = false;
         
         async function sendUpdate(x, y) {
@@ -1305,12 +799,30 @@
             }
         }
 
-        window.addEventListener('load', () => {
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Spaceship Controller initialized');
+            
+            // SIMPLE START BUTTON - No complex event handling
+            startButton.onclick = () => {
+                console.log('🚀 Starting mission...');
+                setupScreen.style.display = 'none';
+                gameScreen.style.display = 'grid';
+                gameScreen.classList.add('active');
+                enterFullscreen();
+                hideAddressBar();
+                console.log('✅ Mission started successfully');
+            };
+
+            // Simple button handlers
+            connectButton.onclick = handleConnect;
+            recalibrateButton.onclick = startCalibration;
+            
             hideAddressBar();
-            initializeMobileEvents();
         });
+
+        window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
-        document.addEventListener('touchstart', hideAddressBar, { passive: true });
     </script>
 </body>
 </html>
