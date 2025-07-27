@@ -1004,13 +1004,9 @@
         }
 
         function handleButtonPress(button) {
-            if (button === startButton) {
-                console.log('🚀 Start button pressed - switching to game screen');
-                setupScreen.style.display = 'none';
-                gameScreen.classList.add('active');
-                hideAddressBar();
-                // No immediate fullscreen - let user get oriented first
-            } else if (button === connectButton) {
+            // Only handle connect and recalibrate buttons now
+            // Start button has its own simple handlers
+            if (button === connectButton) {
                 handleConnect();
             } else if (button === recalibrateButton) {
                 startCalibration();
