@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.static('public'));
 
-// Session storage with simple smoothing
+// Session storage - REMOVED server-side smoothing for more responsiveness
 const sessions = {};
 
 // Clean expired sessions every 2 minutes
@@ -49,12 +49,11 @@ app.post('/start', (req, res) => {
             token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
         }
 
-        // Create session with smoothing history
+        // FIXED: Removed smoothing history - direct values for responsiveness
         sessions[token] = {
             x: 0,
             y: 0,
-            ts: Date.now(),
-            history: [] // Simple smoothing history
+            ts: Date.now()
         };
 
         res.json({ token, success: true });
@@ -63,7 +62,7 @@ app.post('/start', (req, res) => {
     }
 });
 
-// Update motion data with simple smoothing
+// FIXED: Update motion data WITHOUT smoothing - direct values
 app.post('/update', (req, res) => {
     try {
         const { token, x, y } = req.body;
@@ -72,25 +71,13 @@ app.post('/update', (req, res) => {
             return res.status(400).json({ error: 'Invalid token' });
         }
 
-        const session = sessions[token];
         const newX = parseFloat(x) || 0;
         const newY = parseFloat(y) || 0;
 
-        // Simple smoothing: average with previous values
-        session.history.push({ x: newX, y: newY });
-        if (session.history.length > 3) {
-            session.history.shift(); // Keep only last 3 samples
-        }
-
-        // Calculate smooth average
-        const avgX = session.history.reduce((sum, sample) => sum + sample.x, 0) / session.history.length;
-        const avgY = session.history.reduce((sum, sample) => sum + sample.y, 0) / session.history.length;
-
-        // Update session with smoothed values
+        // FIXED: Direct assignment - no smoothing on server side
         sessions[token] = {
-            ...session,
-            x: avgX,
-            y: avgY,
+            x: newX,
+            y: newY,
             ts: Date.now()
         };
 
@@ -100,61 +87,61 @@ app.post('/update', (req, res) => {
     }
 });
 
-// Get X movement for PictoBlox (-4 to +4)
+// Get X movement for PictoBlox (-5 to +5) - FIXED: Increased sensitivity
 app.get('/x/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
-        if (!session || Date.now() - session.ts > 60000) {
+        if (!session || Date.now() - session.ts > 180000) { // FIXED: 180 seconds timeout
             return res.status(200).end('0');
         }
 
-        // 1/3 more sensitive and faster: -4 to +4
-        const movement = Math.max(-4, Math.min(4, Math.round(session.x * 1.0)));
+        // FIXED: More sensitive and wider range: -5 to +5
+        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 1.2)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
     }
 });
 
-// Get Y movement for PictoBlox (-4 to +4)
+// Get Y movement for PictoBlox (-5 to +5) - FIXED: Increased sensitivity
 app.get('/y/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
-        if (!session || Date.now() - session.ts > 60000) {
+        if (!session || Date.now() - session.ts > 180000) { // FIXED: 180 seconds timeout
             return res.status(200).end('0');
         }
 
-        // 1/3 more sensitive and faster: -4 to +4
-        const movement = Math.max(-4, Math.min(4, Math.round(session.y * 1.0)));
+        // FIXED: More sensitive and wider range: -5 to +5
+        const movement = Math.max(-5, Math.min(5, Math.round(session.y * 1.2)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
     }
 });
 
-// Original simple endpoint for PictoBlox (returns "X05Y05" format) with smoothing
+// FIXED: Simple endpoint without random variations
 app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
-        if (!session || Date.now() - session.ts > 60000) {
+        if (!session || Date.now() - session.ts > 180000) { // FIXED: 180 seconds timeout
             return res.status(200).end('X05Y05'); // Center position
         }
 
-        // Range validation with smoothed values
+        // Range validation
         let validX = session.x;
         let validY = session.y;
-
-        if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+        
+        if (Math.abs(validX) > 15 || Math.abs(validY) > 15) {
+            console.log(`⚠️ Extreme values detected X:${validX} Y:${validY}, resetting to center`);
             validX = 0;
             validY = 0;
         }
 
-        // Smoother mapping to 1-9 scale
+        // FIXED: More responsive mapping to 1-9 scale
         const mapToScale = (velocity) => {
-            const clamped = Math.max(-10, Math.min(10, velocity));
-            const normalized = clamped / 10;
-            const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5); // More responsive
-            const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
+            const clamped = Math.max(-8, Math.min(8, velocity));
+            const normalized = clamped / 8; // Scale to -1 to +1
+            const scaled = Math.round(((normalized + 1) / 2) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
         };
 
@@ -162,55 +149,53 @@ app.get('/simple/:token', (req, res) => {
         const yScaled = mapToScale(validY);
 
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
-
+        
+        console.log(`📤 Sending: ${result} (from x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
         res.status(200).end(result);
-
+        
     } catch (error) {
         console.error('❌ Error in simple endpoint:', error);
         res.status(200).end('X05Y05');
     }
 });
 
-// NEW: Batching endpoint for ultra-smooth movement
+// FIXED: Batching endpoint WITHOUT random variations for consistent movement
 app.get('/batch/:token/:count', (req, res) => {
     try {
         const session = sessions[req.params.token];
         const count = Math.min(parseInt(req.params.count) || 3, 10); // Max 10 positions
-        
-        if (!session || Date.now() - session.ts > 60000) {
+
+        if (!session || Date.now() - session.ts > 180000) { // FIXED: 180 seconds timeout
             // Return center positions for bad token
             const centerBatch = 'X05Y05,'.repeat(count).slice(0, -1);
             return res.status(200).end(centerBatch);
         }
 
-        // Generate multiple positions with small variations for smooth movement
+        // FIXED: Generate consistent positions WITHOUT random variations
         const positions = [];
         const baseX = session.x;
         const baseY = session.y;
-        
+
         for (let i = 0; i < count; i++) {
-            // Add tiny variations for smoother interpolation
-            const variation = (Math.random() - 0.5) * 0.4;
-            const interpolatedX = baseX + variation;
-            const interpolatedY = baseY + variation;
-            
+            // FIXED: No random variations - use exact same values for consistency
+            const interpolatedX = baseX;
+            const interpolatedY = baseY;
+
             // Use same mapping as simple endpoint
             const mapToScale = (velocity) => {
-                const clamped = Math.max(-10, Math.min(10, velocity));
-                const normalized = clamped / 10;
-                const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5);
-                const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
+                const clamped = Math.max(-8, Math.min(8, velocity));
+                const normalized = clamped / 8;
+                const scaled = Math.round(((normalized + 1) / 2) * 8) + 1;
                 return Math.max(1, Math.min(9, scaled));
             };
 
             const xScaled = mapToScale(interpolatedX);
             const yScaled = mapToScale(interpolatedY);
-            
+
             positions.push(`X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`);
         }
-        
+
         res.status(200).end(positions.join(','));
-        
     } catch (error) {
         console.error('❌ Error in batch endpoint:', error);
         const centerBatch = 'X05Y05,'.repeat(3).slice(0, -1);
@@ -224,7 +209,8 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📱 Phone Interface: http://localhost:${PORT}`);
     console.log(`🎮 PictoBlox Endpoints:`);
-    console.log(`   - Original: /simple/TOKEN`);
-    console.log(`   - NEW Batch: /batch/TOKEN/3`);
-    console.log(`✨ Batching support added for ultra-smooth movement!`);
+    console.log(`  - Individual: /x/TOKEN and /y/TOKEN`);
+    console.log(`  - Simple: /simple/TOKEN`);
+    console.log(`  - Batch: /batch/TOKEN/COUNT`);
+    console.log(`✨ FIXED: No smoothing, no random variations, 180s timeout!`);
 });
