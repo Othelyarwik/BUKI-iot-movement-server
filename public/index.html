@@ -10,6 +10,9 @@
     <meta name="theme-color" content="#0a0a1f">
     <meta name="apple-touch-fullscreen" content="yes">
     <meta name="format-detection" content="telephone=no">
+    <!-- Samsung specific meta tags -->
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a1f">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
         
@@ -36,6 +39,8 @@
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            /* Samsung Galaxy navigation bar compensation */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         /* FULLSCREEN WALLPAPER BACKGROUND */
@@ -56,39 +61,43 @@
             backface-visibility: hidden;
         }
 
-        /* MAIN LAYOUT CONTAINER */
+        /* MAIN LAYOUT CONTAINER - ADJUSTED FOR PHONE NAVIGATION */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            padding: 20px;
+            height: calc(100vh - env(safe-area-inset-bottom, 60px)); /* Reserve space for navigation */
+            padding: 15px 20px 80px 20px; /* Extra bottom padding for phone buttons */
+            max-height: 100vh;
+            overflow-y: auto;
         }
 
-        /* CONTENT AREA */
+        /* CONTENT AREA - MOVED UP */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             text-align: center;
+            padding-top: 10px; /* Reduced top padding to move content up */
         }
 
-        /* TYPOGRAPHY */
+        /* TYPOGRAPHY - SMALLER SIZES */
         .main-content h1 {
-            font-size: 32px;
+            font-size: 28px; /* Reduced from 32px */
             font-weight: 900;
-            margin-bottom: 16px;
+            margin-bottom: 12px; /* Reduced from 16px */
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
             letter-spacing: 1px;
         }
 
         .main-content h2 {
-            font-size: 16px;
-            margin-bottom: 32px;
+            font-size: 14px; /* Reduced from 16px */
+            margin-bottom: 24px; /* Reduced from 32px */
             color: #b0b0ff;
-            font-weight: 500;
+            font-weight: 700; /* Made bold - was 500 */
         }
 
         /* INSTRUCTIONS CARD */
@@ -139,60 +148,30 @@
             text-align: left;
         }
 
-        .portrait-reminder {
-            background: rgba(0, 20, 40, 0.6);
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 20px 0 0 0;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .portrait-icon {
-            width: 24px;
-            height: 36px;
-            border: 2px solid #8090ff;
-            border-radius: 4px;
-            position: relative;
-            background: rgba(128, 144, 255, 0.1);
-        }
-
-        .portrait-icon::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: -4px;
-            right: -4px;
-            height: 2px;
-            background: #8090ff;
-        }
-
         .portrait-text {
             color: #8090ff;
             font-size: 12px;
             font-weight: 500;
         }
 
-        /* BUTTON - MOBILE OPTIMIZED */
+        /* REMOVED PORTRAIT REMINDER STYLES */
+
+        /* BUTTON - SMALLER AND POSITIONED ABOVE NAVIGATION */
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
             border-radius: 12px;
-            padding: 16px 32px;
-            font-size: 18px;
+            padding: 14px 28px; /* Reduced from 16px 32px */
+            font-size: 16px; /* Reduced from 18px */
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
             letter-spacing: 1px;
-            min-width: 200px;
-            min-height: 56px;
-            margin-top: auto;
-            margin-bottom: 20px;
+            min-width: 180px; /* Reduced from 200px */
+            min-height: 52px; /* Reduced from 56px */
+            margin-top: 30px; /* Added space from instructions - was auto */
+            margin-bottom: 15px; /* Reduced from 20px */
             align-self: center;
             transition: transform 0.2s ease;
             /* Mobile touch optimization */
@@ -200,6 +179,9 @@
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
+            /* Ensure button stays above navigation */
+            position: relative;
+            z-index: 100;
         }
 
         .start-button:hover, .start-button:active {
@@ -495,8 +477,7 @@
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
 
-    <!-- Exit fullscreen button -->
-    <button class="exit-fullscreen-btn" id="exitFullscreenBtn">✕ Изход</button>
+    <!-- Exit button removed - tap screen to show/hide system UI -->
 
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
@@ -527,13 +508,6 @@
                     <div class="sub-instruction">• Въведете генерирания код в PictoBlox</div>
                     <div class="sub-instruction">• Използвайте смартфона като волан с накланяне за да управлявате космическия кораб</div>
                     <div class="sub-instruction">• Можете да рекалибрирате смартфона с бутон в дясно</div>
-                </div>
-
-                <div class="portrait-reminder">
-                    <div class="portrait-icon"></div>
-                    <div class="portrait-text">
-                        Заключете телефона в портретен режим преди да започнете
-                    </div>
                 </div>
             </div>
         </div>
@@ -681,6 +655,12 @@
             }
 
             async enterFullscreen() {
+                // Use Samsung-specific fullscreen for Galaxy devices
+                if (navigator.userAgent.includes('Samsung') || navigator.userAgent.includes('Galaxy')) {
+                    return await enterFullscreenSamsung();
+                }
+                
+                // Original fullscreen logic for other devices
                 try {
                     const element = document.documentElement;
                     
@@ -710,59 +690,160 @@
             }
 
             fallbackFullscreen() {
-                // Enhanced address bar hiding for browsers that don't support fullscreen
+                // Enhanced fallback for Samsung Galaxy devices
                 document.body.classList.add('fullscreen-mode');
-                this.forceHideAddressBar();
+                forceHideSystemUI();
                 this.setupAutoHide();
                 
-                // Prevent scrolling to keep address bar hidden
+                // Prevent scrolling to keep UI hidden
                 document.body.style.overflow = 'hidden';
                 document.body.style.position = 'fixed';
                 document.body.style.width = '100%';
                 document.body.style.height = '100%';
+                
+                // Samsung specific adjustments
+                if (navigator.userAgent.includes('Samsung')) {
+                    document.body.style.paddingBottom = '0px';
+                    setTimeout(() => forceHideSystemUI(), 100);
+                }
             }
 
-            forceHideAddressBar() {
-                // Multiple attempts to hide address bar
-                const hideSequence = () => {
-                    window.scrollTo(0, 1);
-                    setTimeout(() => window.scrollTo(0, 0), 100);
-                    setTimeout(() => window.scrollTo(0, 1), 200);
-                };
+        // Enhanced address bar and navigation hiding for Samsung Galaxy
+        function forceHideSystemUI() {
+            // Multiple aggressive attempts to hide system UI
+            const hideSequence = () => {
+                // Scroll methods
+                window.scrollTo(0, 1);
+                setTimeout(() => window.scrollTo(0, 0), 50);
+                setTimeout(() => window.scrollTo(0, 1), 100);
                 
-                hideSequence();
-                setTimeout(hideSequence, 500);
-                setTimeout(hideSequence, 1000);
+                // Samsung specific viewport adjustments
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                // Force layout recalculation
+                document.body.style.height = window.innerHeight + 'px';
+                
+                // Additional Samsung Galaxy specific tricks
+                if (navigator.userAgent.includes('Samsung')) {
+                    // Force immediate layout
+                    document.body.offsetHeight;
+                    window.dispatchEvent(new Event('resize'));
+                }
+            };
+            
+            // Execute hiding sequence multiple times
+            hideSequence();
+            setTimeout(hideSequence, 100);
+            setTimeout(hideSequence, 300);
+            setTimeout(hideSequence, 500);
+            setTimeout(hideSequence, 1000);
+        }
+
+        // Enhanced fullscreen for Samsung Galaxy devices
+        async function enterFullscreenSamsung() {
+            try {
+                const element = document.documentElement;
+                
+                // Request fullscreen first
+                if (element.requestFullscreen) {
+                    await element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    await element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullScreen) {
+                    await element.mozRequestFullScreen();
+                } else if (element.msRequestFullscreen) {
+                    await element.msRequestFullscreen();
+                }
+                
+                // Samsung specific UI hiding
+                if ('Samsung' in window || navigator.userAgent.includes('Samsung')) {
+                    // Hide Samsung's navigation bar
+                    document.body.style.paddingBottom = '0px';
+                    document.body.style.height = '100vh';
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                forceHideSystemUI();
+                document.body.classList.add('fullscreen-mode');
+                
+                console.log('🖥️ Samsung fullscreen mode activated');
+                return true;
+                
+            } catch (error) {
+                console.warn('Fullscreen failed, using fallback:', error);
+                // Enhanced fallback for Samsung
+                forceHideSystemUI();
+                document.body.classList.add('fullscreen-mode');
+                return false;
             }
+        }
 
             setupAutoHide() {
-                // Hide controls after 3 seconds of no interaction
-                this.resetHideTimer();
+                // Listen for screen taps to toggle system UI
+                let tapCount = 0;
                 
-                // Listen for user interactions
-                ['touchstart', 'touchmove', 'touchend', 'click', 'mousemove'].forEach(event => {
-                    document.addEventListener(event, () => {
-                        this.showControls();
-                        this.resetHideTimer();
-                    }, { passive: true });
-                });
+                document.addEventListener('touchstart', (e) => {
+                    tapCount++;
+                    
+                    // Single tap toggles system UI visibility
+                    setTimeout(() => {
+                        if (tapCount === 1) {
+                            this.toggleSystemUI();
+                        }
+                        tapCount = 0;
+                    }, 300);
+                }, { passive: true });
+
+                // Also listen for clicks (desktop/mouse)
+                document.addEventListener('click', () => {
+                    this.toggleSystemUI();
+                }, { passive: true });
             }
 
-            showControls() {
+            toggleSystemUI() {
+                if (document.body.classList.contains('hide-controls')) {
+                    this.showSystemUI();
+                } else {
+                    this.hideSystemUI();
+                }
+            }
+
+            showSystemUI() {
                 document.body.classList.remove('hide-controls');
-            }
-
-            hideControls() {
-                document.body.classList.add('hide-controls');
-            }
-
-            resetHideTimer() {
-                clearTimeout(this.hideTimeout);
-                this.showControls();
                 
-                this.hideTimeout = setTimeout(() => {
-                    this.hideControls();
-                }, 3000); // Hide after 3 seconds
+                // Force show address bar and navigation
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                // Samsung specific: restore system UI
+                if (navigator.userAgent.includes('Samsung')) {
+                    document.body.style.overflow = '';
+                    document.body.style.position = '';
+                    document.body.style.height = '';
+                    window.scrollTo(0, 0);
+                }
+                
+                // Auto-hide again after 5 seconds
+                setTimeout(() => {
+                    this.hideSystemUI();
+                }, 5000);
+            }
+
+            hideSystemUI() {
+                document.body.classList.add('hide-controls');
+                
+                // Re-enter fullscreen mode
+                setTimeout(() => {
+                    this.enterFullscreen();
+                }, 100);
             }
 
             exitFullscreen() {
