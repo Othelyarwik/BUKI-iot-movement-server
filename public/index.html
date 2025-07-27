@@ -37,14 +37,14 @@
         }
 
         @keyframes backgroundShift {
-            0%, 100% { 
+            0%, 100% {
                 background: 
                     radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
                     radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
                     radial-gradient(ellipse at 40% 60%, rgba(120, 255, 198, 0.1) 0%, transparent 50%),
                     linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
             }
-            50% { 
+            50% {
                 background: 
                     radial-gradient(ellipse at 80% 10%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
                     radial-gradient(ellipse at 10% 90%, rgba(120, 255, 198, 0.2) 0%, transparent 50%),
@@ -82,11 +82,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             text-align: center;
-            padding: 40px 20px;
+            padding: 40px 20px 60px 20px;
             height: 100vh;
             position: relative;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 40px;
         }
 
         .setup-screen h1 {
@@ -147,15 +156,43 @@
             box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
         }
 
-        .warning-instruction {
-            background: rgba(255, 100, 100, 0.1);
-            border: 1px solid rgba(255, 100, 100, 0.3);
-            border-radius: 10px;
-            padding: 15px;
+        .portrait-reminder {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
             margin: 25px 0;
-            color: #ffaaaa;
-            font-weight: 600;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .portrait-icon {
+            width: 30px;
+            height: 45px;
+            border: 2px solid #8090ff;
+            border-radius: 6px;
+            position: relative;
+            background: rgba(128, 144, 255, 0.1);
+        }
+
+        .portrait-icon::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: -6px;
+            right: -6px;
+            height: 2px;
+            background: #8090ff;
+        }
+
+        .portrait-text {
+            color: #8090ff;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         .start-button {
@@ -167,7 +204,6 @@
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 40px;
             transition: all 0.3s ease;
             box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
             font-family: 'Orbitron', monospace;
@@ -440,41 +476,46 @@
     <div class="connection-indicator" id="connectionIndicator"></div>
 
     <div class="setup-screen" id="setupScreen">
-        <h1>🚀 SPACESHIP CONTROLLER</h1>
-        <h2>Antigravity Navigation System</h2>
+        <div class="main-content">
+            <h1>SPACESHIP CONTROLLER</h1>
+            <h2>Antigravity Navigation System</h2>
 
-        <div class="instructions">
-            <div class="instruction">
-                <div class="instruction-number">1</div>
-                <div>Дръжте телефона <strong>вертикално</strong> с две ръце</div>
-            </div>
-            <div class="instruction">
-                <div class="instruction-number">2</div>
-                <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
-            </div>
-            <div class="instruction">
-                <div class="instruction-number">3</div>
-                <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
-            </div>
-            <div class="instruction">
-                <div class="instruction-number">4</div>
-                <div>След натискане на START, <strong>завъртете телефона хоризонтално</strong></div>
-            </div>
-            <div class="instruction">
-                <div class="instruction-number">5</div>
-                <div>Накланяйте телефона <strong>леко</strong> за навигация на космическия кораб</div>
-            </div>
-            <div class="instruction">
-                <div class="instruction-number">6</div>
-                <div>Въведете получения код в <strong>PictoBlox</strong> и започнете мисията!</div>
-            </div>
+            <div class="instructions">
+                <div class="instruction">
+                    <div class="instruction-number">1</div>
+                    <div>Дръжте телефона <strong>вертикално</strong> с две ръце</div>
+                </div>
+                <div class="instruction">
+                    <div class="instruction-number">2</div>
+                    <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
+                </div>
+                <div class="instruction">
+                    <div class="instruction-number">3</div>
+                    <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
+                </div>
+                <div class="instruction">
+                    <div class="instruction-number">4</div>
+                    <div>След натискане на START, <strong>завъртете телефона хоризонтално</strong></div>
+                </div>
+                <div class="instruction">
+                    <div class="instruction-number">5</div>
+                    <div>Накланяйте телефона <strong>леко</strong> за навигация на космическия кораб</div>
+                </div>
+                <div class="instruction">
+                    <div class="instruction-number">6</div>
+                    <div>Въведете получения код в <strong>PictoBlox</strong> и започнете мисията!</div>
+                </div>
 
-            <div class="warning-instruction">
-                ⚠️ <strong>ВАЖНО:</strong> Заключете телефона в портретен режим преди да започнете!
+                <div class="portrait-reminder">
+                    <div class="portrait-icon"></div>
+                    <div class="portrait-text">
+                        Заключете телефона в портретен режим преди да започнете
+                    </div>
+                </div>
             </div>
         </div>
 
-        <button class="start-button" id="startButton">🚀 START MISSION</button>
+        <button class="start-button" id="startButton">СТАРТИРАЙ МИСИЯТА</button>
     </div>
 
     <div class="game-screen" id="gameScreen">
@@ -491,11 +532,11 @@
             <div class="values-display">
                 <div class="values-row">
                     <div class="value-item">
-                        <div class="value-label">🚀 Ляво/Дясно</div>
+                        <div class="value-label">Ляво/Дясно</div>
                         <div class="value-number" id="x">0.0</div>
                     </div>
                     <div class="value-item">
-                        <div class="value-label">⚡ Горе/Долу</div>
+                        <div class="value-label">Горе/Долу</div>
                         <div class="value-number" id="y">0.0</div>
                     </div>
                 </div>
@@ -517,17 +558,18 @@
         <div class="calibration-content">
             <h2>🎯 Калибриране на сензорите</h2>
             <p>Дръжте космическия кораб стабилно в навигационна позиция</p>
-            
+
             <div class="calibration-token">
                 <div class="token-label">Код за PictoBlox</div>
                 <div class="token-value" id="calibrationToken">--------</div>
             </div>
-            
+
             <div class="calibration-progress">
                 <div class="calibration-fill" id="calibrationFillOverlay"></div>
             </div>
+
             <div id="calibrationText">Калибриране... 0/120</div>
-            
+
             <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
                 💡 Можете да въведете кода в PictoBlox докато калибрирате
             </p>
@@ -623,19 +665,19 @@
             calibrationOverlay.classList.add('show');
             calibrationFillOverlay.style.width = '0%';
             calibrationText.textContent = 'Калибриране... 0/120';
-            
+
             // Show calibration progress in status area
             statusText.textContent = 'Калибриране...';
             calibrationProgress.style.display = 'block';
             recalibrateButton.style.display = 'none';
             calibrationFill.style.width = '0%';
-            
+
             // Show token during calibration
             const calibrationTokenElement = document.getElementById('calibrationToken');
             if (calibrationTokenElement && token) {
                 calibrationTokenElement.textContent = token;
             }
-            
+
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
 
@@ -686,7 +728,7 @@
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
-        
+
         function handleMotion(event) {
             if (!connected || !token) return;
 
@@ -695,16 +737,15 @@
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
-            
             const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;  
+            const rawY = parseFloat(accel.y) || 0;
             const rawZ = parseFloat(accel.z) || 0;
-            
+
             updateCounter++;
 
             // Always use landscape orientation (phone held horizontally)
-            let rawSteering = rawY;  // Left/right tilt
-            let rawThrottle = rawZ;  // Forward/back tilt
+            let rawSteering = rawY; // Left/right tilt
+            let rawThrottle = rawZ; // Forward/back tilt
 
             // Calibration phase
             if (isCalibrating) {
@@ -728,7 +769,6 @@
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         
                         calibrationSamples = null;
-                        
                         isCalibrating = false;
                         calibrationOverlay.classList.remove('show');
                         
@@ -743,18 +783,4 @@
                 return;
             }
 
-            if (isCalibrating) return;
-
-            const steeringTilt = rawSteering - restPositionX;
-            const throttleTilt = rawThrottle - restPositionY;
-
-            // Apply dead zones
-            const steeringDeadZone = 1.5;
-            const throttleDeadZone = 2.0;
-            
-            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
-            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
-
-            // Process through spaceship motion processor
-            const processed = spaceshipProcessor.addSample(
-                processedSteering *
+            if (is
