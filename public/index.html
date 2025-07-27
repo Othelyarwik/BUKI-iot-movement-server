@@ -2,14 +2,14 @@
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
-    <title>Phone Racing Controller</title>
+    <title>Spaceship Controller</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#7A74CE">
+    <meta name="theme-color" content="#0a0a1f">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
         
         * {
             box-sizing: border-box;
@@ -18,9 +18,13 @@
         }
 
         body {
-            font-family: 'Rubik', Arial, sans-serif;
-            background: #7A74CE;
-            color: white;
+            font-family: 'Orbitron', monospace;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 60%, rgba(120, 255, 198, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+            color: #e0e0ff;
             min-height: 100vh;
             min-height: 100dvh;
             overflow: hidden;
@@ -29,409 +33,361 @@
             left: 0;
             right: 0;
             bottom: 0;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { 
+                background: 
+                    radial-gradient(ellipse at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                    radial-gradient(ellipse at 40% 60%, rgba(120, 255, 198, 0.1) 0%, transparent 50%),
+                    linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+            }
+            50% { 
+                background: 
+                    radial-gradient(ellipse at 80% 10%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                    radial-gradient(ellipse at 10% 90%, rgba(120, 255, 198, 0.2) 0%, transparent 50%),
+                    radial-gradient(ellipse at 60% 30%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                    linear-gradient(45deg, #0f0f2f 0%, #2a1a3a 50%, #1a1a4f 100%);
+            }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.9), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.5), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: starsMove 30s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes starsMove {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
         }
 
         .setup-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             text-align: center;
-            padding: 20px;
-            padding-top: 80px;
+            padding: 40px 20px;
             height: 100vh;
-            overflow-y: auto;
+            position: relative;
+        }
+
+        .setup-screen h1 {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            letter-spacing: 2px;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+            to { text-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.3); }
         }
 
         .setup-screen h2 {
-            font-size: 28px;
-            margin-bottom: 30px;
-            margin-top: 20px;
+            font-size: 18px;
+            margin-bottom: 40px;
+            color: #b0b0ff;
+            font-weight: 500;
         }
 
-        .setup-instructions {
-            display: block;
-        }
-
-        .setup-left, .setup-right, .setup-center, .ready-message {
-            display: none;
-        }
-
-        .steps {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
+        .instructions {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
             margin: 20px 0;
-            max-width: 600px;
+            max-width: 380px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
         }
 
-        .step {
+        .instruction {
             display: flex;
             align-items: center;
-            margin: 18px 0;
-            font-size: 16px;
+            margin: 20px 0;
+            font-size: 15px;
             text-align: left;
+            line-height: 1.4;
         }
 
-        .step-number {
-            background: #F9AC7E;
-            color: white;
+        .instruction-number {
+            background: linear-gradient(135deg, #00ffff, #0080ff);
+            color: #001122;
             border-radius: 50%;
-            width: 35px;
-            height: 35px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             margin-right: 15px;
             flex-shrink: 0;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
         }
 
-        .flip-toggle, .orientation-toggle {
-            background: rgba(255, 255, 255, 0.2);
+        .warning-instruction {
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
             border-radius: 10px;
             padding: 15px;
-            margin: 15px 0;
-            max-width: 500px;
-        }
-
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .switch.active {
-            background: #F9AC7E;
-        }
-
-        .switch-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .switch.active .switch-slider {
-            transform: translateX(30px);
-        }
-
-        .continue-btn {
-            background: #F9AC7E;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
-        }
-
-        .ready-message {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
+            margin: 25px 0;
+            color: #ffaaaa;
+            font-weight: 600;
             text-align: center;
         }
 
-        @media (orientation: landscape) {
-            .setup-screen {
-                display: grid;
-                grid-template-columns: 1fr 300px 1fr;
-                grid-template-rows: auto 1fr auto;
-                gap: 20px;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-                padding-top: 20px;
-            }
+        .start-button {
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            color: #001122;
+            border: none;
+            border-radius: 15px;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 1px;
+        }
 
-            .setup-screen h2 {
-                grid-column: 1 / -1;
-                margin: 0;
-                font-size: 24px;
-            }
-
-            .setup-instructions {
-                display: none;
-            }
-
-            .setup-left, .setup-right, .setup-center {
-                display: flex;
-            }
-
-            .ready-message {
-                display: block;
-            }
-
-            .setup-center {
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-
-            .setup-left {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-
-            .setup-right {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 255, 136, 0.5);
         }
 
         .game-screen {
             display: none;
-            padding: 15px;
+            width: 100vw;
             height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: rotate(90deg);
+            transform-origin: center center;
+            width: 100vh;
+            height: 100vw;
+            left: calc((100vw - 100vh) / 2);
+            top: calc((100vh - 100vw) / 2);
         }
 
-        .game-screen.portrait {
+        .game-screen.active {
+            display: grid;
+            grid-template-columns: 150px 1fr 150px;
+            grid-template-rows: 1fr;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .left-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .right-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .center-display {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 30px;
-            text-align: center;
-        }
-
-        .game-screen.landscape {
-            display: grid;
-            grid-template-columns: 1fr 280px 1fr;
-            grid-template-rows: 1fr;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .game-screen .header {
-            display: none;
-        }
-
-        .left-controls, .right-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .center-status {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
+            height: 100%;
         }
 
         .connect-button {
-            font-size: 18px;
-            padding: 15px 25px;
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            color: #001122;
             border: none;
             border-radius: 12px;
-            background: #F9AC7E;
-            color: white;
-            cursor: pointer;
+            padding: 15px 25px;
+            font-size: 16px;
             font-weight: bold;
+            cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 160px;
+            min-width: 120px;
+            font-family: 'Orbitron', monospace;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
         }
 
         .connect-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
         }
 
         .connect-button:disabled {
-            opacity: 0.6;
+            background: rgba(0, 255, 136, 0.3);
             cursor: not-allowed;
+            transform: none;
         }
 
         .token-display {
-            background: #3F469D;
-            padding: 25px;
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
             border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            min-width: 260px;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
         }
 
         .token-label {
-            font-size: 18px;
-            margin-bottom: 12px;
-            opacity: 0.9;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #b0b0ff;
             font-weight: 500;
         }
 
         .token-value {
-            font-family: 'Courier New', monospace;
-            font-size: 28px;
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
             font-weight: bold;
-            letter-spacing: 4px;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            letter-spacing: 3px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
-        .values {
-            background: #3F469D;
-            padding: 25px;
+        .values-display {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
             border-radius: 15px;
-            display: none;
-            min-width: 260px;
+            padding: 20px;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
         }
 
-        .values h3 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .value-row {
+        .values-row {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            gap: 20px;
         }
 
-        .value {
-            font-family: 'Courier New', monospace;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 15px 20px;
-            border-radius: 12px;
+        .value-item {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
             text-align: center;
-            min-width: 90px;
+            flex: 1;
         }
 
         .value-label {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            opacity: 0.9;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #b0b0ff;
+            font-weight: 500;
         }
 
         .value-number {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
         }
 
-        .status {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 15px;
-            background: rgba(255, 255, 255, 0.15);
+        .status-area {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(255, 100, 100, 0.4);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            font-weight: 500;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
         }
 
-        .game-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
+        .status-text {
+            font-size: 14px;
+            color: #ffaaaa;
+            font-weight: 600;
         }
 
-        .orientation-btn {
-            background: rgba(255, 255, 255, 0.25);
+        .calibration-progress {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .calibration-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ffff);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .recalibrate-button {
+            background: linear-gradient(135deg, #ff8800, #ff4400);
             color: white;
             border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
+            border-radius: 8px;
+            padding: 10px 15px;
             font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
+            font-family: 'Orbitron', monospace;
             transition: all 0.3s ease;
-            font-weight: 500;
-            min-width: 140px;
+            min-width: 100px;
         }
 
-        .orientation-btn:hover {
-            background: rgba(255, 255, 255, 0.35);
+        .recalibrate-button:hover {
             transform: translateY(-1px);
-        }
-
-        @media (orientation: portrait) {
-            .game-screen.portrait .token-display {
-                min-width: 320px;
-            }
-            
-            .game-screen.portrait .values {
-                min-width: 320px;
-            }
-            
-            .game-screen.portrait .value-row {
-                justify-content: space-evenly;
-            }
-            
-            .game-screen.portrait .value {
-                min-width: 120px;
-            }
-        }
-
-        @media (orientation: landscape) {
-            .game-screen.landscape .center-status {
-                gap: 20px;
-            }
-            
-            .game-screen.landscape .token-display {
-                padding: 20px;
-            }
-            
-            .game-screen.landscape .values {
-                padding: 20px;
-            }
-            
-            .game-screen.landscape .token-value {
-                font-size: 24px;
-                padding: 15px;
-            }
-            
-            .game-screen.landscape .value-number {
-                font-size: 20px;
-            }
+            box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
         }
 
         .connection-indicator {
             position: fixed;
             top: 15px;
             right: 15px;
-            width: 18px;
-            height: 18px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
             z-index: 1000;
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
         }
 
         .connection-indicator.connected {
             background: #44ff44;
+            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
         }
 
         .calibration-overlay {
@@ -440,7 +396,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(122, 116, 206, 0.90);
+            background: rgba(10, 10, 31, 0.95);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -448,6 +404,7 @@
             z-index: 2000;
             text-align: center;
             padding: 20px;
+            backdrop-filter: blur(10px);
         }
 
         .calibration-overlay.show {
@@ -455,188 +412,111 @@
         }
 
         .calibration-content {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
             border-radius: 20px;
             padding: 30px;
             max-width: 400px;
             width: 90%;
+            backdrop-filter: blur(15px);
         }
 
         .calibration-token {
-            background: #3F469D;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
+            background: rgba(0, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
             text-align: center;
         }
 
-        .calibration-token .token-label {
-            font-size: 16px;
-            margin-bottom: 10px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
         .calibration-token .token-value {
-            font-family: 'Courier New', monospace;
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 3px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            color: #F9AC7E;
-        }
-
-        .calibration-progress {
-            width: 250px;
-            height: 12px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 6px;
-            margin: 25px 0;
-            overflow: hidden;
-        }
-
-        .calibration-fill {
-            height: 100%;
-            background: #F9AC7E;
-            border-radius: 6px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .game-screen.portrait .center-status {
-            order: 1;
-        }
-
-        .game-screen.portrait .left-controls {
-            order: 2;
-            margin-top: 20px;
-        }
-
-        .game-screen.portrait .header {
-            margin-bottom: 20px;
-        }
-
-        .smoothing-indicator {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 255, 0, 0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .smoothing-indicator.show {
-            display: block;
+            color: #00ffff;
+            font-size: 20px;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
-    <div class="smoothing-indicator" id="smoothingIndicator">Smoothing: ON</div>
 
     <div class="setup-screen" id="setupScreen">
-        <h2>🏎️ Racing Controller Setup</h2>
+        <h1>🚀 SPACESHIP CONTROLLER</h1>
+        <h2>Antigravity Navigation System</h2>
 
-        <div class="setup-instructions">
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div>Дръжте телефона <strong>хоризонтално</strong> с две ръце като волан</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div>Накланяйте телефона <strong>леко</strong> наляво/надясно за завиване</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">5</div>
-                    <div>Накланяйте телефона <strong>леко</strong> напред/назад за газ/спирачка</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">6</div>
-                    <div>Въведете получения код в <strong>PictoBlox</strong> и се забавлявайте!</div>
-                </div>
+        <div class="instructions">
+            <div class="instruction">
+                <div class="instruction-number">1</div>
+                <div>Дръжте телефона <strong>вертикално</strong> с две ръце</div>
+            </div>
+            <div class="instruction">
+                <div class="instruction-number">2</div>
+                <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
+            </div>
+            <div class="instruction">
+                <div class="instruction-number">3</div>
+                <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
+            </div>
+            <div class="instruction">
+                <div class="instruction-number">4</div>
+                <div>След натискане на START, <strong>завъртете телефона хоризонтално</strong></div>
+            </div>
+            <div class="instruction">
+                <div class="instruction-number">5</div>
+                <div>Накланяйте телефона <strong>леко</strong> за навигация на космическия кораб</div>
+            </div>
+            <div class="instruction">
+                <div class="instruction-number">6</div>
+                <div>Въведете получения код в <strong>PictoBlox</strong> и започнете мисията!</div>
             </div>
 
-            <div class="flip-toggle">
-                <div style="font-size: 16px; margin-bottom: 10px;">
-                    <strong>Обърнат телефон?</strong> (камерата вдясно)
-                </div>
-                <div class="toggle-switch">
-                    <span>Не</span>
-                    <div class="switch" id="flipToggle">
-                        <div class="switch-slider"></div>
+            <div class="warning-instruction">
+                ⚠️ <strong>ВАЖНО:</strong> Заключете телефона в портретен режим преди да започнете!
+            </div>
+        </div>
+
+        <button class="start-button" id="startButton">🚀 START MISSION</button>
+    </div>
+
+    <div class="game-screen" id="gameScreen">
+        <div class="left-controls">
+            <button class="connect-button" id="connectButton">🔗 Свържи се</button>
+        </div>
+
+        <div class="center-display">
+            <div class="token-display">
+                <div class="token-label">Код за връзка</div>
+                <div class="token-value" id="token">Няма връзка</div>
+            </div>
+
+            <div class="values-display">
+                <div class="values-row">
+                    <div class="value-item">
+                        <div class="value-label">🚀 Ляво/Дясно</div>
+                        <div class="value-number" id="x">0.0</div>
                     </div>
-                    <span>Да</span>
-                </div>
-            </div>
-
-            <div class="orientation-toggle">
-                <div style="font-size: 16px; margin-bottom: 10px;">
-                    <strong>Предпочитана ориентация</strong>
-                </div>
-                <div class="toggle-switch">
-                    <span>📱 Портрет</span>
-                    <div class="switch active" id="orientationToggle">
-                        <div class="switch-slider"></div>
+                    <div class="value-item">
+                        <div class="value-label">⚡ Горе/Долу</div>
+                        <div class="value-number" id="y">0.0</div>
                     </div>
-                    <span>📱 Пейзаж</span>
                 </div>
-            </div>
-
-            <button class="continue-btn" id="continueBtn">🎮 Започни играта</button>
-        </div>
-
-        <div class="setup-left">
-            <div class="ready-message">
-                <strong>Готов за игра!</strong><br>
-                Дръжте телефона като волан
             </div>
         </div>
 
-        <div class="setup-center">
-            <div style="background: #3F469D; padding: 20px; border-radius: 15px; text-align: center; min-width: 280px;">
-                <div style="font-size: 16px; margin-bottom: 10px; opacity: 0.9;">Настройки:</div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
-                    <span>Обърнат телефон:</span>
-                    <span id="flipStatus">Не</span>
+        <div class="right-controls">
+            <div class="status-area" id="statusArea">
+                <div class="status-text" id="statusText">Некалибриран</div>
+                <div class="calibration-progress" id="calibrationProgress" style="display: none;">
+                    <div class="calibration-fill" id="calibrationFill"></div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
-                    <span>Ориентация:</span>
-                    <span id="orientationStatus">Пейзаж</span>
-                </div>
-            </div>
-            <button class="continue-btn" id="continueBtnLandscape">🎮 Започни играта</button>
-        </div>
-
-        <div class="setup-right">
-            <div style="text-align: center; font-size: 14px; opacity: 0.8;">
-                <div>🏎️ Racing Controller</div>
-                <div style="margin: 10px 0; font-size: 12px;">
-                    Завъртете телефона<br>
-                    хоризонтално за игра
-                </div>
+                <button class="recalibrate-button" id="recalibrateButton" style="display: none;">Калибрирай</button>
             </div>
         </div>
     </div>
 
     <div class="calibration-overlay" id="calibrationOverlay">
         <div class="calibration-content">
-            <h2>🎯 Калибриране</h2>
-            <p>Дръжте телефона стабилно в игрова позиция</p>
+            <h2>🎯 Калибриране на сензорите</h2>
+            <p>Дръжте космическия кораб стабилно в навигационна позиция</p>
             
             <div class="calibration-token">
                 <div class="token-label">Код за PictoBlox</div>
@@ -644,7 +524,7 @@
             </div>
             
             <div class="calibration-progress">
-                <div class="calibration-fill" id="calibrationFill"></div>
+                <div class="calibration-fill" id="calibrationFillOverlay"></div>
             </div>
             <div id="calibrationText">Калибриране... 0/120</div>
             
@@ -654,64 +534,15 @@
         </div>
     </div>
 
-    <div class="game-screen landscape" id="gameScreen">
-        <div class="left-controls">
-            <button class="connect-button" id="connectButton">🔗 Свържи се</button>
-            <div class="game-controls">
-                <button class="orientation-btn" id="orientationBtn">📱 Ориентация</button>
-                <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Калибриране</button>
-                <button class="orientation-btn" id="smoothingBtn" style="display: none;">✨ Плавност</button>
-            </div>
-        </div>
-
-        <div class="center-status">
-            <div class="token-display">
-                <div class="token-label">Код за връзка</div>
-                <div class="token-value" id="token">Няма връзка</div>
-            </div>
-
-            <div class="values" id="values">
-                <h3>🎮 Контрол</h3>
-                <div class="value-row">
-                    <div class="value">
-                        <div class="value-label">🏎️ Волан</div>
-                        <div class="value-number" id="x">0.0</div>
-                    </div>
-                    <div class="value">
-                        <div class="value-label">⚡ Газ</div>
-                        <div class="value-number" id="y">0.0</div>
-                    </div>
-                </div>
-                <div class="status" id="status">Готов за шофиране</div>
-            </div>
-        </div>
-
-        <div class="right-controls">
-            <div style="text-align: center; font-size: 13px; opacity: 0.7; line-height: 1.4;">
-                <div>📱 Racing Controller</div>
-                <div style="margin: 8px 0;">v2.2 Enhanced</div>
-                <div>🎮 Ultra Smooth</div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Enhanced Client-Side Motion Smoother for Ultra-Smooth Racing
-        class ClientMotionSmoother {
+        // Enhanced Client-Side Motion Smoother for Spaceship Navigation
+        class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
-                this.maxSamples = 6;
+                this.maxSamples = 5;
                 this.smoothedX = 0;
                 this.smoothedY = 0;
-                this.velocityX = 0;
-                this.velocityY = 0;
                 this.lastTime = Date.now();
-                
-                // Racing-optimized smoothing parameters
-                this.outlierThreshold = 2.5;
-                this.blendFactor = 0.25;
-                this.velocitySmoothing = 0.82;
-                this.accelerationLimit = 15.0;
             }
 
             addSample(rawX, rawY) {
@@ -719,106 +550,24 @@
                 const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
                 this.lastTime = now;
 
-                // Step 1: Outlier detection and filtering
-                const filtered = this.filterOutliers(rawX, rawY);
-                
-                // Step 2: Add to sample history
-                this.samples.push({ x: filtered.x, y: filtered.y, time: now });
+                // Simple averaging for spaceship controls
+                this.samples.push({ x: rawX, y: rawY });
                 if (this.samples.length > this.maxSamples) {
                     this.samples.shift();
                 }
 
-                // Step 3: Calculate weighted average
-                const averaged = this.getExponentialAverage();
-                
-                // Step 4: Apply velocity smoothing for natural movement
-                const smoothed = this.applyVelocitySmoothing(averaged.x, averaged.y, deltaTime);
-                
-                this.smoothedX = smoothed.x;
-                this.smoothedY = smoothed.y;
+                // Calculate simple average
+                const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
+                const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
+
+                this.smoothedX = avgX;
+                this.smoothedY = avgY;
 
                 return { x: this.smoothedX, y: this.smoothedY };
-            }
-
-            filterOutliers(x, y) {
-                if (this.samples.length === 0) return { x, y };
-
-                // Get recent average for comparison
-                const recentSamples = this.samples.slice(-3);
-                const avgX = recentSamples.reduce((sum, s) => sum + s.x, 0) / recentSamples.length;
-                const avgY = recentSamples.reduce((sum, s) => sum + s.y, 0) / recentSamples.length;
-
-                // Check for outliers
-                const deltaX = Math.abs(x - avgX);
-                const deltaY = Math.abs(y - avgY);
-
-                let filteredX = x;
-                let filteredY = y;
-
-                // Blend outliers with recent average
-                if (deltaX > this.outlierThreshold) {
-                    filteredX = avgX * (1 - this.blendFactor) + x * this.blendFactor;
-                }
-                if (deltaY > this.outlierThreshold) {
-                    filteredY = avgY * (1 - this.blendFactor) + y * this.blendFactor;
-                }
-
-                return { x: filteredX, y: filteredY };
-            }
-
-            getExponentialAverage() {
-                if (this.samples.length === 0) return { x: 0, y: 0 };
-
-                let totalWeight = 0;
-                let weightedX = 0;
-                let weightedY = 0;
-
-                // Exponential weighting - much higher weight for recent samples
-                this.samples.forEach((sample, index) => {
-                    const weight = Math.pow(2.5, index);
-                    weightedX += sample.x * weight;
-                    weightedY += sample.y * weight;
-                    totalWeight += weight;
-                });
-
-                return {
-                    x: weightedX / totalWeight,
-                    y: weightedY / totalWeight
-                };
-            }
-
-            applyVelocitySmoothing(targetX, targetY, deltaTime) {
-                // Calculate acceleration toward target
-                const accelX = (targetX - this.smoothedX) / deltaTime;
-                const accelY = (targetY - this.smoothedY) / deltaTime;
-
-                // Limit acceleration for stability
-                const limitedAccelX = Math.max(-this.accelerationLimit, Math.min(this.accelerationLimit, accelX));
-                const limitedAccelY = Math.max(-this.accelerationLimit, Math.min(this.accelerationLimit, accelY));
-
-                // Update velocity with smoothing
-                this.velocityX = this.velocityX * this.velocitySmoothing + limitedAccelX * deltaTime * (1 - this.velocitySmoothing);
-                this.velocityY = this.velocityY * this.velocitySmoothing + limitedAccelY * deltaTime * (1 - this.velocitySmoothing);
-
-                // Update position
-                const newX = this.smoothedX + this.velocityX * deltaTime;
-                const newY = this.smoothedY + this.velocityY * deltaTime;
-
-                return { x: newX, y: newY };
-            }
-
-            getDebugInfo() {
-                return {
-                    samples: this.samples.length,
-                    velocity: { x: this.velocityX.toFixed(2), y: this.velocityY.toFixed(2) },
-                    smoothed: { x: this.smoothedX.toFixed(2), y: this.smoothedY.toFixed(2) }
-                };
             }
         }
 
         // Global variables
-        let isFlipped = false;
-        let isLandscape = true;
         let connected = false;
         let token = '';
         let velocityX = 0;
@@ -827,87 +576,44 @@
         let restPositionX = 0;
         let restPositionY = 0;
         let isCalibrating = false;
-        let smoothingEnabled = true;
-        let clientSmoother = new ClientMotionSmoother();
+        let spaceshipProcessor = new SpaceshipMotionProcessor();
 
         // DOM elements
         const setupScreen = document.getElementById('setupScreen');
         const gameScreen = document.getElementById('gameScreen');
+        const startButton = document.getElementById('startButton');
         const calibrationOverlay = document.getElementById('calibrationOverlay');
-        const flipToggle = document.getElementById('flipToggle');
-        const orientationToggle = document.getElementById('orientationToggle');
-        const continueBtn = document.getElementById('continueBtn');
-        const continueBtnLandscape = document.getElementById('continueBtnLandscape');
-        const flipStatus = document.getElementById('flipStatus');
-        const orientationStatus = document.getElementById('orientationStatus');
         const connectButton = document.getElementById('connectButton');
-        const orientationBtn = document.getElementById('orientationBtn');
-        const recalibrateBtn = document.getElementById('recalibrateBtn');
-        const smoothingBtn = document.getElementById('smoothingBtn');
         const tokenElement = document.getElementById('token');
-        const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
         const yElement = document.getElementById('y');
-        const statusElement = document.getElementById('status');
-        const connectionIndicator = document.getElementById('connectionIndicator');
+        const statusArea = document.getElementById('statusArea');
+        const statusText = document.getElementById('statusText');
+        const calibrationProgress = document.getElementById('calibrationProgress');
         const calibrationFill = document.getElementById('calibrationFill');
+        const recalibrateButton = document.getElementById('recalibrateButton');
+        const connectionIndicator = document.getElementById('connectionIndicator');
+        const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
         const calibrationText = document.getElementById('calibrationText');
-        const smoothingIndicator = document.getElementById('smoothingIndicator');
 
-        // Setup event handlers
-        flipToggle.onclick = function() {
-            isFlipped = !isFlipped;
-            this.classList.toggle('active', isFlipped);
-            if (flipStatus) flipStatus.textContent = isFlipped ? 'Да' : 'Не';
-        };
-
-        orientationToggle.onclick = function() {
-            isLandscape = !isLandscape;
-            this.classList.toggle('active', isLandscape);
-            if (orientationStatus) orientationStatus.textContent = isLandscape ? 'Пейзаж' : 'Портрет';
-        };
-
-        function startGame() {
+        // Start mission button
+        startButton.onclick = function() {
             setupScreen.style.display = 'none';
-            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
-            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
+            gameScreen.classList.add('active');
             hideAddressBar();
-        }
-
-        continueBtn.onclick = startGame;
-        continueBtnLandscape.onclick = startGame;
-
-        orientationBtn.onclick = function() {
-            isLandscape = !isLandscape;
-            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
-            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
-            this.textContent = isLandscape ? '📱 Смени ориентация' : '📱 Смени ориентация';
         };
 
-        recalibrateBtn.onclick = function() {
+        // Recalibrate button
+        recalibrateButton.onclick = function() {
             startCalibration();
-        };
-
-        smoothingBtn.onclick = function() {
-            smoothingEnabled = !smoothingEnabled;
-            this.textContent = smoothingEnabled ? '✨ Плавност: ВКЛ' : '✨ Плавност: ИЗКЛ';
-            smoothingIndicator.textContent = smoothingEnabled ? 'Smoothing: ON' : 'Smoothing: OFF';
-            smoothingIndicator.style.background = smoothingEnabled ? 'rgba(0, 255, 0, 0.7)' : 'rgba(255, 0, 0, 0.7)';
-            
-            // Reset smoother when toggling
-            if (smoothingEnabled) {
-                clientSmoother = new ClientMotionSmoother();
-            }
         };
 
         function hideAddressBar() {
             setTimeout(() => window.scrollTo(0, 1), 100);
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
         }
 
         function updateStatus(message, type = 'info') {
-            statusElement.textContent = message;
+            statusText.textContent = message;
             connectionIndicator.classList.toggle('connected', type === 'success');
         }
 
@@ -915,8 +621,14 @@
             isCalibrating = true;
             calibrationSamples = [];
             calibrationOverlay.classList.add('show');
-            calibrationFill.style.width = '0%';
+            calibrationFillOverlay.style.width = '0%';
             calibrationText.textContent = 'Калибриране... 0/120';
+            
+            // Show calibration progress in status area
+            statusText.textContent = 'Калибриране...';
+            calibrationProgress.style.display = 'block';
+            recalibrateButton.style.display = 'none';
+            calibrationFill.style.width = '0%';
             
             // Show token during calibration
             const calibrationTokenElement = document.getElementById('calibrationToken');
@@ -924,8 +636,7 @@
                 calibrationTokenElement.textContent = token;
             }
             
-            // Reset smoother during calibration
-            clientSmoother = new ClientMotionSmoother();
+            spaceshipProcessor = new SpaceshipMotionProcessor();
         }
 
         connectButton.onclick = async () => {
@@ -957,29 +668,21 @@
                 window.addEventListener('devicemotion', handleMotion, { passive: true });
 
                 connected = true;
-                valuesElement.style.display = 'block';
-                recalibrateBtn.style.display = 'block';
-                smoothingBtn.style.display = 'block';
-                smoothingIndicator.classList.add('show');
                 connectButton.textContent = '✅ Свързан';
-                connectButton.style.background = '#6CC5A1';
-                
-                // Initialize smoothing button
-                smoothingBtn.textContent = '✨ Плавност: ВКЛ';
+                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
                 
                 startCalibration();
 
             } catch (error) {
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
-                connectButton.style.background = '#F9AC7E';
                 tokenElement.textContent = 'Грешка при свързване';
                 updateStatus(`Грешка: ${error.message}`, 'error');
                 alert(`Грешка при свързване: ${error.message}`);
             }
         };
 
-        // Enhanced motion handling with client-side smoothing
+        // Spaceship motion handling
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
@@ -987,9 +690,8 @@
         function handleMotion(event) {
             if (!connected || !token) return;
 
-            // Higher frequency for smoother client processing
             const now = Date.now();
-            if (now - lastMotionTime < 40) return; // 25 FPS processing
+            if (now - lastMotionTime < 50) return;
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
@@ -999,19 +701,10 @@
             const rawZ = parseFloat(accel.z) || 0;
             
             updateCounter++;
-            if (updateCounter % 100 === 0) {
-                console.log(`📊 Motion update #${updateCounter} - Smoothing: ${smoothingEnabled ? 'ON' : 'OFF'}`);
-            }
 
-            let rawSteering, rawThrottle;
-            
-            if (isFlipped) {
-                rawSteering = -rawY;
-                rawThrottle = rawZ;
-            } else {
-                rawSteering = rawY;
-                rawThrottle = rawZ;
-            }
+            // Always use landscape orientation (phone held horizontally)
+            let rawSteering = rawY;  // Left/right tilt
+            let rawThrottle = rawZ;  // Forward/back tilt
 
             // Calibration phase
             if (isCalibrating) {
@@ -1020,27 +713,31 @@
                     
                     const progress = (calibrationSamples.length / 120) * 100;
                     calibrationFill.style.width = progress + '%';
+                    calibrationFillOverlay.style.width = progress + '%';
                     calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/120`;
                     
                     if (calibrationSamples.length === 120) {
-                        // More robust calibration calculation
+                        // Calculate rest position
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
                         
-                        // Use middle 50% of samples for more stable calibration
                         const start = Math.floor(sortedSteering.length * 0.25);
                         const end = Math.floor(sortedSteering.length * 0.75);
                         
                         restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         
-                        calibrationSamples = null; // Free memory
+                        calibrationSamples = null;
                         
                         isCalibrating = false;
                         calibrationOverlay.classList.remove('show');
-                        updateStatus('Калибриране завършено - готов за шофиране!', 'success');
                         
-                        console.log(`🎯 Enhanced calibration complete - Rest position: X=${restPositionX.toFixed(2)}, Y=${restPositionY.toFixed(2)}`);
+                        // Update status area
+                        statusText.textContent = 'Калибриран';
+                        calibrationProgress.style.display = 'none';
+                        recalibrateButton.style.display = 'block';
+                        
+                        updateStatus('Готов за навигация!', 'success');
                     }
                 }
                 return;
@@ -1051,97 +748,13 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // Enhanced smooth dead zone function
-            function applySmoothDeadZone(value, deadZone, transitionZone = 0.8) {
-                const absValue = Math.abs(value);
-                if (absValue <= deadZone) return 0;
-                
-                if (absValue <= deadZone + transitionZone) {
-                    const factor = (absValue - deadZone) / transitionZone;
-                    // Smooth hermite interpolation
-                    const smoothFactor = factor * factor * (3 - 2 * factor);
-                    return Math.sign(value) * deadZone * smoothFactor;
-                }
-                
-                return value - Math.sign(value) * deadZone;
-            }
-
-            const steeringDeadZone = 1.2; // Smaller for more responsive steering
-            const throttleDeadZone = 1.8;
+            // Apply dead zones
+            const steeringDeadZone = 1.5;
+            const throttleDeadZone = 2.0;
             
-            let processedSteering = applySmoothDeadZone(steeringTilt, steeringDeadZone, 0.6);
-            let processedThrottle = applySmoothDeadZone(throttleTilt, throttleDeadZone, 0.8);
+            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
+            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            // Apply client-side smoothing if enabled
-            if (smoothingEnabled) {
-                const smoothed = clientSmoother.addSample(
-                    processedSteering * 1.1, // Optimized multipliers for racing
-                    processedThrottle * 0.9
-                );
-                
-                velocityX = Math.max(-10, Math.min(10, smoothed.x));
-                velocityY = Math.max(-10, Math.min(10, smoothed.y));
-            } else {
-                // Direct values without smoothing
-                velocityX = Math.max(-10, Math.min(10, processedSteering * 1.1));
-                velocityY = Math.max(-10, Math.min(10, processedThrottle * 0.9));
-            }
-
-            // Update display more frequently for responsive feedback
-            if (updateCounter % 2 === 0) {
-                xElement.textContent = velocityX.toFixed(1);
-                yElement.textContent = velocityY.toFixed(1);
-            }
-
-            // Send updates more frequently for ultra-smooth server-side processing
-            debouncedSendUpdate(velocityX, velocityY);
-        }
-
-        // Ultra-fast debounced send for maximum smoothness
-        function debouncedSendUpdate(x, y) {
-            clearTimeout(sendTimeout);
-            sendTimeout = setTimeout(() => {
-                sendUpdate(x, y);
-            }, 25); // Even faster - 40 FPS updates to server
-        }
-
-        // Memory-optimized server communication
-        let requestInProgress = false;
-        
-        async function sendUpdate(x, y) {
-            if (requestInProgress) return;
-            
-            try {
-                requestInProgress = true;
-                
-                const response = await fetch('/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token, x, y })
-                });
-
-                if (!response.ok) {
-                    updateStatus('Проблем с връзката...', 'error');
-                }
-            } catch (error) {
-                updateStatus('Връзката е загубена...', 'error');
-            } finally {
-                requestInProgress = false;
-            }
-        }
-
-        // Initialize app
-        window.addEventListener('load', hideAddressBar);
-        window.addEventListener('resize', hideAddressBar);
-        document.addEventListener('touchstart', hideAddressBar, { passive: true });
-        
-        // Debug logging for development
-        setInterval(() => {
-            if (connected && smoothingEnabled) {
-                const debugInfo = clientSmoother.getDebugInfo();
-                console.log(`🎮 Smoothing Debug: Samples=${debugInfo.samples}, Vel=(${debugInfo.velocity.x},${debugInfo.velocity.y}), Pos=(${debugInfo.smoothed.x},${debugInfo.smoothed.y})`);
-            }
-        }, 5000);
-    </script>
-</body>
-</html>
+            // Process through spaceship motion processor
+            const processed = spaceshipProcessor.addSample(
+                processedSteering *
