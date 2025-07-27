@@ -23,9 +23,6 @@
         /* MOBILE PERFORMANCE OPTIMIZATIONS */
         body {
             font-family: 'Orbitron', monospace;
-            background: 
-                url('wallpaper.png') center/cover no-repeat,
-                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
             color: #e0e0ff;
             height: 100vh;
             height: 100dvh; /* Dynamic viewport height for mobile */
@@ -36,6 +33,24 @@
             right: 0;
             bottom: 0;
             /* Hardware acceleration */
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        /* FULLSCREEN WALLPAPER BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('wallpaper.png') center/cover no-repeat,
+                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+            z-index: -1;
+            /* Hardware acceleration for smooth rendering */
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
@@ -112,14 +127,16 @@
 
         .sub-instructions {
             margin-left: 40px;
-            margin-top: 12px;
+            margin-top: 8px;
+            margin-bottom: 8px;
         }
 
         .sub-instruction {
-            margin: 6px 0;
+            margin: 4px 0;
             font-size: 13px;
             color: #e0e0ff;
             line-height: 1.4;
+            text-align: left;
         }
 
         .portrait-reminder {
@@ -478,6 +495,9 @@
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
 
+    <!-- Exit fullscreen button -->
+    <button class="exit-fullscreen-btn" id="exitFullscreenBtn">✕ Изход</button>
+
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
             <h1>КОСМИЧЕСКА МИСИЯ Ω</h1>
@@ -486,7 +506,7 @@
             <div class="instructions">
                 <div class="instruction">
                     <div class="instruction-number">1</div>
-                    <div>Смартфона трябва да се държи хоризонтално в <u>заключен</u> портретен режим</div>
+                    <div>Смартфонът ви трябва да се държи хоризонтално в <u>заключен</u> портретен режим</div>
                 </div>
                 <div class="instruction">
                     <div class="instruction-number">2</div>
@@ -503,7 +523,7 @@
                 
                 <div class="sub-instructions">
                     <div class="sub-instruction">• Натиснете бутона "СВЪРЖИ СЕ"</div>
-                    <div class="sub-instruction">• Позволете на смартфона да се калибрира</div>
+                    <div class="sub-instruction">• Позволете на смартфонът да се калибрира</div>
                     <div class="sub-instruction">• Въведете генерирания код в PictoBlox</div>
                     <div class="sub-instruction">• Използвайте смартфона като волан с накланяне за да управлявате космическия кораб</div>
                     <div class="sub-instruction">• Можете да рекалибрирате смартфона с бутон в дясно</div>
@@ -641,7 +661,135 @@
         const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
         const calibrationText = document.getElementById('calibrationText');
 
-        // PERFORMANCE MONITORING AND ERROR HANDLING
+        // FULLSCREEN MANAGEMENT FOR CLEAN UI
+        class FullscreenManager {
+            constructor() {
+                this.isFullscreen = false;
+                this.hideTimeout = null;
+                this.setupFullscreenAPI();
+            }
+
+            setupFullscreenAPI() {
+                // Listen for fullscreen changes
+                document.addEventListener('fullscreenchange', () => {
+                    this.isFullscreen = !!document.fullscreenElement;
+                });
+
+                document.addEventListener('webkitfullscreenchange', () => {
+                    this.isFullscreen = !!document.webkitFullscreenElement;
+                });
+            }
+
+            async enterFullscreen() {
+                try {
+                    const element = document.documentElement;
+                    
+                    if (element.requestFullscreen) {
+                        await element.requestFullscreen();
+                    } else if (element.webkitRequestFullscreen) {
+                        await element.webkitRequestFullscreen();
+                    } else if (element.mozRequestFullScreen) {
+                        await element.mozRequestFullScreen();
+                    } else if (element.msRequestFullscreen) {
+                        await element.msRequestFullscreen();
+                    }
+                    
+                    // Add fullscreen class for additional styling
+                    document.body.classList.add('fullscreen-mode');
+                    this.setupAutoHide();
+                    
+                    console.log('🖥️ Entered fullscreen mode');
+                    return true;
+                    
+                } catch (error) {
+                    console.warn('Fullscreen not supported or denied:', error);
+                    // Fallback to manual address bar hiding
+                    this.fallbackFullscreen();
+                    return false;
+                }
+            }
+
+            fallbackFullscreen() {
+                // Enhanced address bar hiding for browsers that don't support fullscreen
+                document.body.classList.add('fullscreen-mode');
+                this.forceHideAddressBar();
+                this.setupAutoHide();
+                
+                // Prevent scrolling to keep address bar hidden
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+                document.body.style.height = '100%';
+            }
+
+            forceHideAddressBar() {
+                // Multiple attempts to hide address bar
+                const hideSequence = () => {
+                    window.scrollTo(0, 1);
+                    setTimeout(() => window.scrollTo(0, 0), 100);
+                    setTimeout(() => window.scrollTo(0, 1), 200);
+                };
+                
+                hideSequence();
+                setTimeout(hideSequence, 500);
+                setTimeout(hideSequence, 1000);
+            }
+
+            setupAutoHide() {
+                // Hide controls after 3 seconds of no interaction
+                this.resetHideTimer();
+                
+                // Listen for user interactions
+                ['touchstart', 'touchmove', 'touchend', 'click', 'mousemove'].forEach(event => {
+                    document.addEventListener(event, () => {
+                        this.showControls();
+                        this.resetHideTimer();
+                    }, { passive: true });
+                });
+            }
+
+            showControls() {
+                document.body.classList.remove('hide-controls');
+            }
+
+            hideControls() {
+                document.body.classList.add('hide-controls');
+            }
+
+            resetHideTimer() {
+                clearTimeout(this.hideTimeout);
+                this.showControls();
+                
+                this.hideTimeout = setTimeout(() => {
+                    this.hideControls();
+                }, 3000); // Hide after 3 seconds
+            }
+
+            exitFullscreen() {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                document.body.classList.remove('fullscreen-mode', 'hide-controls');
+                
+                // Restore normal scrolling
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                document.body.style.height = '';
+                
+                clearTimeout(this.hideTimeout);
+            }
+        }
+
+        // Initialize fullscreen manager
+        const fullscreenManager = new FullscreenManager();
         class PerformanceMonitor {
             constructor() {
                 this.startTime = performance.now();
@@ -761,6 +909,12 @@
             if (button === startButton) {
                 setupScreen.style.display = 'none';
                 gameScreen.classList.add('active');
+                
+                // Enter fullscreen mode for clean UI
+                setTimeout(() => {
+                    fullscreenManager.enterFullscreen();
+                }, 100);
+                
                 hideAddressBar();
             } else if (button === connectButton) {
                 handleConnect();
