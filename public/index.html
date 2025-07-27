@@ -872,6 +872,7 @@
 
         // Initialize fullscreen manager
         const fullscreenManager = new FullscreenManager();
+        
         class PerformanceMonitor {
             constructor() {
                 this.startTime = performance.now();
@@ -972,13 +973,13 @@
                     setupScreen.style.display = 'flex';
                     gameScreen.classList.remove('active');
                     document.body.classList.remove('fullscreen-mode', 'hide-controls');
-                    fullscreenManager.stopControllerMonitoring();
                 }
             };
         }
 
         // Initialize performance monitoring
         const perfMonitor = new PerformanceMonitor();
+        
         function initializeMobileEvents() {
             // Unified touch/click handling to prevent 300ms delay
             const buttons = [startButton, connectButton, recalibrateButton];
@@ -1003,13 +1004,40 @@
             });
         }
 
+        // FIXED: Add the missing startButton handler
         function handleButtonPress(button) {
-            // Only handle connect and recalibrate buttons now
-            // Start button has its own simple handlers
-            if (button === connectButton) {
+            if (button === startButton) {
+                handleStartMission();
+            } else if (button === connectButton) {
                 handleConnect();
             } else if (button === recalibrateButton) {
                 startCalibration();
+            }
+        }
+
+        // FIXED: Add the missing start mission function
+        function handleStartMission() {
+            try {
+                console.log('🚀 Starting mission...');
+                
+                // Hide setup screen
+                setupScreen.style.display = 'none';
+                
+                // Show game screen
+                gameScreen.style.display = 'grid';
+                gameScreen.classList.add('active');
+                
+                // Enter fullscreen mode
+                fullscreenManager.enterFullscreen();
+                
+                // Hide address bar
+                hideAddressBar();
+                
+                console.log('✅ Mission started successfully');
+                
+            } catch (error) {
+                console.error('❌ Mission start failed:', error);
+                alert('Failed to start mission: ' + error.message);
             }
         }
 
@@ -1052,9 +1080,6 @@
                 connected = true;
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
-                
-                // Start controller monitoring for fullscreen after connection
-                fullscreenManager.startControllerMonitoring();
                 
                 startCalibration();
 
@@ -1156,10 +1181,6 @@
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
-
-        connectButton.onclick = async () => {
-            // This will be handled by the new mobile event system
-        };
 
         // Spaceship motion handling
         let lastMotionTime = 0;
