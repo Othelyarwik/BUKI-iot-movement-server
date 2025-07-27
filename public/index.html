@@ -41,7 +41,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 url('wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
             z-index: -1;
@@ -179,7 +179,7 @@
             height: 100vw;
             left: calc((100vw - 100vh) / 2);
             top: calc((100vh - 100vw) / 2);
-            background: 
+            background:
                 url('flipped wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
         }
@@ -375,22 +375,22 @@
                 font-size: 28px;
                 margin-bottom: 12px;
             }
-            
+
             .main-content h2 {
                 font-size: 14px;
                 margin-bottom: 24px;
             }
-            
+
             .instructions {
                 padding: 20px;
                 max-width: 360px;
             }
-            
+
             .instruction {
                 font-size: 13px;
                 margin: 12px 0;
             }
-            
+
             .start-button {
                 padding: 14px 28px;
                 font-size: 16px;
@@ -402,16 +402,16 @@
             .setup-screen {
                 padding: 15px;
             }
-            
+
             .main-content h1 {
                 font-size: 24px;
                 margin-bottom: 8px;
             }
-            
+
             .instructions {
                 padding: 16px;
             }
-            
+
             .instruction {
                 margin: 10px 0;
             }
@@ -431,19 +431,22 @@
                     <div class="instruction-number">1</div>
                     <div>Смартфонът трябва да се държи хоризонтално в <u>заключен портретен режим</u></div>
                 </div>
+
                 <div class="instruction">
                     <div class="instruction-number">2</div>
                     <div>Лявата ръка държи страната с камерата</div>
                 </div>
+
                 <div class="instruction">
                     <div class="instruction-number">3</div>
                     <div>Дясната ръка държи страната със зарядното</div>
                 </div>
+
                 <div class="instruction">
                     <div class="instruction-number">4</div>
                     <div>След натискане на "СТАРТИРАЙ МИСИЯТА":</div>
                 </div>
-                
+
                 <div class="sub-instructions">
                     <div class="sub-instruction">• Натисни бутона "СВЪРЖИ СЕ"</div>
                     <div class="sub-instruction">• Позволи на смартфонът да се калибрира</div>
@@ -459,7 +462,7 @@
 
     <div class="game-screen" id="gameScreen">
         <div class="status-indicator" id="statusIndicator">Некалибриран</div>
-        
+
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
         </div>
@@ -496,11 +499,11 @@
     </div>
 
     <script>
-        // Simple Motion Processor for Spaceship Navigation
+        // FIXED: Simplified Motion Processor - Less smoothing for more responsiveness
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
-                this.maxSamples = 5;
+                this.maxSamples = 2; // REDUCED from 5 to 2 - much more responsive
                 this.smoothedX = 0;
                 this.smoothedY = 0;
                 this.lastTime = Date.now();
@@ -512,6 +515,7 @@
                 this.lastTime = now;
 
                 this.samples.push({ x: rawX, y: rawY });
+
                 if (this.samples.length > this.maxSamples) {
                     this.samples.shift();
                 }
@@ -557,7 +561,6 @@
         function enterFullscreen() {
             try {
                 const element = document.documentElement;
-                
                 if (element.requestFullscreen) {
                     element.requestFullscreen();
                 } else if (element.webkitRequestFullscreen) {
@@ -567,9 +570,7 @@
                 } else if (element.msRequestFullscreen) {
                     element.msRequestFullscreen();
                 }
-                
                 console.log('🖥️ Entered fullscreen mode');
-                
             } catch (error) {
                 console.warn('Fullscreen not supported:', error);
             }
@@ -618,7 +619,6 @@
                 connected = true;
                 connectButton.textContent = '✅ Свързан';
                 connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
-                
                 updateStatus('', 'success');
                 startCalibration();
 
@@ -635,24 +635,23 @@
             // Update the central status indicator with text
             const messages = {
                 'success': 'Готов',
-                'error': 'Грешка', 
+                'error': 'Грешка',
                 'info': 'Некалибриран',
                 'calibrating': 'Калибриране'
             };
-            
+
             statusIndicator.textContent = messages[type] || 'Некалибриран';
             statusIndicator.className = `status-indicator ${type}`;
-            
             connectionIndicator.classList.toggle('connected', type === 'success');
         }
 
         function startCalibration() {
             isCalibrating = true;
             calibrationSamples = [];
-            
+
             // Update central status indicator
             updateStatus('', 'calibrating');
-            
+
             // Update status area
             statusText.textContent = 'Калибриране...';
             calibrationProgress.style.display = 'block';
@@ -662,7 +661,7 @@
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
 
-        // Motion handling
+        // FIXED: Motion handling - Much more responsive
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
@@ -675,23 +674,25 @@
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
+            
             const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;
+            const rawY = parseFloat(accel.y) || 0;  
             const rawZ = parseFloat(accel.z) || 0;
-
+            
             updateCounter++;
 
             let rawSteering = rawY;
             let rawThrottle = rawZ;
 
+            // FIXED: Reduced calibration samples from 120 to 60
             if (isCalibrating) {
-                if (calibrationSamples.length < 120) {
+                if (calibrationSamples.length < 60) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                     
-                    const progress = (calibrationSamples.length / 120) * 100;
+                    const progress = (calibrationSamples.length / 60) * 100;
                     calibrationFill.style.width = progress + '%';
                     
-                    if (calibrationSamples.length === 120) {
+                    if (calibrationSamples.length === 60) {
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
                         
@@ -703,13 +704,14 @@
                         
                         calibrationSamples = null;
                         isCalibrating = false;
-                        
+
                         // Hide progress bar and show button again
                         statusText.textContent = 'Калибриран';
                         calibrationProgress.style.display = 'none';
                         recalibrateButton.style.display = 'block';
-                        
                         updateStatus('', 'success');
+                        
+                        console.log(`🎯 Calibration complete: X=${restPositionX.toFixed(2)}, Y=${restPositionY.toFixed(2)}`);
                     }
                 }
                 return;
@@ -720,21 +722,23 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            const steeringDeadZone = 1.5;
-            const throttleDeadZone = 2.0;
-
+            // FIXED: Much smaller dead zones for more responsiveness
+            const steeringDeadZone = 0.5; // REDUCED from 1.5 to 0.5
+            const throttleDeadZone = 0.8; // REDUCED from 2.0 to 0.8
+            
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
+            // FIXED: More sensitive multipliers
             const processed = spaceshipProcessor.addSample(
-                processedSteering * 1.5,
-                processedThrottle * 1.0
+                processedSteering * 2.0, // INCREASED from 1.5 to 2.0
+                processedThrottle * 1.5   // INCREASED from 1.0 to 1.5
             );
 
-            velocityX = Math.max(-6, Math.min(6, processed.x));
-            velocityY = Math.max(-6, Math.min(6, processed.y));
+            velocityX = Math.max(-8, Math.min(8, processed.x)); // INCREASED range from -6,6 to -8,8
+            velocityY = Math.max(-8, Math.min(8, processed.y)); // INCREASED range from -6,6 to -8,8
 
-            if (updateCounter % 3 === 0) {
+            if (updateCounter % 2 === 0) { // More frequent updates - was % 3, now % 2
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
             }
@@ -746,14 +750,14 @@
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
-            }, 50);
+            }, 40); // FASTER updates - was 50ms, now 40ms
         }
 
         let requestInProgress = false;
-        
+
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
-            
+
             try {
                 requestInProgress = true;
                 
@@ -776,7 +780,7 @@
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Spaceship Controller initialized');
-            
+
             // SIMPLE START BUTTON - No complex event handling
             startButton.onclick = () => {
                 console.log('🚀 Starting mission...');
@@ -791,7 +795,7 @@
             // Simple button handlers
             connectButton.onclick = handleConnect;
             recalibrateButton.onclick = startCalibration;
-            
+
             hideAddressBar();
         });
 
