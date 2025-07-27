@@ -438,7 +438,7 @@
             <div class="instructions">
                 <div class="instruction">
                     <div class="instruction-number">1</div>
-                    <div>Смартфонът ви трябва да се държи хоризонтално в <u>заключен</u> портретен режим</div>
+                    <div>Смартфонът трябва да се държи хоризонтално в <u>заключен портретен режим</u></div>
                 </div>
                 <div class="instruction">
                     <div class="instruction-number">2</div>
@@ -454,11 +454,11 @@
                 </div>
                 
                 <div class="sub-instructions">
-                    <div class="sub-instruction">• Натиснете бутона "СВЪРЖИ СЕ"</div>
-                    <div class="sub-instruction">• Позволете на смартфонът да се калибрира</div>
-                    <div class="sub-instruction">• Въведете генерирания код в PictoBlox</div>
-                    <div class="sub-instruction">• Използвайте смартфона като волан с накланяне за да управлявате космическия кораб</div>
-                    <div class="sub-instruction">• Можете да рекалибрирате смартфона с бутон в дясно</div>
+                    <div class="sub-instruction">• Натисни бутона "СВЪРЖИ СЕ"</div>
+                    <div class="sub-instruction">• Позволи на смартфонът да се калибрира</div>
+                    <div class="sub-instruction">• Въведи генерирания код в PictoBlox играта</div>
+                    <div class="sub-instruction">• Използвай смартфона като волан с накланяне за да управляваш космическия кораб</div>
+                    <div class="sub-instruction">• Можеш да рекалибрираш смартфона с бутон в дясно</div>
                 </div>
             </div>
         </div>
@@ -669,19 +669,12 @@
         function startCalibration() {
             isCalibrating = true;
             calibrationSamples = [];
-            calibrationOverlay.classList.add('show');
-            calibrationFillOverlay.style.width = '0%';
-            calibrationText.textContent = 'Калибриране... 0/120';
-
+            
+            // NO MORE FULL SCREEN OVERLAY - just update the status area
             statusText.textContent = 'Калибриране...';
             calibrationProgress.style.display = 'block';
             recalibrateButton.style.display = 'none';
             calibrationFill.style.width = '0%';
-
-            const calibrationTokenElement = document.getElementById('calibrationToken');
-            if (calibrationTokenElement && token) {
-                calibrationTokenElement.textContent = token;
-            }
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
@@ -714,8 +707,6 @@
                     
                     const progress = (calibrationSamples.length / 120) * 100;
                     calibrationFill.style.width = progress + '%';
-                    calibrationFillOverlay.style.width = progress + '%';
-                    calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/120`;
                     
                     if (calibrationSamples.length === 120) {
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
@@ -729,8 +720,8 @@
                         
                         calibrationSamples = null;
                         isCalibrating = false;
-                        calibrationOverlay.classList.remove('show');
                         
+                        // Hide progress bar and show button again
                         statusText.textContent = 'Калибриран';
                         calibrationProgress.style.display = 'none';
                         recalibrateButton.style.display = 'block';
