@@ -357,45 +357,6 @@
             background: #44ff44;
         }
 
-        .calibration-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 10, 31, 0.95);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            text-align: center;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .calibration-overlay.show {
-            display: flex;
-        }
-
-        .calibration-content {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 90%;
-            backdrop-filter: blur(15px);
-        }
-
-        .calibration-token {
-            background: rgba(0, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            text-align: center;
-        }
-
         /* RESPONSIVE DESIGN */
         @media screen and (max-width: 480px) {
             .main-content h1 {
@@ -485,7 +446,7 @@
     </div>
 
     <div class="game-screen" id="gameScreen">
-        <div class="status-indicator" id="statusIndicator">🔌</div>
+        <div class="status-indicator" id="statusIndicator">Некалибриран</div>
         
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
@@ -519,28 +480,6 @@
                 </div>
                 <button class="recalibrate-button" id="recalibrateButton" style="display: none;">Калибрирай</button>
             </div>
-        </div>
-    </div>
-
-    <div class="calibration-overlay" id="calibrationOverlay">
-        <div class="calibration-content">
-            <h2>🎯 Калибриране на сензорите</h2>
-            <p>Дръжте космическия кораб стабилно в навигационна позиция</p>
-
-            <div class="calibration-token">
-                <div class="token-label">Код за PictoBlox</div>
-                <div class="token-value" id="calibrationToken">--------</div>
-            </div>
-
-            <div class="calibration-progress">
-                <div class="calibration-fill" id="calibrationFillOverlay"></div>
-            </div>
-
-            <div id="calibrationText">Калибриране... 0/120</div>
-
-            <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
-                💡 Можете да въведете кода в PictoBlox докато калибрирате
-            </p>
         </div>
     </div>
 
@@ -590,7 +529,6 @@
         const setupScreen = document.getElementById('setupScreen');
         const gameScreen = document.getElementById('gameScreen');
         const startButton = document.getElementById('startButton');
-        const calibrationOverlay = document.getElementById('calibrationOverlay');
         const connectButton = document.getElementById('connectButton');
         const tokenElement = document.getElementById('token');
         const xElement = document.getElementById('x');
@@ -601,8 +539,6 @@
         const calibrationFill = document.getElementById('calibrationFill');
         const recalibrateButton = document.getElementById('recalibrateButton');
         const connectionIndicator = document.getElementById('connectionIndicator');
-        const calibrationFillOverlay = document.getElementById('calibrationFillOverlay');
-        const calibrationText = document.getElementById('calibrationText');
         const statusIndicator = document.getElementById('statusIndicator');
 
         // Simple fullscreen function
@@ -684,15 +620,15 @@
         }
 
         function updateStatus(message, type = 'info') {
-            // Update the central status indicator with icons
-            const icons = {
-                'success': '✅',
-                'error': '❌', 
-                'info': '🔌',
-                'calibrating': '🎯'
+            // Update the central status indicator with text
+            const messages = {
+                'success': 'Готов',
+                'error': 'Грешка', 
+                'info': 'Некалибриран',
+                'calibrating': 'Калибриране'
             };
             
-            statusIndicator.textContent = icons[type] || '🔌';
+            statusIndicator.textContent = messages[type] || 'Некалибриран';
             statusIndicator.className = `status-indicator ${type}`;
             
             connectionIndicator.classList.toggle('connected', type === 'success');
