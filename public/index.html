@@ -239,8 +239,6 @@
         }
 
         .connect-button, .recalibrate-button {
-            background: linear-gradient(135deg, #00ff88, #0088ff);
-            color: #001122;
             border: none;
             border-radius: 12px;
             padding: 15px 25px;
@@ -257,6 +255,12 @@
             white-space: nowrap;
             overflow: hidden;
             margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .connect-button {
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            color: #001122;
         }
 
         .connect-button:disabled {
@@ -264,9 +268,27 @@
             cursor: not-allowed;
         }
 
+        .connect-button.connected {
+            background: linear-gradient(135deg, #0088ff, #0066cc);
+            color: white;
+        }
+
         .recalibrate-button {
+            background: rgba(255, 136, 0, 0.2);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+        }
+
+        .recalibrate-button.calibrating {
+            background: linear-gradient(135deg, #ffaa00, #ff8800);
+            color: #001122;
+            cursor: not-allowed;
+        }
+
+        .recalibrate-button.ready {
             background: linear-gradient(135deg, #ff8800, #ff4400);
             color: white;
+            cursor: pointer;
         }
 
         .token-display, .values-display {
@@ -499,13 +521,7 @@
         </div>
 
         <div class="right-controls">
-            <div class="status-area" id="statusArea">
-                <div class="status-text" id="statusText">Некалибриран</div>
-                <div class="calibration-progress" id="calibrationProgress" style="display: none;">
-                    <div class="calibration-fill" id="calibrationFill"></div>
-                </div>
-                <button class="recalibrate-button" id="recalibrateButton" style="display: none;">Рекалибрирай</button>
-            </div>
+            <button class="recalibrate-button" id="recalibrateButton">Рекалибрирай</button>
         </div>
     </div>
 
@@ -597,10 +613,12 @@
             }, 100);
         }
 
-        // Connect button handler
+        // Connect button handler with new code functionality
         async function handleConnect() {
+            const isReconnect = connected && token;
+            
             connectButton.disabled = true;
-            connectButton.textContent = 'Свързване...';
+            connectButton.textContent = isReconnect ? 'Генериране...' : 'Свързване...';
 
             try {
                 const response = await fetch('/start', {
@@ -616,30 +634,44 @@
                 token = data.token;
                 tokenElement.textContent = token;
 
-                if (typeof DeviceMotionEvent !== 'undefined') {
-                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                        const permission = await DeviceMotionEvent.requestPermission();
-                        if (permission !== 'granted') {
-                            throw new Error('Motion sensor permission denied');
+                if (!connected) {
+                    // First time connection - request motion permission
+                    if (typeof DeviceMotionEvent !== 'undefined') {
+                        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                            const permission = await DeviceMotionEvent.requestPermission();
+                            if (permission !== 'granted') {
+                                throw new Error('Motion sensor permission denied');
+                            }
                         }
+                        window.addEventListener('devicemotion', handleMotion, { passive: true });
+                    } else {
+                        throw new Error('Device motion not supported');
                     }
-                    window.addEventListener('devicemotion', handleMotion, { passive: true });
-                } else {
-                    throw new Error('Device motion not supported');
+
+                    connected = true;
+                    startCalibration();
                 }
 
-                connected = true;
-                connectButton.textContent = '✅ Свързан';
-                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
-
-                updateStatus('', 'success');
-                startCalibration();
+                // Update button states
+                connectButton.disabled = false;
+                connectButton.textContent = '🔄 Нов код';
+                connectButton.classList.add('connected');
+                
+                if (isReconnect) {
+                    updateStatus('', 'success');
+                    console.log('🔄 New token generated:', token);
+                } else {
+                    console.log('🚀 First connection established:', token);
+                }
 
             } catch (error) {
                 connectButton.disabled = false;
-                connectButton.textContent = '🔗 Свържи се';
-                tokenElement.textContent = 'Грешка при свързване';
-                updateStatus('', 'error');
+                connectButton.textContent = connected ? '🔄 Нов код' : '🔗 Свържи се';
+                if (!connected) {
+                    connectButton.classList.remove('connected');
+                    tokenElement.textContent = 'Грешка при свързване';
+                    updateStatus('', 'error');
+                }
                 alert(`Грешка при свързване: ${error.message}`);
             }
         }
@@ -665,11 +697,11 @@
             // Update central status indicator
             updateStatus('', 'calibrating');
 
-            // Update status area
-            statusText.textContent = 'Калибриране...';
-            calibrationProgress.style.display = 'block';
-            recalibrateButton.style.display = 'none';
-            calibrationFill.style.width = '0%';
+            // Update button states
+            recalibrateButton.textContent = 'Калибриране...';
+            recalibrateButton.classList.remove('ready');
+            recalibrateButton.classList.add('calibrating');
+            recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
         }
@@ -716,10 +748,11 @@
                         calibrationSamples = null;
                         isCalibrating = false;
 
-                        // Hide progress bar and show button again
-                        statusText.textContent = 'Калибриран';
-                        calibrationProgress.style.display = 'none';
-                        recalibrateButton.style.display = 'block';
+                        // Update button states after calibration
+                        recalibrateButton.textContent = 'Рекалибрирай';
+                        recalibrateButton.classList.remove('calibrating');
+                        recalibrateButton.classList.add('ready');
+                        recalibrateButton.disabled = false;
 
                         updateStatus('', 'success');
                         console.log('🎯 Spaceship calibration complete');
@@ -813,7 +846,11 @@
 
             // Simple button handlers
             connectButton.onclick = handleConnect;
-            recalibrateButton.onclick = startCalibration;
+            recalibrateButton.onclick = () => {
+                if (!recalibrateButton.disabled && recalibrateButton.classList.contains('ready')) {
+                    startCalibration();
+                }
+            };
 
             hideAddressBar();
         });
