@@ -140,6 +140,7 @@ app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
         if (!session || Date.now() - session.ts > 60000) {
+            console.log(`❌ Token ${req.params.token}: expired or not found`);
             return res.status(200).end('X05Y05'); // Center position
         }
 
@@ -148,6 +149,7 @@ app.get('/simple/:token', (req, res) => {
         let validY = session.y;
 
         if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+            console.log(`⚠️ Extreme values X:${validX} Y:${validY}, centering`);
             validX = 0;
             validY = 0;
         }
@@ -166,6 +168,8 @@ app.get('/simple/:token', (req, res) => {
 
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
         
+        // Debug logging - show what PictoBlox is getting
+        console.log(`📤 ${req.params.token}: ${result} (raw: x=${validX.toFixed(1)}, y=${validY.toFixed(1)}) age: ${Date.now() - session.ts}ms`);
         res.status(200).end(result);
     } catch (error) {
         console.error('❌ Error in simple endpoint:', error);
