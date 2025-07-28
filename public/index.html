@@ -704,6 +704,7 @@
             recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
+            console.log('🎯 Starting calibration - need 120 samples');
         }
 
         // Motion handling with velocity-based smoothing
@@ -732,8 +733,11 @@
                 if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
 
-                    const progress = (calibrationSamples.length / 120) * 100;
-                    calibrationFill.style.width = progress + '%';
+                    // Update progress on button text
+                    const progress = Math.floor((calibrationSamples.length / 120) * 100);
+                    recalibrateButton.textContent = `Калибриране ${progress}%`;
+
+                    console.log(`📊 Calibration progress: ${calibrationSamples.length}/120 (${progress}%)`);
 
                     if (calibrationSamples.length === 120) {
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
@@ -755,7 +759,7 @@
                         recalibrateButton.disabled = false;
 
                         updateStatus('', 'success');
-                        console.log('🎯 Spaceship calibration complete');
+                        console.log('🎯 Spaceship calibration complete - ready for motion control!');
                     }
                 }
                 return;
