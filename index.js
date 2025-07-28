@@ -40,8 +40,8 @@ app.get('/', (req, res) => {
 // Create session and generate token
 app.post('/start', (req, res) => {
     try {
-        // Generate clear 8-character token (no confusing characters)
-        const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
+        // Generate 8-digit numeric token (easy numpad entry)
+        const clearChars = '23456789';
         let token = '';
         for (let i = 0; i < 8; i++) {
             token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
