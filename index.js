@@ -2,105 +2,191 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// CORS for PictoBlox compatibility
+// Enhanced CORS for PictoBlox compatibility with better error handling
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+    credentials: false
 }));
 
-// Additional headers for maximum speed
+// Additional headers for PictoBlox with cache prevention
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.header('Connection', 'keep-alive'); // Keep connections alive
-    res.header('Keep-Alive', 'timeout=5, max=1000'); // Optimize connection reuse
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.header('Cache-Control', 'no-cache, no-store, must-revalidate, proxy-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+    res.header('Surrogate-Control', 'no-store');
     next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static('public'));
 
-// Session storage with simple smoothing
+// Enhanced session storage with memory management
 const sessions = {};
+const MAX_SESSIONS = 100; // Prevent memory overflow
+const SESSION_TIMEOUT = 180000; // 3 minutes instead of 2
+const CLEANUP_INTERVAL = 60000; // Clean every minute
 
-// Clean expired sessions every 2 minutes
-setInterval(() => {
+// Enhanced session cleanup with memory protection
+const cleanupSessions = () => {
     const now = Date.now();
-    Object.keys(sessions).forEach(token => {
-        if (now - sessions[token].ts > 120000) {
+    const sessionKeys = Object.keys(sessions);
+    let cleanedCount = 0;
+    
+    // Clean expired sessions
+    sessionKeys.forEach(token => {
+        if (now - sessions[token].ts > SESSION_TIMEOUT) {
             delete sessions[token];
+            cleanedCount++;
         }
     });
-}, 120000);
+    
+    // Emergency cleanup if too many sessions
+    if (sessionKeys.length - cleanedCount > MAX_SESSIONS) {
+        const sortedSessions = sessionKeys
+            .filter(token => sessions[token])
+            .sort((a, b) => sessions[a].ts - sessions[b].ts);
+        
+        const toRemove = sortedSessions.slice(0, sortedSessions.length - MAX_SESSIONS);
+        toRemove.forEach(token => {
+            delete sessions[token];
+            cleanedCount++;
+        });
+    }
+    
+    if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned ${cleanedCount} expired sessions. Active: ${Object.keys(sessions).length}`);
+    }
+};
+
+// Start cleanup interval
+setInterval(cleanupSessions, CLEANUP_INTERVAL);
 
 // Serve phone interface
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
-
-// Create session and generate token
-app.post('/start', (req, res) => {
     try {
-        // Generate clear 8-character token (no confusing characters)
-        const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
-        let token = '';
-        for (let i = 0; i < 8; i++) {
-            token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
-        }
-
-        // Create session with smoothing history
-        sessions[token] = {
-            x: 0,
-            y: 0,
-            ts: Date.now(),
-            history: [] // Simple smoothing history
-        };
-
-        res.json({ token, success: true });
+        res.sendFile(__dirname + '/public/index.html');
     } catch (error) {
-        res.status(500).json({ error: 'Failed to create session' });
+        console.error('❌ Error serving index.html:', error);
+        res.status(500).send('Server Error');
     }
 });
 
-// Update motion data with simple smoothing
+// Enhanced session creation with collision detection
+app.post('/start', (req, res) => {
+    try {
+        // Clean up first to ensure we have space
+        cleanupSessions();
+        
+        // Check if we're at capacity
+        if (Object.keys(sessions).length >= MAX_SESSIONS) {
+            return res.status(503).json({ 
+                error: 'Server at capacity. Please try again in a moment.',
+                success: false 
+            });
+        }
+
+        // Generate unique token with better collision detection
+        const clearChars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
+        let token = '';
+        let attempts = 0;
+        const MAX_ATTEMPTS = 50;
+        
+        do {
+            token = '';
+            for (let i = 0; i < 8; i++) {
+                token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
+            }
+            attempts++;
+        } while (sessions[token] && attempts < MAX_ATTEMPTS);
+        
+        if (attempts >= MAX_ATTEMPTS) {
+            return res.status(500).json({ 
+                error: 'Unable to generate unique token. Please try again.',
+                success: false 
+            });
+        }
+
+        // Create session with enhanced data structure
+        sessions[token] = { 
+            x: 0, 
+            y: 0, 
+            ts: Date.now(),
+            created: Date.now(),
+            requestCount: 0,
+            lastUpdate: Date.now()
+        };
+
+        console.log(`🎮 New session created: ${token} (Total active: ${Object.keys(sessions).length})`);
+        res.json({ token, success: true });
+        
+    } catch (error) {
+        console.error('❌ Error creating session:', error);
+        res.status(500).json({ 
+            error: 'Failed to create session', 
+            success: false 
+        });
+    }
+});
+
+// Enhanced motion data update with validation
 app.post('/update', (req, res) => {
     try {
         const { token, x, y } = req.body;
 
-        if (!token || !sessions[token]) {
-            return res.status(400).json({ error: 'Invalid token' });
+        // Enhanced validation
+        if (!token || typeof token !== 'string' || token.length !== 8) {
+            return res.status(400).json({ error: 'Invalid token format' });
         }
 
+        if (!sessions[token]) {
+            return res.status(404).json({ error: 'Session not found or expired' });
+        }
+
+        // Validate numeric inputs with proper bounds checking
+        const numX = parseFloat(x);
+        const numY = parseFloat(y);
+        
+        if (isNaN(numX) || isNaN(numY)) {
+            return res.status(400).json({ error: 'Invalid motion data' });
+        }
+        
+        // Clamp values to reasonable ranges to prevent overflow
+        const clampedX = Math.max(-15, Math.min(15, numX));
+        const clampedY = Math.max(-15, Math.min(15, numY));
+
+        // Update session with rate limiting protection
         const session = sessions[token];
-        const newX = parseFloat(x) || 0;
-        const newY = parseFloat(y) || 0;
-
-        // Simple smoothing: average with previous values
-        session.history.push({ x: newX, y: newY });
-        if (session.history.length > 3) {
-            session.history.shift(); // Keep only last 3 samples
+        const now = Date.now();
+        
+        // Rate limiting: max 50 updates per second per session
+        if (now - session.lastUpdate < 20) {
+            return res.json({ ok: true, throttled: true });
         }
 
-        // Calculate smooth average
-        const avgX = session.history.reduce((sum, sample) => sum + sample.x, 0) / session.history.length;
-        const avgY = session.history.reduce((sum, sample) => sum + sample.y, 0) / session.history.length;
-
-        // Update session with smoothed values
+        // Update session data
         sessions[token] = {
             ...session,
-            x: avgX,
-            y: avgY,
-            ts: Date.now()
+            x: clampedX,
+            y: clampedY,
+            ts: now,
+            lastUpdate: now,
+            requestCount: (session.requestCount || 0) + 1
         };
 
         res.json({ ok: true });
+        
     } catch (error) {
+        console.error('❌ Error updating session:', error);
         res.status(500).json({ error: 'Update failed' });
     }
 });
 
-// Get X movement for PictoBlox (-4 to +4)
+// Get X movement for PictoBlox (-5 to +5)
 app.get('/x/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
@@ -108,15 +194,14 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // 1/3 more sensitive and faster: -4 to +4
-        const movement = Math.max(-4, Math.min(4, Math.round(session.x * 1.0)));
+        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.8)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
     }
 });
 
-// Get Y movement for PictoBlox (-4 to +4)
+// Get Y movement for PictoBlox (-5 to +5)
 app.get('/y/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
@@ -124,15 +209,14 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // 1/3 more sensitive and faster: -4 to +4
-        const movement = Math.max(-4, Math.min(4, Math.round(session.y * 1.0)));
+        const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.8)));
         res.status(200).end(movement.toString());
     } catch (error) {
         res.status(200).end('0');
     }
 });
 
-// Original simple endpoint for PictoBlox (returns "X05Y05" format) with smoothing
+// Simple endpoint for PictoBlox (returns "X05Y05" format) with improved filtering
 app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
@@ -140,89 +224,113 @@ app.get('/simple/:token', (req, res) => {
             return res.status(200).end('X05Y05'); // Center position
         }
 
-        // Range validation with smoothed values
+        // FIXED: Prevent Y-axis sticking by adding range validation
         let validX = session.x;
         let validY = session.y;
-
+        
+        // Range validation - if values are extreme, reset to center
         if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+            console.log(`⚠️ Extreme values detected X:${validX} Y:${validY}, resetting to center`);
             validX = 0;
             validY = 0;
         }
 
-        // Smoother mapping to 1-9 scale
+        // IMPROVED: Map -8 to +8 velocity to 1-9 scale with better distribution
         const mapToScale = (velocity) => {
-            const clamped = Math.max(-10, Math.min(10, velocity));
-            const normalized = clamped / 10;
-            const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5); // More responsive
-            const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
+            // Clamp to safe range first
+            const clamped = Math.max(-8, Math.min(8, velocity));
+            // Map to 1-9 scale: -8 = 1, 0 = 5, +8 = 9
+            const scaled = Math.round(((clamped + 8) / 16) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
         };
 
         const xScaled = mapToScale(validX);
         const yScaled = mapToScale(validY);
 
+        // Always return exactly 6 characters
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
-
+        
+        console.log(`📤 Sending: ${result} (from x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
         res.status(200).end(result);
+        
     } catch (error) {
         console.error('❌ Error in simple endpoint:', error);
         res.status(200).end('X05Y05');
     }
 });
 
-// NEW: Batching endpoint for ultra-smooth movement
+// NEW: Batch endpoint for PictoBlox batching system
 app.get('/batch/:token/:count', (req, res) => {
     try {
-        const session = sessions[req.params.token];
-        const count = Math.min(parseInt(req.params.count) || 3, 10); // Max 10 positions
-
+        const { token, count } = req.params;
+        const batchSize = parseInt(count) || 5;
+        
+        // Validate session
+        const session = sessions[token];
         if (!session || Date.now() - session.ts > 60000) {
-            // Return center positions for bad token
-            const centerBatch = 'X05Y05,'.repeat(count).slice(0, -1);
+            // Return center positions for all batch items
+            const centerBatch = 'X05Y05'.repeat(batchSize);
+            console.log(`📦 Batch for expired/invalid token: ${centerBatch}`);
             return res.status(200).end(centerBatch);
         }
 
-        // Generate multiple positions with small variations for smooth movement
-        const positions = [];
-        const baseX = session.x;
-        const baseY = session.y;
-
-        for (let i = 0; i < count; i++) {
-            // Add tiny variations for smoother interpolation
-            const variation = (Math.random() - 0.5) * 0.4;
-            const interpolatedX = baseX + variation;
-            const interpolatedY = baseY + variation;
-
-            // Use same mapping as simple endpoint
-            const mapToScale = (velocity) => {
-                const clamped = Math.max(-10, Math.min(10, velocity));
-                const normalized = clamped / 10;
-                const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5);
-                const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
-                return Math.max(1, Math.min(9, scaled));
-            };
-
-            const xScaled = mapToScale(interpolatedX);
-            const yScaled = mapToScale(interpolatedY);
-
-            positions.push(`X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`);
+        // Get current motion data
+        let validX = session.x;
+        let validY = session.y;
+        
+        // Range validation
+        if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+            validX = 0;
+            validY = 0;
         }
 
-        res.status(200).end(positions.join(','));
+        // Map to 1-9 scale for PictoBlox
+        const mapToScale = (velocity) => {
+            const clamped = Math.max(-8, Math.min(8, velocity));
+            const scaled = Math.round(((clamped + 8) / 16) * 8) + 1;
+            return Math.max(1, Math.min(9, scaled));
+        };
+
+        const xScaled = mapToScale(validX);
+        const yScaled = mapToScale(validY);
+
+        // Create batch response - repeat current values for all positions
+        let batchResponse = '';
+        for (let i = 0; i < batchSize; i++) {
+            // Add slight variation to make movement smoother
+            const xVariation = Math.max(1, Math.min(9, xScaled + Math.floor(Math.random() * 3) - 1));
+            const yVariation = Math.max(1, Math.min(9, yScaled + Math.floor(Math.random() * 3) - 1));
+            
+            batchResponse += `X${String(xVariation).padStart(2, '0')}Y${String(yVariation).padStart(2, '0')}`;
+        }
+
+        console.log(`📦 Batch response (${batchSize}): ${batchResponse} (base: x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
+        res.status(200).end(batchResponse);
+        
     } catch (error) {
         console.error('❌ Error in batch endpoint:', error);
-        const centerBatch = 'X05Y05,'.repeat(3).slice(0, -1);
+        // Return safe fallback
+        const batchSize = parseInt(req.params.count) || 5;
+        const centerBatch = 'X05Y05'.repeat(batchSize);
         res.status(200).end(centerBatch);
     }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        activeSessions: Object.keys(sessions).length,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Phone Interface: http://localhost:${PORT}`);
-    console.log(`🎮 PictoBlox Endpoints:`);
-    console.log(`  - Original: /simple/TOKEN`);
-    console.log(`  - NEW Batch: /batch/TOKEN/3`);
-    console.log(`✨ Batching support added for ultra-smooth movement!`);
+    console.log(`🚀 Motion Server Phase 4.5 running on port ${PORT}`);
+    console.log(`📱 Phone interface: http://localhost:${PORT}/`);
+    console.log(`🎮 Batch endpoint: /batch/:token/:count`);
+    console.log(`💖 Health check: /health`);
 });
