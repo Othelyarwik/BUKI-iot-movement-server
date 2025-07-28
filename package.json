@@ -1,7 +1,7 @@
 {
   "name": "phone-racing-controller",
-  "version": "2.3.0",
-  "description": "Enhanced Phone Motion Controller for PictoBlox with Advanced Diagnostics and Smoothing",
+  "version": "2.2.0",
+  "description": "Enhanced Phone Motion Controller for PictoBlox with Advanced Smoothing",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -27,12 +27,9 @@
     "smoothing",
     "accelerometer",
     "gyroscope",
-    "game-controller",
-    "diagnostics",
-    "sensor-monitoring",
-    "real-time"
+    "game-controller"
   ],
-  "author": "Motion Controller Developer",
+  "author": "Racing Controller Developer",
   "license": "MIT",
   "repository": {
     "type": "git",
