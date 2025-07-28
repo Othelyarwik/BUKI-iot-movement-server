@@ -1,42 +1,27 @@
 {
-  "name": "phone-racing-controller",
-  "version": "2.2.0",
-  "description": "Enhanced Phone Motion Controller for PictoBlox with Advanced Smoothing",
+  "name": "velocity-phone-controller",
+  "version": "2.0.0",
+  "description": "Velocity-based smooth phone motion controller for PictoBlox",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"No tests specified\" && exit 0"
+    "dev": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  },
   "engines": {
     "node": ">=14.0.0"
   },
   "keywords": [
-    "pictoblox",
-    "motion",
-    "controller",
-    "phone",
-    "racing",
-    "smoothing",
-    "accelerometer",
-    "gyroscope",
-    "game-controller"
+    "pictoblox", 
+    "motion", 
+    "controller", 
+    "velocity", 
+    "smooth", 
+    "racing"
   ],
-  "author": "Racing Controller Developer",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "your-repository-url"
-  },
-  "bugs": {
-    "url": "your-issues-url"
-  },
-  "homepage": "your-homepage-url"
+  "author": "",
+  "license": "MIT"
 }
