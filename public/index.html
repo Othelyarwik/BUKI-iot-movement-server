@@ -821,18 +821,19 @@
             const intensity = Math.abs(velocityX) + Math.abs(velocityY);
             const updateRate = intensity > 4 ? 150 : 200;
             
-            debouncedSendUpdate(velocityX, velocityY, updateRate);
+            // FIXED: Only send real data when NOT calibrating
+            if (!isCalibrating) {
+                debouncedSendUpdate(velocityX, velocityY, updateRate);
+            } else {
+                // Send neutral data during calibration
+                debouncedSendUpdate(0, 0, updateRate);
+            }
         }
 
         function debouncedSendUpdate(x, y, delay = 200) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
-                // CRITICAL FIX: Send neutral values during calibration
-                if (isCalibrating) {
-                    sendUpdate(0, 0); // Send center values during calibration
-                } else {
-                    sendUpdate(x, y); // Send real values when ready
-                }
+                sendUpdate(x, y); // Send whatever values are passed
             }, delay);
         }
 
