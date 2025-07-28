@@ -277,18 +277,27 @@
             background: rgba(255, 136, 0, 0.2);
             color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
+            font-family: 'Courier New', monospace; /* Fixed-width font for stable text */
+            font-size: 14px; /* Slightly smaller to fit percentage */
+            letter-spacing: 0; /* Tighter spacing for percentage text */
         }
 
         .recalibrate-button.calibrating {
             background: linear-gradient(135deg, #ffaa00, #ff8800);
             color: #001122;
             cursor: not-allowed;
+            font-family: 'Courier New', monospace; /* Fixed-width font prevents jumping */
+            font-size: 14px; /* Smaller text for percentage display */
+            letter-spacing: 0;
         }
 
         .recalibrate-button.ready {
             background: linear-gradient(135deg, #ff8800, #ff4400);
             color: white;
             cursor: pointer;
+            font-family: 'Orbitron', monospace; /* Back to original font when ready */
+            font-size: 16px; /* Back to original size */
+            letter-spacing: normal;
         }
 
         .token-display, .values-display {
@@ -698,7 +707,7 @@
             updateStatus('', 'calibrating');
 
             // Update button states
-            recalibrateButton.textContent = 'Калибриране...';
+            recalibrateButton.textContent = '  0%';
             recalibrateButton.classList.remove('ready');
             recalibrateButton.classList.add('calibrating');
             recalibrateButton.disabled = true;
@@ -733,9 +742,9 @@
                 if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
 
-                    // Update progress on button text
+                    // Update progress on button text with clean percentage only
                     const progress = Math.floor((calibrationSamples.length / 120) * 100);
-                    recalibrateButton.textContent = `Калибриране ${progress}%`;
+                    recalibrateButton.textContent = `${progress.toString().padStart(3, ' ')}%`;
 
                     console.log(`📊 Calibration progress: ${calibrationSamples.length}/120 (${progress}%)`);
 
