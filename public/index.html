@@ -703,6 +703,9 @@
             isCalibrating = true;
             calibrationSamples = [];
 
+            // CRITICAL FIX: Send neutral data immediately when calibration starts
+            sendUpdate(0, 0);
+
             // Update central status indicator
             updateStatus('', 'calibrating');
 
@@ -713,7 +716,7 @@
             recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
-            console.log('🎯 Starting calibration - need 120 samples');
+            console.log('🎯 Starting calibration - sending neutral data to server');
         }
 
         // Motion handling with velocity-based smoothing and better debugging
@@ -768,6 +771,9 @@
                         calibrationSamples = null;
                         isCalibrating = false;
 
+                        // CRITICAL FIX: Send neutral data immediately after calibration
+                        sendUpdate(0, 0);
+
                         // Update button states after calibration
                         recalibrateButton.textContent = 'Рекалибрирай';
                         recalibrateButton.classList.remove('calibrating');
@@ -775,7 +781,7 @@
                         recalibrateButton.disabled = false;
 
                         updateStatus('', 'success');
-                        console.log('🎯 Spaceship calibration complete - ready for motion control!');
+                        console.log('🎯 Spaceship calibration complete - sending neutral data and ready for motion control!');
                     }
                 }
                 return;
@@ -821,7 +827,12 @@
         function debouncedSendUpdate(x, y, delay = 200) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
-                sendUpdate(x, y);
+                // CRITICAL FIX: Send neutral values during calibration
+                if (isCalibrating) {
+                    sendUpdate(0, 0); // Send center values during calibration
+                } else {
+                    sendUpdate(x, y); // Send real values when ready
+                }
             }, delay);
         }
 
