@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-// Create session and generate token
+// Create session and generate numeric token
 app.post('/start', (req, res) => {
     try {
         // Generate 8-digit numeric token (easy numpad entry)
@@ -50,8 +50,10 @@ app.post('/start', (req, res) => {
         // Create session
         sessions[token] = { x: 0, y: 0, ts: Date.now() };
 
+        console.log(`🎮 New session: ${token} (Total: ${Object.keys(sessions).length})`);
         res.json({ token, success: true });
     } catch (error) {
+        console.error('❌ Session creation error:', error);
         res.status(500).json({ error: 'Failed to create session' });
     }
 });
@@ -65,7 +67,7 @@ app.post('/update', (req, res) => {
             return res.status(400).json({ error: 'Invalid token' });
         }
 
-        // Update session
+        // Update session with motion data
         sessions[token] = {
             x: parseFloat(x) || 0,
             y: parseFloat(y) || 0,
@@ -74,41 +76,12 @@ app.post('/update', (req, res) => {
 
         res.json({ ok: true });
     } catch (error) {
+        console.error('❌ Update error:', error);
         res.status(500).json({ error: 'Update failed' });
     }
 });
 
-// Get X movement for PictoBlox (-5 to +5)
-app.get('/x/:token', (req, res) => {
-    try {
-        const session = sessions[req.params.token];
-        if (!session || Date.now() - session.ts > 60000) {
-            return res.status(200).end('0');
-        }
-
-        const movement = Math.max(-5, Math.min(5, Math.round(session.x * 0.8)));
-        res.status(200).end(movement.toString());
-    } catch (error) {
-        res.status(200).end('0');
-    }
-});
-
-// Get Y movement for PictoBlox (-5 to +5)
-app.get('/y/:token', (req, res) => {
-    try {
-        const session = sessions[req.params.token];
-        if (!session || Date.now() - session.ts > 60000) {
-            return res.status(200).end('0');
-        }
-
-        const movement = Math.max(-5, Math.min(5, Math.round(session.y * 0.8)));
-        res.status(200).end(movement.toString());
-    } catch (error) {
-        res.status(200).end('0');
-    }
-});
-
-// Simple endpoint for PictoBlox (returns "X05Y05" format) with improved filtering
+// Simple endpoint for PictoBlox (returns "X05Y05" format)
 app.get('/simple/:token', (req, res) => {
     try {
         const session = sessions[req.params.token];
@@ -116,22 +89,20 @@ app.get('/simple/:token', (req, res) => {
             return res.status(200).end('X05Y05'); // Center position
         }
 
-        // FIXED: Prevent Y-axis sticking by adding range validation
+        // Get current motion data
         let validX = session.x;
         let validY = session.y;
         
         // Range validation - if values are extreme, reset to center
         if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
-            console.log(`⚠️ Extreme values detected X:${validX} Y:${validY}, resetting to center`);
+            console.log(`⚠️ Extreme values X:${validX} Y:${validY}, centering`);
             validX = 0;
             validY = 0;
         }
 
-        // IMPROVED: Map -8 to +8 velocity to 1-9 scale with better distribution
+        // Map -8 to +8 velocity to 1-9 scale
         const mapToScale = (velocity) => {
-            // Clamp to safe range first
             const clamped = Math.max(-8, Math.min(8, velocity));
-            // Map to 1-9 scale: -8 = 1, 0 = 5, +8 = 9
             const scaled = Math.round(((clamped + 8) / 16) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
         };
@@ -139,74 +110,33 @@ app.get('/simple/:token', (req, res) => {
         const xScaled = mapToScale(validX);
         const yScaled = mapToScale(validY);
 
-        // Always return exactly 6 characters
+        // Return exactly 6 characters: X##Y##
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
         
-        console.log(`📤 Sending: ${result} (from x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
+        console.log(`📤 ${req.params.token}: ${result} (raw: x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
         res.status(200).end(result);
         
     } catch (error) {
-        console.error('❌ Error in simple endpoint:', error);
+        console.error('❌ Simple endpoint error:', error);
         res.status(200).end('X05Y05');
     }
 });
 
-// FIXED: Batch endpoint for PictoBlox batching system - Returns REAL phone data
-app.get('/batch/:token/:count', (req, res) => {
-    try {
-        const { token, count } = req.params;
-        const batchSize = parseInt(count) || 5;
-        
-        // Validate session
-        const session = sessions[token];
-        if (!session || Date.now() - session.ts > 60000) {
-            // Return center positions for all batch items
-            const centerBatch = 'X05Y05'.repeat(batchSize);
-            console.log(`📦 Batch for expired/invalid token: ${centerBatch}`);
-            return res.status(200).end(centerBatch);
-        }
-
-        // Get current motion data - REAL values from phone
-        let validX = session.x;
-        let validY = session.y;
-        
-        // Range validation
-        if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
-            console.log(`⚠️ Extreme values detected X:${validX} Y:${validY}, resetting to center`);
-            validX = 0;
-            validY = 0;
-        }
-
-        // Map to 1-9 scale for PictoBlox
-        const mapToScale = (velocity) => {
-            const clamped = Math.max(-8, Math.min(8, velocity));
-            const scaled = Math.round(((clamped + 8) / 16) * 8) + 1;
-            return Math.max(1, Math.min(9, scaled));
-        };
-
-        const xScaled = mapToScale(validX);
-        const yScaled = mapToScale(validY);
-
-        // FIXED: Use ACTUAL phone values for all positions (no random variation!)
-        let batchResponse = '';
-        for (let i = 0; i < batchSize; i++) {
-            batchResponse += `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
-        }
-
-        console.log(`📦 REAL Batch response (${batchSize}): ${batchResponse} (phone: x=${validX.toFixed(1)}, y=${validY.toFixed(1)})`);
-        res.status(200).end(batchResponse);
-        
-    } catch (error) {
-        console.error('❌ Error in batch endpoint:', error);
-        // Return safe fallback
-        const batchSize = parseInt(req.params.count) || 5;
-        const centerBatch = 'X05Y05'.repeat(batchSize);
-        res.status(200).end(centerBatch);
-    }
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        activeSessions: Object.keys(sessions).length,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Velocity-Based Motion Server running on port ${PORT}`);
+    console.log(`📱 Phone interface: http://localhost:${PORT}/`);
+    console.log(`🎮 PictoBlox endpoint: /simple/:token`);
+    console.log(`💖 Health check: /health`);
 });
