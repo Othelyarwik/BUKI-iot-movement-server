@@ -716,13 +716,16 @@
             console.log('🎯 Starting calibration - need 120 samples');
         }
 
-        // Motion handling with velocity-based smoothing
+        // Motion handling with velocity-based smoothing and better debugging
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
 
         function handleMotion(event) {
-            if (!connected || !token) return;
+            if (!connected || !token) {
+                console.log('❌ Motion ignored - not connected or no token');
+                return;
+            }
 
             const now = Date.now();
             if (now - lastMotionTime < 50) return; // 20 FPS processing
@@ -732,6 +735,8 @@
             const rawX = parseFloat(accel.x) || 0;
             const rawY = parseFloat(accel.y) || 0;
             const rawZ = parseFloat(accel.z) || 0;
+
+            console.log(`📱 Raw motion: x=${rawX.toFixed(2)}, y=${rawY.toFixed(2)}, z=${rawZ.toFixed(2)}`);
 
             updateCounter++;
 
@@ -757,6 +762,8 @@
 
                         restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+
+                        console.log(`🎯 Calibration complete! Rest position: X=${restPositionX.toFixed(2)}, Y=${restPositionY.toFixed(2)}`);
 
                         calibrationSamples = null;
                         isCalibrating = false;
@@ -793,6 +800,8 @@
             velocityX = Math.max(-6, Math.min(6, processed.x));
             velocityY = Math.max(-6, Math.min(6, processed.y));
 
+            console.log(`🎮 Processed motion: steering=${processedSteering.toFixed(2)}, throttle=${processedThrottle.toFixed(2)} → velocityX=${velocityX.toFixed(1)}, velocityY=${velocityY.toFixed(1)}`);
+
             if (updateCounter % 3 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
@@ -824,6 +833,8 @@
             try {
                 requestInProgress = true;
 
+                console.log(`📡 Sending to server: x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
+
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -831,11 +842,14 @@
                 });
 
                 if (!response.ok) {
+                    console.log('❌ Server update failed:', response.status);
                     updateStatus('', 'error');
                 } else {
+                    console.log('✅ Server update success');
                     updateStatus('', 'success');
                 }
             } catch (error) {
+                console.log('❌ Network error:', error);
                 updateStatus('', 'error');
             } finally {
                 requestInProgress = false;
