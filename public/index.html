@@ -499,11 +499,11 @@
     </div>
 
     <script>
-        // FIXED: Simplified Motion Processor - Less smoothing for more responsiveness
+        // DIAGNOSTIC: Simplified Motion Processor with health monitoring
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
-                this.maxSamples = 2; // REDUCED from 5 to 2 - much more responsive
+                this.maxSamples = 2;
                 this.smoothedX = 0;
                 this.smoothedY = 0;
                 this.lastTime = Date.now();
@@ -603,15 +603,19 @@
 
                 token = data.token;
                 tokenElement.textContent = token;
+                console.log('🔗 Token received:', token);
 
                 if (typeof DeviceMotionEvent !== 'undefined') {
                     if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                        console.log('📱 Requesting motion sensor permission...');
                         const permission = await DeviceMotionEvent.requestPermission();
                         if (permission !== 'granted') {
                             throw new Error('Motion sensor permission denied');
                         }
+                        console.log('✅ Motion sensor permission granted');
                     }
                     window.addEventListener('devicemotion', handleMotion, { passive: true });
+                    console.log('🎯 Motion event listener added');
                 } else {
                     throw new Error('Device motion not supported');
                 }
@@ -623,6 +627,7 @@
                 startCalibration();
 
             } catch (error) {
+                console.error('❌ Connection failed:', error);
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
                 tokenElement.textContent = 'Грешка при свързване';
@@ -632,7 +637,6 @@
         }
 
         function updateStatus(message, type = 'info') {
-            // Update the central status indicator with text
             const messages = {
                 'success': 'Готов',
                 'error': 'Грешка',
@@ -649,22 +653,27 @@
             isCalibrating = true;
             calibrationSamples = [];
 
-            // Update central status indicator
             updateStatus('', 'calibrating');
-
-            // Update status area
-            statusText.textContent = 'Калибриране...';
+            statusText.textContent = 'Калибриране... Дръжте стабилно!';
             calibrationProgress.style.display = 'block';
             recalibrateButton.style.display = 'none';
             calibrationFill.style.width = '0%';
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
+            
+            setTimeout(() => {
+                statusText.textContent = 'Калибриране активно...';
+            }, 2000);
+
+            console.log('🎯 Calibration started');
         }
 
-        // FIXED: Motion handling - Much more responsive
+        // DIAGNOSTIC: Motion handling with comprehensive sensor monitoring
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
+        let sensorHealthCheck = 0;
+        let lastSensorValues = { x: 0, y: 0, z: 0 };
 
         function handleMotion(event) {
             if (!connected || !token) return;
@@ -681,31 +690,46 @@
             
             updateCounter++;
 
+            // DIAGNOSTIC: Check for sensor health issues
+            if (Math.abs(rawX) > 50 || Math.abs(rawY) > 50 || Math.abs(rawZ) > 50) {
+                console.warn('⚠️ Extreme sensor values detected - possible hardware issue');
+                console.warn(`Raw values: X=${rawX} Y=${rawY} Z=${rawZ}`);
+            }
+
+            // DIAGNOSTIC: Check if sensor is stuck (same values repeatedly)
+            if (rawX === lastSensorValues.x && rawY === lastSensorValues.y && rawZ === lastSensorValues.z) {
+                sensorHealthCheck++;
+                if (sensorHealthCheck > 10) {
+                    console.error('❌ Sensor appears stuck - same values for 10+ readings');
+                    updateStatus('Sensor stuck - try recalibrating', 'error');
+                }
+            } else {
+                sensorHealthCheck = 0;
+            }
+            
+            lastSensorValues = { x: rawX, y: rawY, z: rawZ };
+
             let rawSteering = rawY;
             let rawThrottle = rawZ;
 
-            // FIXED: Reduced calibration samples from 120 to 60
             if (isCalibrating) {
-                if (calibrationSamples.length < 60) {
+                if (calibrationSamples.length < 40) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
                     
-                    const progress = (calibrationSamples.length / 60) * 100;
+                    const progress = (calibrationSamples.length / 40) * 100;
                     calibrationFill.style.width = progress + '%';
                     
-                    if (calibrationSamples.length === 60) {
+                    if (calibrationSamples.length === 40) {
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
                         
-                        const start = Math.floor(sortedSteering.length * 0.25);
-                        const end = Math.floor(sortedSteering.length * 0.75);
-                        
-                        restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                        restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+                        const medianIndex = Math.floor(sortedSteering.length / 2);
+                        restPositionX = sortedSteering[medianIndex];
+                        restPositionY = sortedThrottle[medianIndex];
                         
                         calibrationSamples = null;
                         isCalibrating = false;
 
-                        // Hide progress bar and show button again
                         statusText.textContent = 'Калибриран';
                         calibrationProgress.style.display = 'none';
                         recalibrateButton.style.display = 'block';
@@ -722,23 +746,26 @@
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            // FIXED: Much smaller dead zones for more responsiveness
-            const steeringDeadZone = 0.5; // REDUCED from 1.5 to 0.5
-            const throttleDeadZone = 0.8; // REDUCED from 2.0 to 0.8
+            const steeringDeadZone = 0.2;
+            const throttleDeadZone = 0.3;
             
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            // FIXED: More sensitive multipliers
             const processed = spaceshipProcessor.addSample(
-                processedSteering * 2.0, // INCREASED from 1.5 to 2.0
-                processedThrottle * 1.5   // INCREASED from 1.0 to 1.5
+                processedSteering * 3.0,
+                processedThrottle * 2.5
             );
 
-            velocityX = Math.max(-8, Math.min(8, processed.x)); // INCREASED range from -6,6 to -8,8
-            velocityY = Math.max(-8, Math.min(8, processed.y)); // INCREASED range from -6,6 to -8,8
+            velocityX = Math.max(-10, Math.min(10, processed.x));
+            velocityY = Math.max(-10, Math.min(10, processed.y));
 
-            if (updateCounter % 2 === 0) { // More frequent updates - was % 3, now % 2
+            // DIAGNOSTIC: Debug logging every 10th update
+            if (updateCounter % 10 === 0) {
+                console.log(`🎮 Raw: X=${rawSteering.toFixed(2)} Y=${rawThrottle.toFixed(2)} | Rest: X=${restPositionX.toFixed(2)} Y=${restPositionY.toFixed(2)} | Tilt: X=${steeringTilt.toFixed(2)} Y=${throttleTilt.toFixed(2)} | Final: X=${velocityX.toFixed(1)} Y=${velocityY.toFixed(1)}`);
+            }
+
+            if (updateCounter % 2 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
             }
@@ -750,10 +777,12 @@
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
-            }, 40); // FASTER updates - was 50ms, now 40ms
+            }, 40);
         }
 
+        // DIAGNOSTIC: Enhanced connection monitoring
         let requestInProgress = false;
+        let lastSuccessfulSend = Date.now();
 
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
@@ -767,40 +796,52 @@
                     body: JSON.stringify({ token, x, y })
                 });
 
-                if (!response.ok) {
-                    updateStatus('', 'error');
+                if (response.ok) {
+                    lastSuccessfulSend = Date.now();
+                    updateStatus('', 'success');
+                } else {
+                    throw new Error(`Server responded with ${response.status}`);
                 }
             } catch (error) {
-                updateStatus('', 'error');
+                console.error('❌ Send update failed:', error);
+                updateStatus('Connection problem', 'error');
             } finally {
                 requestInProgress = false;
             }
         }
 
+        // DIAGNOSTIC: Monitor connection health
+        setInterval(() => {
+            if (connected && token) {
+                const timeSinceLastSend = Date.now() - lastSuccessfulSend;
+                if (timeSinceLastSend > 10000) { // 10 seconds without successful send
+                    console.warn(`⚠️ No successful data send for ${Math.round(timeSinceLastSend/1000)} seconds`);
+                    updateStatus('Connection may be lost', 'error');
+                }
+            }
+        }, 5000); // Check every 5 seconds
+
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Spaceship Controller initialized');
 
-            // SIMPLE START BUTTON - No complex event handling
             startButton.onclick = () => {
                 console.log('🚀 Starting mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
-                hideAddressBar();
-                console.log('✅ Mission started successfully');
-            };
-
-            // Simple button handlers
-            connectButton.onclick = handleConnect;
-            recalibrateButton.onclick = startCalibration;
-
-            hideAddressBar();
-        });
+            });
 
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
     </script>
 </body>
 </html>
+                console.log('✅ Mission started successfully');
+            };
+
+            connectButton.onclick = handleConnect;
+            recalibrateButton.onclick = startCalibration;
+
+            hideAddressBar();
