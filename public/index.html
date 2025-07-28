@@ -2,15 +2,16 @@
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
-    <title>Phone Racing Controller</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Spaceship Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#7A74CE">
+    <meta name="theme-color" content="#0a0a1f">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+        /* RESET & BASE */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -18,424 +19,357 @@
         }
 
         body {
-            font-family: 'Rubik', Arial, sans-serif;
-            background: #7A74CE;
-            color: white;
-            min-height: 100vh;
-            min-height: 100dvh;
+            font-family: 'Orbitron', monospace;
+            color: #e0e0ff;
+            height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                url('wallpaper.png') center/cover no-repeat,
+                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+            z-index: -1;
+            transform: translateZ(0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         .setup-screen {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            text-align: center;
-            padding: 20px;
-            padding-top: 80px;
             height: 100vh;
+            padding: 15px 20px 80px 20px;
+            max-height: 100vh;
             overflow-y: auto;
         }
 
-        .setup-screen h2 {
-            font-size: 28px;
-            margin-bottom: 30px;
-            margin-top: 20px;
-        }
-
-        .setup-instructions {
-            display: block;
-        }
-
-        .setup-left, .setup-right, .setup-center, .ready-message {
-            display: none;
-        }
-
-        .steps {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            max-width: 600px;
-        }
-
-        .step {
-            display: flex;
-            align-items: center;
-            margin: 18px 0;
-            font-size: 16px;
-            text-align: left;
-        }
-
-        .step-number {
-            background: #F9AC7E;
-            color: white;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-
-        .flip-toggle, .orientation-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            max-width: 500px;
-        }
-
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .switch.active {
-            background: #F9AC7E;
-        }
-
-        .switch-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .switch.active .switch-slider {
-            transform: translateX(30px);
-        }
-
-        .continue-btn {
-            background: #F9AC7E;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
-        }
-
-        .ready-message {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            text-align: center;
-        }
-
-        @media (orientation: landscape) {
-            .setup-screen {
-                display: grid;
-                grid-template-columns: 1fr 300px 1fr;
-                grid-template-rows: auto 1fr auto;
-                gap: 20px;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-                padding-top: 20px;
-            }
-
-            .setup-screen h2 {
-                grid-column: 1 / -1;
-                margin: 0;
-                font-size: 24px;
-            }
-
-            .setup-instructions {
-                display: none;
-            }
-
-            .setup-left, .setup-right, .setup-center {
-                display: flex;
-            }
-
-            .ready-message {
-                display: block;
-            }
-
-            .setup-center {
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-
-            .setup-left {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-
-            .setup-right {
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-        }
-
-        .game-screen {
-            display: none;
-            padding: 15px;
-            height: 100vh;
-        }
-
-        /* Portrait Game Screen */
-        .game-screen.portrait {
+        .main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 30px;
             text-align: center;
         }
 
-        /* Landscape Game Screen */
-        .game-screen.landscape {
-            display: grid;
-            grid-template-columns: 1fr 280px 1fr;
-            grid-template-rows: 1fr;
-            gap: 20px;
-            align-items: center;
+        .main-content h1 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: #00ffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            letter-spacing: 1px;
         }
 
-        /* Hide header completely in game screen */
-        .game-screen .header {
+        .main-content h2 {
+            font-size: 16px;
+            margin-bottom: 28px;
+            color: #b0b0ff;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
+        }
+
+        .instructions {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+
+        .instruction {
+            display: flex;
+            align-items: flex-start;
+            margin: 16px 0;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .instruction-number {
+            background: linear-gradient(135deg, #00ffff, #0080ff);
+            color: #001122;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .sub-instructions {
+            margin-left: 40px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .sub-instruction {
+            margin: 4px 0;
+            font-size: 13px;
+            color: #e0e0ff;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .start-button {
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            color: #001122;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 1px;
+            min-width: 180px;
+            min-height: 52px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            align-self: center;
+            transition: transform 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+            z-index: 100;
+        }
+
+        .start-button:hover, .start-button:active {
+            transform: translateY(-2px);
+        }
+
+        .start-button:active {
+            transform: translateY(1px);
+        }
+
+        /* GAME SCREEN WITH ROTATED LAYOUT */
+        .game-screen {
             display: none;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: rotate(90deg);
+            transform-origin: center center;
+            width: 100vh;
+            height: 100vw;
+            left: calc((100vw - 100vh) / 2);
+            top: calc((100vh - 100vw) / 2);
+            background:
+                url('flipped wallpaper.png') center/cover no-repeat,
+                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+        }
+
+        .game-screen.active {
+            display: grid;
+            grid-template-columns: 150px 1fr 150px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Status indicator at the top center */
+        .status-indicator {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator.success {
+            color: #44ff44;
+        }
+
+        .status-indicator.error {
+            color: #ff4444;
+        }
+
+        .status-indicator.info {
+            color: #ffaa44;
+        }
+
+        .status-indicator.calibrating {
+            color: #00ffff;
         }
 
         .left-controls, .right-controls {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
         }
 
-        .center-status {
+        .center-display {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 25px;
+            justify-content: center;
+            gap: 30px;
+            height: 100%;
         }
 
-        .connect-button {
-            font-size: 18px;
-            padding: 15px 25px;
+        .connect-button, .recalibrate-button {
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            color: #001122;
             border: none;
             border-radius: 12px;
-            background: #F9AC7E;
-            color: white;
-            cursor: pointer;
+            padding: 15px 25px;
+            font-size: 16px;
             font-weight: bold;
-            transition: all 0.3s ease;
-            min-width: 160px;
-        }
-
-        .connect-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 172, 126, 0.4);
+            cursor: pointer;
+            width: 140px;
+            height: 50px;
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            margin: 0 auto;
         }
 
         .connect-button:disabled {
-            opacity: 0.6;
+            background: rgba(0, 255, 136, 0.3);
             cursor: not-allowed;
         }
 
-        .token-display {
-            background: #3F469D;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            min-width: 260px;
+        .recalibrate-button {
+            background: linear-gradient(135deg, #ff8800, #ff4400);
+            color: white;
         }
 
-        .token-label {
-            font-size: 18px;
-            margin-bottom: 12px;
-            opacity: 0.9;
+        .token-display, .values-display {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+        }
+
+        .token-label, .value-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #b0b0ff;
             font-weight: 500;
         }
 
         .token-value {
-            font-family: 'Courier New', monospace;
-            font-size: 28px;
+            font-family: 'Orbitron', monospace;
+            font-size: 20px;
             font-weight: bold;
-            letter-spacing: 4px;
-            padding: 18px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            min-height: 60px;
+            letter-spacing: 2px;
+            padding: 12px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #00ffff;
+        }
+
+        .values-row {
             display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .value-item {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .value-item.active {
+            background: rgba(0, 255, 136, 0.3);
+            transform: scale(1.05);
+            border: 2px solid #00ff88;
+        }
+
+        .value-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .status-area {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(255, 100, 100, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        .values {
-            background: #3F469D;
-            padding: 25px;
-            border-radius: 15px;
-            display: none;
-            min-width: 260px;
-        }
-
-        .values h3 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            text-align: center;
+        .status-text {
+            font-size: 14px;
+            color: #ffaaaa;
             font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
-        .value-row {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .value {
-            font-family: 'Courier New', monospace;
+        .calibration-progress {
+            width: 100px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 15px 20px;
-            border-radius: 12px;
-            text-align: center;
-            min-width: 90px;
-            transition: all 0.3s ease;
+            border-radius: 3px;
+            margin: 12px 0;
+            overflow: hidden;
         }
 
-        .value.active {
-            background: rgba(249, 172, 126, 0.3);
-            border: 2px solid #F9AC7E;
-            transform: scale(1.05);
-        }
-
-        .value-label {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
-        .value-number {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .status {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 15px;
-            background: rgba(255, 255, 255, 0.15);
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .game-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .orientation-btn {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            min-width: 140px;
-        }
-
-        .orientation-btn:hover {
-            background: rgba(255, 255, 255, 0.35);
-            transform: translateY(-1px);
-        }
-
-        /* Portrait specific adjustments */
-        @media (orientation: portrait) {
-            .game-screen.portrait .token-display {
-                min-width: 320px;
-            }
-            
-            .game-screen.portrait .values {
-                min-width: 320px;
-            }
-            
-            .game-screen.portrait .value-row {
-                justify-content: space-evenly;
-            }
-            
-            .game-screen.portrait .value {
-                min-width: 120px;
-            }
-        }
-
-        /* Landscape specific adjustments */
-        @media (orientation: landscape) {
-            .game-screen.landscape .center-status {
-                gap: 20px;
-            }
-            
-            .game-screen.landscape .token-display {
-                padding: 20px;
-            }
-            
-            .game-screen.landscape .values {
-                padding: 20px;
-            }
-            
-            .game-screen.landscape .token-value {
-                font-size: 24px;
-                padding: 15px;
-            }
-            
-            .game-screen.landscape .value-number {
-                font-size: 20px;
-            }
+        .calibration-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ffff);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
 
         .connection-indicator {
             position: fixed;
             top: 15px;
             right: 15px;
-            width: 18px;
-            height: 18px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
@@ -444,230 +378,169 @@
 
         .connection-indicator.connected {
             background: #44ff44;
-            box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
         }
 
-        .performance-indicator {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-family: 'Courier New', monospace;
-            z-index: 1000;
+        /* RESPONSIVE DESIGN */
+        @media screen and (max-width: 480px) {
+            .main-content h1 {
+                font-size: 28px;
+                margin-bottom: 12px;
+            }
+
+            .main-content h2 {
+                font-size: 14px;
+                margin-bottom: 24px;
+            }
+
+            .instructions {
+                padding: 20px;
+                max-width: 360px;
+            }
+
+            .instruction {
+                font-size: 13px;
+                margin: 12px 0;
+            }
+
+            .start-button {
+                padding: 14px 28px;
+                font-size: 16px;
+                min-width: 180px;
+            }
         }
 
-        .calibration-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(122, 116, 206, 0.95);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            text-align: center;
-            padding: 20px;
-        }
+        @media screen and (max-height: 640px) {
+            .setup-screen {
+                padding: 15px;
+            }
 
-        .calibration-overlay.show {
-            display: flex;
-        }
+            .main-content h1 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
 
-        .calibration-progress {
-            width: 200px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
+            .instructions {
+                padding: 16px;
+            }
 
-        .calibration-fill {
-            height: 100%;
-            background: #F9AC7E;
-            border-radius: 5px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .game-screen.portrait .center-status {
-            order: 1;
-        }
-
-        .game-screen.portrait .left-controls {
-            order: 2;
-            margin-top: 20px;
-        }
-
-        .game-screen.portrait .header {
-            margin-bottom: 20px;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        .values.active {
-            animation: pulse 2s infinite;
+            .instruction {
+                margin: 10px 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
-    <div class="performance-indicator" id="performanceIndicator">0 FPS</div>
 
     <div class="setup-screen" id="setupScreen">
-        <h2>🏎️ Racing Controller Setup</h2>
+        <div class="main-content">
+            <h1>КОСМИЧЕСКА МИСИЯ Ω</h1>
+            <h2>Система за Антигравитационна Навигация</h2>
 
-        <div class="setup-instructions">
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div>Дръжте телефона <strong>хоризонтално</strong> с две ръце като волан</div>
+            <div class="instructions">
+                <div class="instruction">
+                    <div class="instruction-number">1</div>
+                    <div>Смартфонът трябва да се държи хоризонтално в <u>заключен портретен режим</u></div>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div><strong>Лявата ръка</strong> държи страната с <strong>камерата</strong> 📷</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div><strong>Дясната ръка</strong> държи страната със <strong>зарядното</strong> 🔌</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div>Накланяйте телефона <strong>леко</strong> наляво/надясно за завиване</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">5</div>
-                    <div>Накланяйте телефона <strong>леко</strong> напред/назад за газ/спирачка</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">6</div>
-                    <div>Въведете получения код в <strong>PictoBlox</strong> и се забавлявайте!</div>
-                </div>
-            </div>
 
-            <div class="flip-toggle">
-                <div style="font-size: 16px; margin-bottom: 10px;">
-                    <strong>Обърнат телефон?</strong> (камерата вдясно)
+                <div class="instruction">
+                    <div class="instruction-number">2</div>
+                    <div>Лявата ръка държи страната с камерата</div>
                 </div>
-                <div class="toggle-switch">
-                    <span>Не</span>
-                    <div class="switch" id="flipToggle">
-                        <div class="switch-slider"></div>
-                    </div>
-                    <span>Да</span>
-                </div>
-            </div>
 
-            <div class="orientation-toggle">
-                <div style="font-size: 16px; margin-bottom: 10px;">
-                    <strong>Предпочитана ориентация</strong>
+                <div class="instruction">
+                    <div class="instruction-number">3</div>
+                    <div>Дясната ръка държи страната със зарядното</div>
                 </div>
-                <div class="toggle-switch">
-                    <span>📱 Портрет</span>
-                    <div class="switch active" id="orientationToggle">
-                        <div class="switch-slider"></div>
-                    </div>
-                    <span>📱 Пейзаж</span>
+
+                <div class="instruction">
+                    <div class="instruction-number">4</div>
+                    <div>След натискане на "СТАРТИРАЙ МИСИЯТА":</div>
                 </div>
-            </div>
 
-            <button class="continue-btn" id="continueBtn">🎮 Започни играта</button>
-        </div>
-
-        <div class="setup-left">
-            <div class="ready-message">
-                <strong>Готов за игра!</strong><br>
-                Дръжте телефона като волан
+                <div class="sub-instructions">
+                    <div class="sub-instruction">• Натисни бутона "СВЪРЖИ СЕ"</div>
+                    <div class="sub-instruction">• Позволи на смартфона да се калибрира</div>
+                    <div class="sub-instruction">• Въведи генерирания 8-цифрен код в PictoBlox играта</div>
+                    <div class="sub-instruction">• Използвай смартфона като волан с накланяне за да управляваш космическия кораб</div>
+                    <div class="sub-instruction">• Можеш да рекалибрираш смартфона с бутон в дясно</div>
+                </div>
             </div>
         </div>
 
-        <div class="setup-center">
-            <div style="background: #3F469D; padding: 20px; border-radius: 15px; text-align: center; min-width: 280px;">
-                <div style="font-size: 16px; margin-bottom: 10px; opacity: 0.9;">Настройки:</div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
-                    <span>Обърнат телефон:</span>
-                    <span id="flipStatus">Не</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
-                    <span>Ориентация:</span>
-                    <span id="orientationStatus">Пейзаж</span>
-                </div>
-            </div>
-            <button class="continue-btn" id="continueBtnLandscape">🎮 Започни играта</button>
-        </div>
-
-        <div class="setup-right">
-            <div style="text-align: center; font-size: 14px; opacity: 0.8;">
-                <div>🏎️ Racing Controller</div>
-                <div style="margin: 10px 0; font-size: 12px;">
-                    Завъртете телефона<br>
-                    хоризонтално за игра
-                </div>
-            </div>
-        </div>
+        <button class="start-button" id="startButton">СТАРТИРАЙ МИСИЯТА</button>
     </div>
 
-    <div class="calibration-overlay" id="calibrationOverlay">
-        <h2>🎯 Калибриране</h2>
-        <p>Дръжте телефона стабилно в игрова позиция</p>
-        <div class="calibration-progress">
-            <div class="calibration-fill" id="calibrationFill"></div>
-        </div>
-        <div id="calibrationText">Калибриране... 0/50</div>
-    </div>
+    <div class="game-screen" id="gameScreen">
+        <div class="status-indicator" id="statusIndicator">Некалибриран</div>
 
-    <div class="game-screen landscape" id="gameScreen">
-        <!-- Clean layout: No title, just essentials -->
-        
         <div class="left-controls">
             <button class="connect-button" id="connectButton">🔗 Свържи се</button>
-            <div class="game-controls">
-                <button class="orientation-btn" id="orientationBtn">📱 Ориентация</button>
-                <button class="orientation-btn" id="recalibrateBtn" style="display: none;">🎯 Калибриране</button>
-            </div>
         </div>
 
-        <div class="center-status">
+        <div class="center-display">
             <div class="token-display">
                 <div class="token-label">Код за връзка</div>
                 <div class="token-value" id="token">Няма връзка</div>
             </div>
 
-            <div class="values" id="values">
-                <h3>🎮 Плавен контрол</h3>
-                <div class="value-row">
-                    <div class="value" id="xValue">
-                        <div class="value-label">🏎️ Волан</div>
+            <div class="values-display">
+                <div class="values-row">
+                    <div class="value-item" id="xValue">
+                        <div class="value-label">Ляво/Дясно</div>
                         <div class="value-number" id="x">0.0</div>
                     </div>
-                    <div class="value" id="yValue">
-                        <div class="value-label">⚡ Газ</div>
+                    <div class="value-item" id="yValue">
+                        <div class="value-label">Горе/Долу</div>
                         <div class="value-number" id="y">0.0</div>
                     </div>
                 </div>
-                <div class="status" id="status">Готов за плавно шофиране</div>
             </div>
         </div>
 
         <div class="right-controls">
-            <!-- Empty space for balance -->
+            <div class="status-area" id="statusArea">
+                <div class="status-text" id="statusText">Некалибриран</div>
+                <div class="calibration-progress" id="calibrationProgress" style="display: none;">
+                    <div class="calibration-fill" id="calibrationFill"></div>
+                </div>
+                <button class="recalibrate-button" id="recalibrateButton" style="display: none;">Рекалибрирай</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let isFlipped = false;
-        let isLandscape = true;
+        // Simple Motion Processor for Spaceship Navigation
+        class SpaceshipMotionProcessor {
+            constructor() {
+                this.samples = [];
+                this.maxSamples = 5;
+                this.smoothedX = 0;
+                this.smoothedY = 0;
+                this.lastTime = Date.now();
+            }
+
+            addSample(rawX, rawY) {
+                const now = Date.now();
+                const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
+                this.lastTime = now;
+
+                this.samples.push({ x: rawX, y: rawY });
+                if (this.samples.length > this.maxSamples) {
+                    this.samples.shift();
+                }
+
+                const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
+                const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
+
+                this.smoothedX = avgX;
+                this.smoothedY = avgY;
+
+                return { x: this.smoothedX, y: this.smoothedY };
+            }
+        }
+
+        // Global variables
         let connected = false;
         let token = '';
         let velocityX = 0;
@@ -676,109 +549,56 @@
         let restPositionX = 0;
         let restPositionY = 0;
         let isCalibrating = false;
-        let isCalibrated = false;
+        let spaceshipProcessor = new SpaceshipMotionProcessor();
 
-        // Performance monitoring
-        let frameCount = 0;
-        let lastFpsTime = Date.now();
-
+        // DOM elements
         const setupScreen = document.getElementById('setupScreen');
         const gameScreen = document.getElementById('gameScreen');
-        const calibrationOverlay = document.getElementById('calibrationOverlay');
-        const flipToggle = document.getElementById('flipToggle');
-        const orientationToggle = document.getElementById('orientationToggle');
-        const continueBtn = document.getElementById('continueBtn');
-        const continueBtnLandscape = document.getElementById('continueBtnLandscape');
-        const flipStatus = document.getElementById('flipStatus');
-        const orientationStatus = document.getElementById('orientationStatus');
+        const startButton = document.getElementById('startButton');
         const connectButton = document.getElementById('connectButton');
-        const orientationBtn = document.getElementById('orientationBtn');
-        const recalibrateBtn = document.getElementById('recalibrateBtn');
         const tokenElement = document.getElementById('token');
-        const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
         const yElement = document.getElementById('y');
         const xValueElement = document.getElementById('xValue');
         const yValueElement = document.getElementById('yValue');
-        const statusElement = document.getElementById('status');
-        const connectionIndicator = document.getElementById('connectionIndicator');
+        const statusArea = document.getElementById('statusArea');
+        const statusText = document.getElementById('statusText');
+        const calibrationProgress = document.getElementById('calibrationProgress');
         const calibrationFill = document.getElementById('calibrationFill');
-        const calibrationText = document.getElementById('calibrationText');
-        const performanceIndicator = document.getElementById('performanceIndicator');
+        const recalibrateButton = document.getElementById('recalibrateButton');
+        const connectionIndicator = document.getElementById('connectionIndicator');
+        const statusIndicator = document.getElementById('statusIndicator');
 
-        // Performance monitoring
-        function updatePerformance() {
-            frameCount++;
-            const now = Date.now();
-            if (now - lastFpsTime >= 1000) {
-                const fps = Math.round((frameCount * 1000) / (now - lastFpsTime));
-                performanceIndicator.textContent = `${fps} FPS`;
-                frameCount = 0;
-                lastFpsTime = now;
+        // Simple fullscreen function
+        function enterFullscreen() {
+            try {
+                const element = document.documentElement;
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullScreen) {
+                    element.mozRequestFullScreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                }
+                console.log('🖥️ Entered fullscreen mode');
+            } catch (error) {
+                console.warn('Fullscreen not supported:', error);
             }
-            requestAnimationFrame(updatePerformance);
-        }
-        updatePerformance();
-
-        flipToggle.onclick = function() {
-            isFlipped = !isFlipped;
-            this.classList.toggle('active', isFlipped);
-            if (flipStatus) flipStatus.textContent = isFlipped ? 'Да' : 'Не';
-        };
-
-        orientationToggle.onclick = function() {
-            isLandscape = !isLandscape;
-            this.classList.toggle('active', isLandscape);
-            if (orientationStatus) orientationStatus.textContent = isLandscape ? 'Пейзаж' : 'Портрет';
-        };
-
-        function startGame() {
-            setupScreen.style.display = 'none';
-            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
-            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
-            hideAddressBar();
         }
 
-        continueBtn.onclick = startGame;
-        continueBtnLandscape.onclick = startGame;
-
-        orientationBtn.onclick = function() {
-            isLandscape = !isLandscape;
-            gameScreen.style.display = isLandscape ? 'grid' : 'flex';
-            gameScreen.className = `game-screen ${isLandscape ? 'landscape' : 'portrait'}`;
-            this.textContent = isLandscape ? '📱 Смени ориентация' : '📱 Смени ориентация';
-        };
-
-        recalibrateBtn.onclick = function() {
-            startCalibration();
-        };
-
+        // Simple address bar hiding
         function hideAddressBar() {
-            setTimeout(() => window.scrollTo(0, 1), 100);
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }, 100);
         }
 
-        function updateStatus(message, type = 'info') {
-            statusElement.textContent = message;
-            connectionIndicator.classList.toggle('connected', type === 'success');
-            
-            if (type === 'success') {
-                valuesElement.classList.add('active');
-            } else {
-                valuesElement.classList.remove('active');
-            }
-        }
-
-        function startCalibration() {
-            isCalibrating = true;
-            calibrationSamples = [];
-            calibrationOverlay.classList.add('show');
-            calibrationFill.style.width = '0%';
-            calibrationText.textContent = 'Калибриране... 0/50';
-        }
-
-        connectButton.onclick = async () => {
+        // Connect button handler
+        async function handleConnect() {
             connectButton.disabled = true;
             connectButton.textContent = 'Свързване...';
 
@@ -789,46 +609,76 @@
                 });
 
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                
+
                 const data = await response.json();
                 if (!data.token) throw new Error('No token received');
 
                 token = data.token;
                 tokenElement.textContent = token;
 
-                if (typeof DeviceMotionEvent !== 'undefined' && 
-                    typeof DeviceMotionEvent.requestPermission === 'function') {
-                    const permission = await DeviceMotionEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        throw new Error('Motion sensor permission denied');
+                if (typeof DeviceMotionEvent !== 'undefined') {
+                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                        const permission = await DeviceMotionEvent.requestPermission();
+                        if (permission !== 'granted') {
+                            throw new Error('Motion sensor permission denied');
+                        }
                     }
+                    window.addEventListener('devicemotion', handleMotion, { passive: true });
+                } else {
+                    throw new Error('Device motion not supported');
                 }
 
-                window.addEventListener('devicemotion', handleMotion, { passive: true });
-
                 connected = true;
-                valuesElement.style.display = 'block';
-                recalibrateBtn.style.display = 'block';
                 connectButton.textContent = '✅ Свързан';
-                connectButton.style.background = '#6CC5A1';
-                
+                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
+
+                updateStatus('', 'success');
                 startCalibration();
 
             } catch (error) {
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
-                connectButton.style.background = '#F9AC7E';
                 tokenElement.textContent = 'Грешка при свързване';
-                updateStatus(`Грешка: ${error.message}`, 'error');
+                updateStatus('', 'error');
                 alert(`Грешка при свързване: ${error.message}`);
             }
-        };
+        }
 
-        // Motion handling with velocity-based smooth movement
+        function updateStatus(message, type = 'info') {
+            // Update the central status indicator with text
+            const messages = {
+                'success': 'Готов',
+                'error': 'Грешка',
+                'info': 'Некалибриран',
+                'calibrating': 'Калибриране'
+            };
+
+            statusIndicator.textContent = messages[type] || 'Некалибриран';
+            statusIndicator.className = `status-indicator ${type}`;
+            connectionIndicator.classList.toggle('connected', type === 'success');
+        }
+
+        function startCalibration() {
+            isCalibrating = true;
+            calibrationSamples = [];
+
+            // Update central status indicator
+            updateStatus('', 'calibrating');
+
+            // Update status area
+            statusText.textContent = 'Калибриране...';
+            calibrationProgress.style.display = 'block';
+            recalibrateButton.style.display = 'none';
+            calibrationFill.style.width = '0%';
+
+            spaceshipProcessor = new SpaceshipMotionProcessor();
+        }
+
+        // Motion handling with velocity-based smoothing
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
-        
+
         function handleMotion(event) {
             if (!connected || !token) return;
 
@@ -837,87 +687,78 @@
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
-            
             const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;  
+            const rawY = parseFloat(accel.y) || 0;
             const rawZ = parseFloat(accel.z) || 0;
 
-            let rawSteering, rawThrottle;
-            
-            if (isFlipped) {
-                rawSteering = -rawY;
-                rawThrottle = rawZ;
-            } else {
-                rawSteering = rawY;
-                rawThrottle = rawZ;
-            }
+            updateCounter++;
 
-            // Calibration phase
+            let rawSteering = rawY;
+            let rawThrottle = rawZ;
+
             if (isCalibrating) {
-                if (calibrationSamples.length < 50) {
+                if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
-                    
-                    const progress = (calibrationSamples.length / 50) * 100;
+
+                    const progress = (calibrationSamples.length / 120) * 100;
                     calibrationFill.style.width = progress + '%';
-                    calibrationText.textContent = `Калибриране... ${calibrationSamples.length}/50`;
-                    
-                    if (calibrationSamples.length === 50) {
+
+                    if (calibrationSamples.length === 120) {
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
-                        
-                        const start = Math.floor(sortedSteering.length * 0.2);
-                        const end = Math.floor(sortedSteering.length * 0.8);
-                        
+
+                        const start = Math.floor(sortedSteering.length * 0.25);
+                        const end = Math.floor(sortedSteering.length * 0.75);
+
                         restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                        
+
                         calibrationSamples = null;
-                        
                         isCalibrating = false;
-                        isCalibrated = true;
-                        calibrationOverlay.classList.remove('show');
-                        updateStatus('Калибриране завършено - готов за плавно шофиране!', 'success');
-                        
-                        console.log('🎯 Calibration complete');
+
+                        // Hide progress bar and show button again
+                        statusText.textContent = 'Калибриран';
+                        calibrationProgress.style.display = 'none';
+                        recalibrateButton.style.display = 'block';
+
+                        updateStatus('', 'success');
+                        console.log('🎯 Spaceship calibration complete');
                     }
                 }
                 return;
             }
 
-            if (!isCalibrated) return;
+            if (isCalibrating) return;
 
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
-            const steeringDeadZone = 2.0;
-            const throttleDeadZone = 2.5;
-            
+            const steeringDeadZone = 1.5;
+            const throttleDeadZone = 2.0;
+
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            const steeringMultiplier = 1.5;
-            const throttleMultiplier = 1.0;
-            
-            velocityX = Math.max(-6, Math.min(6, processedSteering * steeringMultiplier));
-            velocityY = Math.max(-6, Math.min(6, processedThrottle * throttleMultiplier));
+            const processed = spaceshipProcessor.addSample(
+                processedSteering * 1.5,
+                processedThrottle * 1.0
+            );
 
-            if (Math.abs(steeringTilt) < steeringDeadZone) velocityX = 0;
-            if (Math.abs(throttleTilt) < throttleDeadZone) velocityY = 0;
+            velocityX = Math.max(-6, Math.min(6, processed.x));
+            velocityY = Math.max(-6, Math.min(6, processed.y));
 
-            // Update display with smooth feedback
-            updateCounter++;
             if (updateCounter % 3 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
-                
+
                 // Active value highlighting
                 xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
                 yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
             }
 
-            // Send updates with adaptive rate for smooth motion
+            // Velocity-based update rate - faster for rapid movement
             const intensity = Math.abs(velocityX) + Math.abs(velocityY);
-            const updateRate = intensity > 4 ? 150 : 200; // Faster for rapid movement
+            const updateRate = intensity > 4 ? 150 : 200;
             
             debouncedSendUpdate(velocityX, velocityY, updateRate);
         }
@@ -930,13 +771,13 @@
         }
 
         let requestInProgress = false;
-        
+
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
-            
+
             try {
                 requestInProgress = true;
-                
+
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -944,20 +785,41 @@
                 });
 
                 if (!response.ok) {
-                    updateStatus('Проблем с връзката...', 'error');
+                    updateStatus('', 'error');
                 } else {
-                    updateStatus('Плавно шофиране активно', 'success');
+                    updateStatus('', 'success');
                 }
             } catch (error) {
-                updateStatus('Връзката е загубена...', 'error');
+                updateStatus('', 'error');
             } finally {
                 requestInProgress = false;
             }
         }
 
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Spaceship Controller initialized');
+
+            // SIMPLE START BUTTON - No complex event handling
+            startButton.onclick = () => {
+                console.log('🚀 Starting spaceship mission...');
+                setupScreen.style.display = 'none';
+                gameScreen.style.display = 'grid';
+                gameScreen.classList.add('active');
+                enterFullscreen();
+                hideAddressBar();
+                console.log('✅ Spaceship mission started successfully');
+            };
+
+            // Simple button handlers
+            connectButton.onclick = handleConnect;
+            recalibrateButton.onclick = startCalibration;
+
+            hideAddressBar();
+        });
+
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
-        document.addEventListener('touchstart', hideAddressBar, { passive: true });
     </script>
 </body>
 </html>
