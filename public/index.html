@@ -2,16 +2,14 @@
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
-    <title>Spaceship Controller</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Smooth Racing Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0a0a1f">
+    <meta name="theme-color" content="#7A74CE">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
         
-        /* RESET & BASE */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -19,574 +17,269 @@
         }
 
         body {
-            font-family: 'Orbitron', monospace;
-            color: #e0e0ff;
-            height: 100vh;
-            height: 100dvh;
+            font-family: 'Rubik', Arial, sans-serif;
+            background: linear-gradient(135deg, #7A74CE 0%, #9B59B6 100%);
+            color: white;
+            min-height: 100vh;
             overflow: hidden;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                url('wallpaper.png') center/cover no-repeat,
-                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
-            z-index: -1;
-            transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-        }
-
-        .setup-screen {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 15px 20px 80px 20px;
-            max-height: 100vh;
-            overflow-y: auto;
-        }
-
-        .main-content {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-        }
-
-        .main-content h1 {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 12px;
-            color: #00ffff;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            letter-spacing: 1px;
-        }
-
-        .main-content h2 {
-            font-size: 16px;
-            margin-bottom: 28px;
-            color: #b0b0ff;
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
-        }
-
-        .instructions {
-            background: rgba(0, 20, 40, 0.8);
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 24px;
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-        }
-
-        .instruction {
-            display: flex;
-            align-items: flex-start;
-            margin: 16px 0;
-            font-size: 14px;
-            text-align: left;
-            line-height: 1.4;
-        }
-
-        .instruction-number {
-            background: linear-gradient(135deg, #00ffff, #0080ff);
-            color: #001122;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 12px;
-            flex-shrink: 0;
-            font-size: 12px;
-        }
-
-        .sub-instructions {
-            margin-left: 40px;
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-
-        .sub-instruction {
-            margin: 4px 0;
-            font-size: 13px;
-            color: #e0e0ff;
-            line-height: 1.4;
-            text-align: left;
-        }
-
-        .start-button {
-            background: linear-gradient(135deg, #00ff88, #0088ff);
-            color: #001122;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Orbitron', monospace;
-            letter-spacing: 1px;
-            min-width: 180px;
-            min-height: 52px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            align-self: center;
-            transition: transform 0.2s ease;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
-            position: relative;
-            z-index: 100;
-        }
-
-        .start-button:hover, .start-button:active {
-            transform: translateY(-2px);
-        }
-
-        .start-button:active {
-            transform: translateY(1px);
-        }
-
-        /* GAME SCREEN WITH ROTATED LAYOUT */
-        .game-screen {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: rotate(90deg);
-            transform-origin: center center;
-            width: 100vh;
-            height: 100vw;
-            left: calc((100vw - 100vh) / 2);
-            top: calc((100vh - 100vw) / 2);
-            background:
-                url('flipped wallpaper.png') center/cover no-repeat,
-                linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
-        }
-
-        .game-screen.active {
-            display: grid;
-            grid-template-columns: 150px 1fr 150px;
-            grid-template-rows: auto 1fr;
-            gap: 20px;
-            align-items: center;
             padding: 20px;
         }
 
-        /* Status indicator at the top center */
-        .status-indicator {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            height: 40px;
-            margin-bottom: 10px;
+        h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        .status-indicator.success {
-            color: #44ff44;
-        }
-
-        .status-indicator.error {
-            color: #ff4444;
-        }
-
-        .status-indicator.info {
-            color: #ffaa44;
-        }
-
-        .left-controls, .right-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            gap: 20px;
-        }
-
-        .center-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            height: 100%;
-        }
-
-        .connect-button, .recalibrate-button {
-            background: linear-gradient(135deg, #00ff88, #0088ff);
-            color: #001122;
+        .connect-button {
+            font-size: 20px;
+            padding: 18px 30px;
             border: none;
-            border-radius: 12px;
-            padding: 15px 25px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #F9AC7E 0%, #FF8A65 100%);
+            color: white;
             cursor: pointer;
-            width: 140px;
-            height: 50px;
-            font-family: 'Orbitron', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            margin: 0 auto;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(249, 172, 126, 0.4);
+        }
+
+        .connect-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(249, 172, 126, 0.6);
         }
 
         .connect-button:disabled {
-            background: rgba(0, 255, 136, 0.3);
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
-        .recalibrate-button {
-            background: linear-gradient(135deg, #ff8800, #ff4400);
-            color: white;
+        .token-display {
+            background: linear-gradient(135deg, #3F469D 0%, #5B67A0 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            min-width: 300px;
+            box-shadow: 0 8px 25px rgba(63, 70, 157, 0.3);
         }
 
-        .token-display, .values-display {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            min-width: 280px;
-            backdrop-filter: blur(10px);
-        }
-
-        .token-label, .value-label {
-            font-size: 12px;
-            margin-bottom: 8px;
-            color: #b0b0ff;
+        .token-label {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.9;
             font-weight: 500;
         }
 
         .token-value {
-            font-family: 'Orbitron', monospace;
-            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
             font-weight: bold;
-            letter-spacing: 2px;
-            padding: 12px;
-            background: rgba(0, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #00ffff;
-        }
-
-        .values-row {
+            letter-spacing: 4px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            min-height: 70px;
             display: flex;
-            justify-content: space-between;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        .value-item {
-            background: rgba(0, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 8px;
+        .values {
+            background: linear-gradient(135deg, #3F469D 0%, #5B67A0 100%);
+            padding: 25px;
+            border-radius: 20px;
+            display: none;
+            min-width: 300px;
+            box-shadow: 0 8px 25px rgba(63, 70, 157, 0.3);
+        }
+
+        .values h3 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .value-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .value {
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 20px;
+            border-radius: 12px;
             text-align: center;
             flex: 1;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .value.active {
+            background: rgba(249, 172, 126, 0.3);
+            border-color: #F9AC7E;
+            transform: scale(1.05);
+        }
+
+        .value-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            opacity: 0.9;
         }
 
         .value-number {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
-            color: #00ffff;
-            font-family: 'Orbitron', monospace;
         }
 
-        .status-area {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(255, 100, 100, 0.4);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            min-width: 120px;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .status-text {
-            font-size: 14px;
-            color: #ffaaaa;
-            font-weight: 600;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .calibration-progress {
-            width: 100px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            margin: 12px 0;
-            overflow: hidden;
-        }
-
-        .calibration-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ffff);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            width: 0%;
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 500;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .connection-indicator {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 12px;
-            height: 12px;
+            top: 20px;
+            right: 20px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
             z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .connection-indicator.connected {
             background: #44ff44;
+            box-shadow: 0 0 15px rgba(68, 255, 68, 0.5);
         }
 
-        /* RESPONSIVE DESIGN */
-        @media screen and (max-width: 480px) {
-            .main-content h1 {
-                font-size: 28px;
-                margin-bottom: 12px;
-            }
-
-            .main-content h2 {
-                font-size: 14px;
-                margin-bottom: 24px;
-            }
-
-            .instructions {
-                padding: 20px;
-                max-width: 360px;
-            }
-
-            .instruction {
-                font-size: 13px;
-                margin: 12px 0;
-            }
-
-            .start-button {
-                padding: 14px 28px;
-                font-size: 16px;
-                min-width: 180px;
-            }
+        .performance-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            z-index: 1000;
         }
 
-        @media screen and (max-height: 640px) {
-            .setup-screen {
-                padding: 15px;
-            }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
 
-            .main-content h1 {
-                font-size: 24px;
-                margin-bottom: 8px;
-            }
-
-            .instructions {
-                padding: 16px;
-            }
-
-            .instruction {
-                margin: 10px 0;
-            }
+        .values.active {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
+    <div class="performance-indicator" id="performanceIndicator">0 FPS</div>
 
-    <div class="setup-screen" id="setupScreen">
-        <div class="main-content">
-            <h1>КОСМИЧЕСКА МИСИЯ Ω</h1>
-            <h2>Система за Антигравитационна Навигация</h2>
+    <h1>🏎️ Smooth Racing Controller</h1>
 
-            <div class="instructions">
-                <div class="instruction">
-                    <div class="instruction-number">1</div>
-                    <div>Смартфонът трябва да се държи хоризонтално в <u>заключен портретен режим</u></div>
-                </div>
+    <button class="connect-button" id="connectButton">🔗 Свържи се</button>
 
-                <div class="instruction">
-                    <div class="instruction-number">2</div>
-                    <div>Лявата ръка държи страната с камерата</div>
-                </div>
-
-                <div class="instruction">
-                    <div class="instruction-number">3</div>
-                    <div>Дясната ръка държи страната със зарядното</div>
-                </div>
-
-                <div class="instruction">
-                    <div class="instruction-number">4</div>
-                    <div>След натискане на "СТАРТИРАЙ МИСИЯТА":</div>
-                </div>
-
-                <div class="sub-instructions">
-                    <div class="sub-instruction">• Натисни бутона "СВЪРЖИ СЕ"</div>
-                    <div class="sub-instruction">• Позволи на смартфонът да се калибрира</div>
-                    <div class="sub-instruction">• Въведи генерирания код в PictoBlox играта</div>
-                    <div class="sub-instruction">• Използвай смартфона като волан с накланяне за да управляваш космическия кораб</div>
-                    <div class="sub-instruction">• Можеш да рекалибрираш смартфона с бутон в дясно</div>
-                </div>
-            </div>
-        </div>
-
-        <button class="start-button" id="startButton">СТАРТИРАЙ МИСИЯТА</button>
+    <div class="token-display">
+        <div class="token-label">Код за връзка</div>
+        <div class="token-value" id="token">Няма връзка</div>
     </div>
 
-    <div class="game-screen" id="gameScreen">
-        <div class="status-indicator" id="statusIndicator">Некалибриран</div>
-
-        <div class="left-controls">
-            <button class="connect-button" id="connectButton">🔗 Свържи се</button>
-        </div>
-
-        <div class="center-display">
-            <div class="token-display">
-                <div class="token-label">Код за връзка</div>
-                <div class="token-value" id="token">Няма връзка</div>
+    <div class="values" id="values">
+        <h3>🎮 Smooth Control</h3>
+        <div class="value-row">
+            <div class="value" id="xValue">
+                <div class="value-label">🏎️ Волан</div>
+                <div class="value-number" id="x">0.0</div>
             </div>
-
-            <div class="values-display">
-                <div class="values-row">
-                    <div class="value-item">
-                        <div class="value-label">Ляво/Дясно</div>
-                        <div class="value-number" id="x">0.0</div>
-                    </div>
-                    <div class="value-item">
-                        <div class="value-label">Горе/Долу</div>
-                        <div class="value-number" id="y">0.0</div>
-                    </div>
-                </div>
+            <div class="value" id="yValue">
+                <div class="value-label">⚡ Газ</div>
+                <div class="value-number" id="y">0.0</div>
             </div>
         </div>
-
-        <div class="right-controls">
-            <div class="status-area" id="statusArea">
-                <div class="status-text" id="statusText">Некалибриран</div>
-                <div class="calibration-progress" id="calibrationProgress" style="display: none;">
-                    <div class="calibration-fill" id="calibrationFill"></div>
-                </div>
-                <button class="recalibrate-button" id="recalibrateButton" style="display: none;">Рекалибрирай</button>
-            </div>
-        </div>
+        <div class="status" id="status">Готов за плавно шофиране</div>
     </div>
 
     <script>
-        // Simple Motion Processor for Spaceship Navigation
-        class SpaceshipMotionProcessor {
-            constructor() {
-                this.samples = [];
-                this.maxSamples = 5;
-                this.smoothedX = 0;
-                this.smoothedY = 0;
-                this.lastTime = Date.now();
-            }
-
-            addSample(rawX, rawY) {
-                const now = Date.now();
-                const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
-                this.lastTime = now;
-
-                this.samples.push({ x: rawX, y: rawY });
-
-                if (this.samples.length > this.maxSamples) {
-                    this.samples.shift();
-                }
-
-                const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
-                const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
-
-                this.smoothedX = avgX;
-                this.smoothedY = avgY;
-
-                return { x: this.smoothedX, y: this.smoothedY };
-            }
-        }
-
-        // Global variables
         let connected = false;
         let token = '';
         let velocityX = 0;
         let velocityY = 0;
-        let calibrationSamples = [];
         let restPositionX = 0;
         let restPositionY = 0;
-        let isCalibrating = false;
-        let spaceshipProcessor = new SpaceshipMotionProcessor();
+        let isCalibrated = false;
+        let calibrationSamples = [];
 
-        // DOM elements
-        const setupScreen = document.getElementById('setupScreen');
-        const gameScreen = document.getElementById('gameScreen');
-        const startButton = document.getElementById('startButton');
+        // Performance monitoring
+        let frameCount = 0;
+        let lastFpsTime = Date.now();
+
         const connectButton = document.getElementById('connectButton');
         const tokenElement = document.getElementById('token');
+        const valuesElement = document.getElementById('values');
         const xElement = document.getElementById('x');
         const yElement = document.getElementById('y');
-        const statusArea = document.getElementById('statusArea');
-        const statusText = document.getElementById('statusText');
-        const calibrationProgress = document.getElementById('calibrationProgress');
-        const calibrationFill = document.getElementById('calibrationFill');
-        const recalibrateButton = document.getElementById('recalibrateButton');
+        const xValueElement = document.getElementById('xValue');
+        const yValueElement = document.getElementById('yValue');
+        const statusElement = document.getElementById('status');
         const connectionIndicator = document.getElementById('connectionIndicator');
-        const statusIndicator = document.getElementById('statusIndicator');
+        const performanceIndicator = document.getElementById('performanceIndicator');
 
-        // Simple fullscreen function
-        function enterFullscreen() {
-            try {
-                const element = document.documentElement;
-                if (element.requestFullscreen) {
-                    element.requestFullscreen();
-                } else if (element.webkitRequestFullscreen) {
-                    element.webkitRequestFullscreen();
-                } else if (element.mozRequestFullScreen) {
-                    element.mozRequestFullScreen();
-                } else if (element.msRequestFullscreen) {
-                    element.msRequestFullscreen();
-                }
-                console.log('🖥️ Entered fullscreen mode');
-            } catch (error) {
-                console.warn('Fullscreen not supported:', error);
+        function updateStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            connectionIndicator.classList.toggle('connected', type === 'success');
+            
+            if (type === 'success') {
+                valuesElement.classList.add('active');
+            } else {
+                valuesElement.classList.remove('active');
             }
         }
 
-        // Simple address bar hiding
-        function hideAddressBar() {
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            }, 100);
+        // Performance monitoring
+        function updatePerformance() {
+            frameCount++;
+            const now = Date.now();
+            if (now - lastFpsTime >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (now - lastFpsTime));
+                performanceIndicator.textContent = `${fps} FPS`;
+                frameCount = 0;
+                lastFpsTime = now;
+            }
+            requestAnimationFrame(updatePerformance);
         }
+        updatePerformance();
 
-        // Connect button handler
-        async function handleConnect() {
+        connectButton.onclick = async () => {
             connectButton.disabled = true;
             connectButton.textContent = 'Свързване...';
 
@@ -604,120 +297,82 @@
                 token = data.token;
                 tokenElement.textContent = token;
 
-                if (typeof DeviceMotionEvent !== 'undefined') {
-                    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                        const permission = await DeviceMotionEvent.requestPermission();
-                        if (permission !== 'granted') {
-                            throw new Error('Motion sensor permission denied');
-                        }
+                if (typeof DeviceMotionEvent !== 'undefined' && 
+                    typeof DeviceMotionEvent.requestPermission === 'function') {
+                    const permission = await DeviceMotionEvent.requestPermission();
+                    if (permission !== 'granted') {
+                        throw new Error('Motion sensor permission denied');
                     }
-                    window.addEventListener('devicemotion', handleMotion, { passive: true });
-                } else {
-                    throw new Error('Device motion not supported');
                 }
 
-                connected = true;
-                connectButton.textContent = '✅ Свързан';
-                connectButton.style.background = 'rgba(0, 255, 136, 0.3)';
-                updateStatus('', 'success');
-                startCalibration();
+                // Start calibration
+                updateStatus('Калибриране... дръжте стабилно', 'info');
+                setTimeout(startCalibration, 1000);
 
             } catch (error) {
                 connectButton.disabled = false;
                 connectButton.textContent = '🔗 Свържи се';
                 tokenElement.textContent = 'Грешка при свързване';
-                updateStatus('', 'error');
-                alert(`Грешка при свързване: ${error.message}`);
+                updateStatus(`Грешка: ${error.message}`, 'error');
             }
-        }
-
-        function updateStatus(message, type = 'info') {
-            // Update the central status indicator with text
-            const messages = {
-                'success': 'Готов',
-                'error': 'Грешка',
-                'info': 'Некалибриран',
-                'calibrating': 'Калибриране'
-            };
-
-            statusIndicator.textContent = messages[type] || 'Некалибриран';
-            statusIndicator.className = `status-indicator ${type}`;
-            connectionIndicator.classList.toggle('connected', type === 'success');
-        }
+        };
 
         function startCalibration() {
-            isCalibrating = true;
             calibrationSamples = [];
-
-            // Update central status indicator
-            updateStatus('', 'calibrating');
-
-            // Update status area
-            statusText.textContent = 'Калибриране...';
-            calibrationProgress.style.display = 'block';
-            recalibrateButton.style.display = 'none';
-            calibrationFill.style.width = '0%';
-
-            spaceshipProcessor = new SpaceshipMotionProcessor();
+            
+            const calibrationHandler = (event) => {
+                const accel = event.accelerationIncludingGravity || {};
+                calibrationSamples.push({
+                    x: parseFloat(accel.y) || 0,
+                    y: parseFloat(accel.z) || 0
+                });
+                
+                updateStatus(`Калибриране... ${calibrationSamples.length}/50`, 'info');
+                
+                if (calibrationSamples.length >= 50) {
+                    window.removeEventListener('devicemotion', calibrationHandler);
+                    
+                    // Calculate rest position (median of samples)
+                    const sortedX = calibrationSamples.map(s => s.x).sort((a, b) => a - b);
+                    const sortedY = calibrationSamples.map(s => s.y).sort((a, b) => a - b);
+                    
+                    restPositionX = sortedX[Math.floor(sortedX.length / 2)];
+                    restPositionY = sortedY[Math.floor(sortedY.length / 2)];
+                    
+                    isCalibrated = true;
+                    window.addEventListener('devicemotion', handleMotion, { passive: true });
+                    
+                    connected = true;
+                    valuesElement.style.display = 'block';
+                    connectButton.textContent = '✅ Свързан';
+                    connectButton.style.background = 'linear-gradient(135deg, #6CC5A1 0%, #5CB85C 100%)';
+                    
+                    updateStatus('Калибриране завършено - плавно шофиране!', 'success');
+                }
+            };
+            
+            window.addEventListener('devicemotion', calibrationHandler, { passive: true });
         }
 
-        // Motion handling
+        // Smooth motion handling with enhanced feedback
         let lastMotionTime = 0;
         let sendTimeout;
-        let updateCounter = 0;
-
+        
         function handleMotion(event) {
-            if (!connected || !token) return;
+            if (!connected || !token || !isCalibrated) return;
 
             const now = Date.now();
-            if (now - lastMotionTime < 50) return;
+            if (now - lastMotionTime < 50) return; // 20 FPS for motion processing
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
             
-            const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;  
+            const rawX = parseFloat(accel.y) || 0;
             const rawZ = parseFloat(accel.z) || 0;
             
-            updateCounter++;
-
-            let rawSteering = rawY;
-            let rawThrottle = rawZ;
-
-            if (isCalibrating) {
-                if (calibrationSamples.length < 120) {
-                    calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
-                    
-                    const progress = (calibrationSamples.length / 120) * 100;
-                    calibrationFill.style.width = progress + '%';
-                    
-                    if (calibrationSamples.length === 120) {
-                        const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
-                        const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
-                        
-                        const start = Math.floor(sortedSteering.length * 0.25);
-                        const end = Math.floor(sortedSteering.length * 0.75);
-                        
-                        restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                        restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                        
-                        calibrationSamples = null;
-                        isCalibrating = false;
-
-                        // Hide progress bar and show button again
-                        statusText.textContent = 'Калибриран';
-                        calibrationProgress.style.display = 'none';
-                        recalibrateButton.style.display = 'block';
-                        updateStatus('', 'success');
-                    }
-                }
-                return;
-            }
-
-            if (isCalibrating) return;
-
-            const steeringTilt = rawSteering - restPositionX;
-            const throttleTilt = rawThrottle - restPositionY;
+            // Calculate relative to calibrated rest position
+            const steeringTilt = rawX - restPositionX;
+            const throttleTilt = rawZ - restPositionY;
 
             const steeringDeadZone = 1.5;
             const throttleDeadZone = 2.0;
@@ -725,37 +380,34 @@
             let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
             let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-            const processed = spaceshipProcessor.addSample(
-                processedSteering * 1.5,
-                processedThrottle * 1.0
-            );
+            // Smooth velocity calculation with better scaling
+            velocityX = Math.max(-8, Math.min(8, processedSteering * 2.0));
+            velocityY = Math.max(-8, Math.min(8, processedThrottle * 1.2));
 
-            velocityX = Math.max(-6, Math.min(6, processed.x));
-            velocityY = Math.max(-6, Math.min(6, processed.y));
+            // Visual feedback
+            xElement.textContent = velocityX.toFixed(1);
+            yElement.textContent = velocityY.toFixed(1);
+            
+            // Active value highlighting
+            xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
+            yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
 
-            if (updateCounter % 3 === 0) {
-                xElement.textContent = velocityX.toFixed(1);
-                yElement.textContent = velocityY.toFixed(1);
-            }
-
-            debouncedSendUpdate(velocityX, velocityY);
+            // Send to server with adaptive rate
+            const intensity = Math.abs(velocityX) + Math.abs(velocityY);
+            const updateRate = intensity > 4 ? 150 : 200; // Faster updates for rapid movement
+            
+            debouncedSendUpdate(velocityX, velocityY, updateRate);
         }
 
-        function debouncedSendUpdate(x, y) {
+        function debouncedSendUpdate(x, y, delay = 200) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
-            }, 50);
+            }, delay);
         }
 
-        let requestInProgress = false;
-
         async function sendUpdate(x, y) {
-            if (requestInProgress) return;
-
             try {
-                requestInProgress = true;
-                
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -763,39 +415,25 @@
                 });
 
                 if (!response.ok) {
-                    updateStatus('', 'error');
+                    updateStatus('Проблем с връзката...', 'error');
+                } else {
+                    updateStatus('Плавно шофиране активно', 'success');
                 }
             } catch (error) {
-                updateStatus('', 'error');
-            } finally {
-                requestInProgress = false;
+                updateStatus('Връзката е загубена...', 'error');
             }
         }
 
-        // Initialize everything
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Spaceship Controller initialized');
-
-            // SIMPLE START BUTTON - No complex event handling
-            startButton.onclick = () => {
-                console.log('🚀 Starting mission...');
-                setupScreen.style.display = 'none';
-                gameScreen.style.display = 'grid';
-                gameScreen.classList.add('active');
-                enterFullscreen();
-                hideAddressBar();
-                console.log('✅ Mission started successfully');
-            };
-
-            // Simple button handlers
-            connectButton.onclick = handleConnect;
-            recalibrateButton.onclick = startCalibration;
-
-            hideAddressBar();
-        });
+        // Hide address bar on mobile
+        function hideAddressBar() {
+            setTimeout(() => window.scrollTo(0, 1), 100);
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
 
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
+        document.addEventListener('touchstart', hideAddressBar, { passive: true });
     </script>
 </body>
 </html>
