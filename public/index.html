@@ -764,7 +764,7 @@
             }
         }
 
-        // STEP 3: Enhanced Motion Processor (from Step 2)
+        // STEP 3: Enhanced Motion Processor
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
@@ -812,7 +812,7 @@
             }
         }
 
-        // Connection health tracking (from Step 2)
+        // Connection health tracking
         class ConnectionHealth {
             constructor() {
                 this.connectionAttempts = 0;
@@ -859,7 +859,7 @@
             }
         }
 
-        // STEP 3: Global variables with motion sensor manager
+        // Global variables
         let connected = false;
         let token = '';
         let velocityX = 0;
@@ -870,7 +870,7 @@
         let isCalibrating = false;
         let spaceshipProcessor = new SpaceshipMotionProcessor();
         let connectionHealth = new ConnectionHealth();
-        let motionSensorManager = new MotionSensorManager(); // STEP 3: New manager
+        let motionSensorManager = new MotionSensorManager();
 
         // DOM elements
         const setupScreen = document.getElementById('setupScreen');
@@ -889,7 +889,7 @@
         const errorMessage = document.getElementById('errorMessage');
         const motionIndicator = document.getElementById('motionIndicator');
 
-        // STEP 3: Enhanced error display with motion diagnostics
+        // Enhanced error display with motion diagnostics
         function showError(message, isTemporary = true) {
             errorDisplay.style.display = 'block';
             errorMessage.textContent = message;
@@ -952,7 +952,7 @@
             }, 100);
         }
 
-        // STEP 3: Completely rewritten connect handler with motion sensor manager
+        // STEP 3: Connect handler with motion sensor manager
         async function handleConnect() {
             const isReconnect = connected && token;
             const startTime = Date.now();
@@ -990,7 +990,6 @@
                 console.log(`🎯 Token received: ${token}`);
 
                 if (!connected) {
-                    // STEP 3: Initialize motion sensor manager instead of direct listener
                     try {
                         await motionSensorManager.initialize();
                         console.log('✅ Motion sensor keep-alive system activated');
@@ -1077,7 +1076,7 @@
             console.log('🎯 Starting calibration with motion sensor keep-alive');
         }
 
-        // STEP 3: Enhanced motion handling - now called by MotionSensorManager
+        // Enhanced motion handling - now called by MotionSensorManager
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
@@ -1142,7 +1141,7 @@
 
                             updateStatus('', 'motion-active');
                             hideError();
-                            console.log('🎯 Calibration complete with motion sensor keep-alive!');
+                            console.log('🎯 Calibration complete with HIGH SENSITIVITY motion sensor!');
                         }
                     }
                     return;
@@ -1158,9 +1157,10 @@
                 let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
                 let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
+                // SENSITIVITY FIX: DRAMATICALLY INCREASED sensitivity multipliers
                 const processed = spaceshipProcessor.addSample(
-                    processedSteering * 1.5,
-                    processedThrottle * 1.0
+                    processedSteering * 4.0,  // SENSITIVITY FIX: Increased from 1.5 to 4.0
+                    processedThrottle * 3.0   // SENSITIVITY FIX: Increased from 1.0 to 3.0
                 );
 
                 velocityX = Math.max(-6, Math.min(6, processed.x));
@@ -1173,7 +1173,7 @@
                     xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
                     yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
                     
-                    // STEP 3: Update status to show active motion
+                    // Update status to show active motion
                     if (Math.abs(velocityX) > 0.5 || Math.abs(velocityY) > 0.5) {
                         updateStatus('', 'motion-active');
                     }
@@ -1183,12 +1183,12 @@
                 if (updateCounter % 50 === 0) {
                     const health = spaceshipProcessor.getHealthInfo();
                     const motionHealth = motionSensorManager.getHealthReport();
-                    console.log(`📊 Motion Health: Processor ${health.successRate.toFixed(1)}% | Sensor ${motionHealth.totalEvents} events`);
+                    console.log(`📊 HIGH SENSITIVITY Motion: Processor ${health.successRate.toFixed(1)}% | Sensor ${motionHealth.totalEvents} events`);
                 }
 
-                console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
+                console.log(`🚀 HIGH SENSITIVITY Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
                 
-                // STEP 3 FIX: Replace broken debounce with working throttle
+                // STEP 3 FIX: Throttled updates
                 throttledSendUpdate(velocityX, velocityY);
 
             } catch (error) {
@@ -1198,7 +1198,7 @@
             }
         };
 
-        // STEP 3 FIX: Throttle instead of debounce - guarantees regular updates
+        // Throttle instead of debounce - guarantees regular updates
         let lastSendTime = 0;
         const SEND_INTERVAL = 100; // Send every 100ms during motion
 
@@ -1209,7 +1209,7 @@
             if (now - lastSendTime >= SEND_INTERVAL) {
                 lastSendTime = now;
                 sendUpdate(x, y);
-                console.log(`📤 THROTTLED SEND: ${now - lastSendTime}ms since last send`);
+                console.log(`📤 HIGH SENSITIVITY SEND: x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
             }
             
             // Also ensure we send the final position after motion stops
@@ -1225,7 +1225,7 @@
         let requestInProgress = false;
         let lastSuccessfulUpdate = Date.now();
 
-        // Enhanced server communication (from Step 2)
+        // Enhanced server communication
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
 
@@ -1233,7 +1233,7 @@
                 requestInProgress = true;
                 const startTime = Date.now();
                 
-                console.log(`📡 STEP 3: Enhanced update to: ${window.location.origin}/update`);
+                console.log(`📡 HIGH SENSITIVITY update to: ${window.location.origin}/update`);
                 console.log(`📡 Data: token=${token}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
 
                 const response = await fetch('/update', {
@@ -1276,7 +1276,7 @@
                     }
                     
                     if (result.updateCount && result.updateCount % 10 === 0) {
-                        console.log(`📊 Update milestone: ${result.updateCount} updates sent`);
+                        console.log(`📊 Update milestone: ${result.updateCount} HIGH SENSITIVITY updates sent`);
                         const health = connectionHealth.getHealthReport();
                         console.log(`📊 Connection health: ${health.successRate}% success, ${health.avgResponseTime}ms avg`);
                     }
@@ -1304,19 +1304,19 @@
             }
         }
 
-        // STEP 3: Initialize everything with motion sensor keep-alive
+        // Initialize everything with motion sensor keep-alive
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 STEP 3: Motion Sensor Keep-Alive System initialized');
+            console.log('🚀 HIGH SENSITIVITY: Motion Sensor Keep-Alive System initialized');
 
             // Start button
             startButton.onclick = () => {
-                console.log('🚀 Starting mission with motion sensor keep-alive...');
+                console.log('🚀 Starting HIGH SENSITIVITY mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
-                console.log('✅ Mission started with enhanced motion system');
+                console.log('✅ HIGH SENSITIVITY mission started with enhanced motion system');
             };
 
             // Enhanced button handlers
@@ -1352,7 +1352,7 @@
 
             hideAddressBar();
 
-            // STEP 3: Enhanced health monitoring with motion sensor status
+            // Enhanced health monitoring with motion sensor status
             setInterval(() => {
                 if (connected) {
                     const timeSinceLastUpdate = Date.now() - lastSuccessfulUpdate;
@@ -1365,7 +1365,7 @@
                     
                     // Log comprehensive health every 30 seconds
                     if (Date.now() % 30000 < 15000) {
-                        console.log('📊 STEP 3 System Health:', {
+                        console.log('📊 HIGH SENSITIVITY System Health:', {
                             motion: motionHealth,
                             connection: connectionHealth.getHealthReport(),
                             processor: spaceshipProcessor.getHealthInfo()
@@ -1374,7 +1374,7 @@
                 }
             }, 15000);
 
-            // STEP 3: Keep screen active for motion sensors
+            // Keep screen active for motion sensors
             setInterval(() => {
                 if (connected && !isCalibrating) {
                     // Gentle screen interaction to prevent sleep
@@ -1389,7 +1389,7 @@
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
 
-        // STEP 3: Prevent page unload to maintain wake lock
+        // Prevent page unload to maintain wake lock
         window.addEventListener('beforeunload', async () => {
             if (motionSensorManager.wakeLock) {
                 await motionSensorManager.releaseWakeLock();
