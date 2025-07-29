@@ -514,14 +514,16 @@
                 </div>
             </div>
 
-            <!-- STEP 2: Error display for debugging -->
+            <!-- STEP 2: Error display moved to right panel -->
+            <!-- Error display now above button for visibility -->
+        </div>
+
+        <div class="right-controls">
+            <!-- STEP 2: Error display moved above button for visibility -->
             <div class="error-display" id="errorDisplay">
                 <div class="error-title">Диагностика</div>
                 <div class="error-message" id="errorMessage">Няма грешки</div>
             </div>
-        </div>
-
-        <div class="right-controls">
             <button class="recalibrate-button" id="recalibrateButton">Рекалибрирай</button>
         </div>
     </div>
@@ -650,7 +652,7 @@
         const errorDisplay = document.getElementById('errorDisplay');
         const errorMessage = document.getElementById('errorMessage');
 
-        // STEP 2: Enhanced error display
+        // STEP 2: Enhanced error display with motion diagnostics
         function showError(message, isTemporary = true) {
             errorDisplay.style.display = 'block';
             errorMessage.textContent = message;
@@ -661,6 +663,22 @@
                     errorDisplay.style.display = 'none';
                 }, 5000);
             }
+        }
+
+        function showMotionDiagnostic() {
+            const health = spaceshipProcessor.getHealthInfo();
+            const connHealth = connectionHealth.getHealthReport();
+            
+            const diagnostic = `Motion: ${health.successRate.toFixed(0)}% | Conn: ${connHealth.successRate}% | Resp: ${connHealth.avgResponseTime}ms`;
+            showError(diagnostic, true);
+            
+            console.log('📊 Full Diagnostic:', {
+                motion: health,
+                connection: connHealth,
+                currentVelocity: { x: velocityX, y: velocityY },
+                restPosition: { x: restPositionX, y: restPositionY },
+                calibrationStatus: isCalibrating
+            });
         }
 
         function hideError() {
@@ -1070,6 +1088,9 @@
                 clearTimeout(resetTimer);
                 if (!recalibrateButton.disabled && recalibrateButton.classList.contains('ready')) {
                     startCalibration();
+                } else {
+                    // Show diagnostic when button is pressed but not ready
+                    showMotionDiagnostic();
                 }
             };
 
