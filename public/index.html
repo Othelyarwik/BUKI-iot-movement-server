@@ -478,6 +478,11 @@
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
 
+    <!-- Debug panel for mobile -->
+    <div id="debugPanel" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #00ff00; font-family: 'Courier New', monospace; font-size: 10px; padding: 5px; border-radius: 5px; max-width: 90%; max-height: 150px; overflow-y: auto; z-index: 9999; display: none;">
+        <div id="debugLog"></div>
+    </div>
+
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
             <h1>КОСМИЧЕСКА МИСИЯ Ω</h1>
@@ -580,7 +585,22 @@
             }
         }
 
-        // Global variables
+        // Global debug system for mobile
+        const debugLog = document.getElementById('debugLog');
+        const debugPanel = document.getElementById('debugPanel');
+        let debugMessages = [];
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugMessages.push(`${timestamp}: ${message}`);
+            if (debugMessages.length > 20) debugMessages.shift(); // Keep last 20
+            
+            debugLog.innerHTML = debugMessages.map(msg => `<div>${msg}</div>`).join('');
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            
+            // Also log to console
+            console.log(message);
+        }
         let connected = false;
         let token = '';
         let velocityX = 0;
