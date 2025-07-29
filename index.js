@@ -197,25 +197,15 @@ app.post('/update', (req, res) => {
             });
         }
 
-        // STEP 3 FINAL: MINIMAL smoothing - only 2 samples, less auto-centering
+        // STEP 3 EMERGENCY REVERT: Go back to working smoothing with slight range increase
         session.history.push({ x: newX, y: newY, timestamp });
-        if (session.history.length > 2) { // Reduced from 3 to 2
+        if (session.history.length > 3) {
             session.history.shift();
         }
 
-        // STEP 3 FINAL: Less aggressive smoothing - more responsive
-        let avgX, avgY;
-        if (session.history.length === 1) {
-            // Use raw values for immediate response
-            avgX = newX;
-            avgY = newY;
-        } else {
-            // Light smoothing with current value weighted more heavily
-            const current = session.history[session.history.length - 1];
-            const previous = session.history[session.history.length - 2];
-            avgX = current.x * 0.7 + previous.x * 0.3; // 70% current, 30% previous
-            avgY = current.y * 0.7 + previous.y * 0.3;
-        }
+        // Calculate smooth average (back to original working method)
+        const avgX = session.history.reduce((sum, sample) => sum + sample.x, 0) / session.history.length;
+        const avgY = session.history.reduce((sum, sample) => sum + sample.y, 0) / session.history.length;
 
         // STEP 3 FINAL: Enhanced session update with minimal centering
         sessions[token] = {
@@ -283,8 +273,8 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // STEP 3 FINAL: EXPANDED range -15 to +15 (was -4 to +4)
-        const movement = Math.max(-15, Math.min(15, Math.round(session.x * 2.0))); // Increased multiplier
+        // STEP 3 EMERGENCY REVERT: Moderate range increase only -8 to +8
+        const movement = Math.max(-8, Math.min(8, Math.round(session.x * 1.2))); // Gentle increase
         
         console.log(`📤 FULL-RANGE X endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/x', token, true, `Value: ${movement}`);
@@ -321,8 +311,8 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // STEP 3 FINAL: EXPANDED range -15 to +15 (was -4 to +4)
-        const movement = Math.max(-15, Math.min(15, Math.round(session.y * 2.0))); // Increased multiplier
+        // STEP 3 EMERGENCY REVERT: Moderate range increase only -8 to +8
+        const movement = Math.max(-8, Math.min(8, Math.round(session.y * 1.2))); // Gentle increase
         
         console.log(`📤 FULL-RANGE Y endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/y', token, true, `Value: ${movement}`);
