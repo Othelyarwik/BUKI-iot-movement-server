@@ -225,6 +225,10 @@
             animation: pulse 2s infinite;
         }
 
+        .status-indicator.timeout {
+            color: #ff8844;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
@@ -545,11 +549,7 @@
         </div>
 
         <div class="right-controls">
-            <!-- Error display above button for visibility -->
-            <div class="error-display" id="errorDisplay">
-                <div class="error-title">Диагностика</div>
-                <div class="error-message" id="errorMessage">Няма грешки</div>
-            </div>
+            <!-- Diagnostics box removed for production -->
             <button class="recalibrate-button" id="recalibrateButton">Рекалибрирай</button>
         </div>
     </div>
@@ -885,43 +885,23 @@
         const recalibrateButton = document.getElementById('recalibrateButton');
         const connectionIndicator = document.getElementById('connectionIndicator');
         const statusIndicator = document.getElementById('statusIndicator');
-        const errorDisplay = document.getElementById('errorDisplay');
-        const errorMessage = document.getElementById('errorMessage');
+        const errorDisplay = null; // Removed for production
+        const errorMessage = null; // Removed for production
         const motionIndicator = document.getElementById('motionIndicator');
 
-        // Enhanced error display with motion diagnostics
+        // PRODUCTION: Simplified error handling - no diagnostic box
         function showError(message, isTemporary = true) {
-            errorDisplay.style.display = 'block';
-            errorMessage.textContent = message;
-            console.log(`🚨 Error shown: ${message}`);
-            
-            if (isTemporary) {
-                setTimeout(() => {
-                    errorDisplay.style.display = 'none';
-                }, 5000);
-            }
+            console.log(`🚨 Error logged: ${message}`);
+            // Errors only go to console in production
         }
 
         function showMotionDiagnostic() {
-            const motionHealth = motionSensorManager.getHealthReport();
-            const processorHealth = spaceshipProcessor.getHealthInfo();
-            const connHealth = connectionHealth.getHealthReport();
-            
-            const diagnostic = `Motion: ${motionHealth.totalEvents} events, ${motionHealth.timeSinceLastMotion}ms ago | Conn: ${connHealth.successRate}%`;
-            showError(diagnostic, true);
-            
-            console.log('📊 STEP 3 Full Diagnostic:', {
-                motion: motionHealth,
-                processor: processorHealth,
-                connection: connHealth,
-                currentVelocity: { x: velocityX, y: velocityY },
-                restPosition: { x: restPositionX, y: restPositionY },
-                calibrationStatus: isCalibrating
-            });
+            console.log('📊 Diagnostic requested - logged to console only');
+            // Diagnostics only in console for production
         }
 
         function hideError() {
-            errorDisplay.style.display = 'none';
+            // No error display to hide in production
         }
 
         // Simple fullscreen function
@@ -1048,7 +1028,8 @@
                 'error': 'Грешка',
                 'info': 'Некалибриран',
                 'calibrating': 'Калибриране',
-                'motion-active': 'Активен'
+                'motion-active': 'Активен',
+                'timeout': 'Прекъсната връзка'  // New timeout status
             };
 
             if (isCalibrating && type !== 'calibrating') {
@@ -1365,28 +1346,27 @@
                 clearTimeout(resetTimer);
                 if (!recalibrateButton.disabled && recalibrateButton.classList.contains('ready')) {
                     startCalibration();
-                } else {
-                    // Show enhanced diagnostic
-                    showMotionDiagnostic();
                 }
+                // Removed diagnostic display for production - logs to console only
             };
 
             hideAddressBar();
 
-            // Enhanced health monitoring with motion sensor status
+            // PRODUCTION: Enhanced health monitoring with status updates
             setInterval(() => {
                 if (connected) {
                     const timeSinceLastUpdate = Date.now() - lastSuccessfulUpdate;
-                    const motionHealth = motionSensorManager.getHealthReport();
                     
+                    // Show timeout status instead of diagnostic message
                     if (timeSinceLastUpdate > 10000) {
                         console.warn(`⚠️ No successful updates for ${timeSinceLastUpdate}ms`);
-                        showError(`Няма актуализации ${Math.floor(timeSinceLastUpdate/1000)}s`, true);
+                        updateStatus('', 'timeout'); // Show "Прекъсната връзка" instead of diagnostic
                     }
                     
-                    // Log comprehensive health every 30 seconds
+                    // Log health data to console only
                     if (Date.now() % 30000 < 15000) {
-                        console.log('📊 HIGH SENSITIVITY System Health:', {
+                        const motionHealth = motionSensorManager.getHealthReport();
+                        console.log('📊 System Health:', {
                             motion: motionHealth,
                             connection: connectionHealth.getHealthReport(),
                             processor: spaceshipProcessor.getHealthInfo()
