@@ -220,6 +220,16 @@
             color: #00ffff;
         }
 
+        .status-indicator.motion-active {
+            color: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
         .left-controls, .right-controls {
             display: flex;
             flex-direction: column;
@@ -372,7 +382,25 @@
             background: #44ff44;
         }
 
-        /* STEP 2: Error message styling */
+        /* STEP 3: Motion sensor indicator */
+        .motion-indicator {
+            position: fixed;
+            top: 15px;
+            right: 30px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .motion-indicator.active {
+            background: #00ff88;
+            animation: pulse 1s infinite;
+        }
+
+        /* Error message styling */
         .error-display {
             background: rgba(255, 0, 0, 0.1);
             border: 2px solid rgba(255, 0, 0, 0.4);
@@ -448,6 +476,7 @@
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
+    <div class="motion-indicator" id="motionIndicator"></div>
 
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
@@ -513,13 +542,10 @@
                     </div>
                 </div>
             </div>
-
-            <!-- STEP 2: Error display moved to right panel -->
-            <!-- Error display now above button for visibility -->
         </div>
 
         <div class="right-controls">
-            <!-- STEP 2: Error display moved above button for visibility -->
+            <!-- Error display above button for visibility -->
             <div class="error-display" id="errorDisplay">
                 <div class="error-title">Диагностика</div>
                 <div class="error-message" id="errorMessage">Няма грешки</div>
@@ -529,7 +555,216 @@
     </div>
 
     <script>
-        // STEP 2: Enhanced Motion Processor with error tracking
+        // STEP 3: Advanced Motion Sensor Keep-Alive System
+        class MotionSensorManager {
+            constructor() {
+                this.isActive = false;
+                this.wakeLock = null;
+                this.lastMotionTime = 0;
+                this.motionTimeout = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                this.sensorHealth = {
+                    totalEvents: 0,
+                    recentEvents: 0,
+                    lastEventTime: null,
+                    restarts: 0
+                };
+            }
+
+            async initialize() {
+                console.log('🎯 STEP 3: Initializing Motion Sensor Keep-Alive System');
+                
+                try {
+                    // Request motion permission
+                    if (typeof DeviceMotionEvent !== 'undefined') {
+                        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                            console.log('📱 Requesting motion permission...');
+                            const permission = await DeviceMotionEvent.requestPermission();
+                            if (permission !== 'granted') {
+                                throw new Error('Motion sensor permission denied');
+                            }
+                            console.log('✅ Motion permission granted');
+                        }
+                    } else {
+                        throw new Error('Device motion not supported on this device');
+                    }
+
+                    // Acquire wake lock to prevent sensor sleep
+                    await this.acquireWakeLock();
+                    
+                    // Start motion monitoring
+                    this.startMotionListening();
+                    
+                    // Start health monitoring
+                    this.startHealthMonitoring();
+                    
+                    return true;
+                } catch (error) {
+                    console.error('❌ Motion sensor initialization failed:', error);
+                    throw error;
+                }
+            }
+
+            async acquireWakeLock() {
+                try {
+                    if ('wakeLock' in navigator) {
+                        this.wakeLock = await navigator.wakeLock.request('screen');
+                        console.log('🔒 Wake lock acquired - screen will stay active');
+                        
+                        this.wakeLock.addEventListener('release', () => {
+                            console.log('🔓 Wake lock released - attempting reacquisition');
+                            setTimeout(() => this.acquireWakeLock(), 1000);
+                        });
+                    } else {
+                        console.log('⚠️ Wake Lock API not supported - using alternative keep-alive');
+                        this.useAlternativeKeepAlive();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Wake lock failed, using alternative:', error);
+                    this.useAlternativeKeepAlive();
+                }
+            }
+
+            useAlternativeKeepAlive() {
+                // Alternative method: invisible video to prevent sleep
+                const video = document.createElement('video');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('muted', '');
+                video.style.position = 'fixed';
+                video.style.top = '-1px';
+                video.style.left = '-1px';
+                video.style.width = '1px';
+                video.style.height = '1px';
+                video.style.opacity = '0';
+                
+                // Create a minimal video blob
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                const ctx = canvas.getContext('2d');
+                ctx.fillRect(0, 0, 1, 1);
+                
+                canvas.captureStream(1).getTracks().forEach(track => {
+                    video.srcObject = new MediaStream([track]);
+                });
+                
+                document.body.appendChild(video);
+                video.play().catch(() => {}); // Ignore errors
+                
+                console.log('🎥 Alternative keep-alive activated');
+            }
+
+            startMotionListening() {
+                // Remove any existing listener first
+                window.removeEventListener('devicemotion', this.handleMotionEvent);
+                
+                // Add fresh listener
+                window.addEventListener('devicemotion', this.handleMotionEvent.bind(this), { passive: true });
+                
+                this.isActive = true;
+                this.lastMotionTime = Date.now();
+                
+                console.log('👂 Motion listener activated');
+                
+                // Update UI
+                document.getElementById('motionIndicator').classList.add('active');
+            }
+
+            handleMotionEvent(event) {
+                const now = Date.now();
+                this.lastMotionTime = now;
+                this.sensorHealth.totalEvents++;
+                this.sensorHealth.recentEvents++;
+                this.sensorHealth.lastEventTime = now;
+                
+                // Update motion indicator
+                const motionIndicator = document.getElementById('motionIndicator');
+                motionIndicator.classList.add('active');
+                
+                // Pass to main motion handler
+                if (window.handleMotion) {
+                    window.handleMotion(event);
+                }
+                
+                // Reset motion timeout
+                clearTimeout(this.motionTimeout);
+                this.motionTimeout = setTimeout(() => {
+                    this.detectMotionTimeout();
+                }, 5000); // 5 second timeout
+            }
+
+            detectMotionTimeout() {
+                const now = Date.now();
+                const timeSinceLastMotion = now - this.lastMotionTime;
+                
+                if (timeSinceLastMotion > 5000) {
+                    console.warn('🚨 Motion sensor timeout detected - attempting restart');
+                    document.getElementById('motionIndicator').classList.remove('active');
+                    this.restartMotionSensor();
+                }
+            }
+
+            restartMotionSensor() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    console.error('❌ Max motion sensor restart attempts reached');
+                    showError('Motion sensor failed - reload page', false);
+                    return;
+                }
+
+                this.reconnectAttempts++;
+                this.sensorHealth.restarts++;
+                
+                console.log(`🔄 Restarting motion sensor (attempt ${this.reconnectAttempts})`);
+                
+                // Stop current listener
+                window.removeEventListener('devicemotion', this.handleMotionEvent);
+                this.isActive = false;
+                
+                // Wait and restart
+                setTimeout(() => {
+                    this.startMotionListening();
+                    showError(`Motion restarted (${this.reconnectAttempts})`, true);
+                }, 1000);
+            }
+
+            startHealthMonitoring() {
+                setInterval(() => {
+                    const now = Date.now();
+                    const timeSinceLastMotion = this.lastMotionTime ? now - this.lastMotionTime : null;
+                    
+                    console.log(`📊 Motion Health: Events: ${this.sensorHealth.totalEvents}, Recent: ${this.sensorHealth.recentEvents}, Last: ${timeSinceLastMotion}ms ago, Restarts: ${this.sensorHealth.restarts}`);
+                    
+                    // Reset recent counter
+                    this.sensorHealth.recentEvents = 0;
+                    
+                    // Check if sensor is still alive
+                    if (timeSinceLastMotion && timeSinceLastMotion > 10000 && connected && !isCalibrating) {
+                        console.warn('⚠️ Motion sensor appears dead - triggering restart');
+                        this.restartMotionSensor();
+                    }
+                }, 10000); // Check every 10 seconds
+            }
+
+            getHealthReport() {
+                return {
+                    ...this.sensorHealth,
+                    isActive: this.isActive,
+                    timeSinceLastMotion: this.lastMotionTime ? Date.now() - this.lastMotionTime : null,
+                    wakeLockActive: this.wakeLock ? !this.wakeLock.released : false
+                };
+            }
+
+            async releaseWakeLock() {
+                if (this.wakeLock) {
+                    await this.wakeLock.release();
+                    this.wakeLock = null;
+                    console.log('🔓 Wake lock released');
+                }
+            }
+        }
+
+        // STEP 3: Enhanced Motion Processor (from Step 2)
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
@@ -577,7 +812,7 @@
             }
         }
 
-        // STEP 2: Enhanced connection health tracking
+        // Connection health tracking (from Step 2)
         class ConnectionHealth {
             constructor() {
                 this.connectionAttempts = 0;
@@ -624,7 +859,7 @@
             }
         }
 
-        // Global variables
+        // STEP 3: Global variables with motion sensor manager
         let connected = false;
         let token = '';
         let velocityX = 0;
@@ -634,7 +869,8 @@
         let restPositionY = 0;
         let isCalibrating = false;
         let spaceshipProcessor = new SpaceshipMotionProcessor();
-        let connectionHealth = new ConnectionHealth(); // STEP 2: Health tracking
+        let connectionHealth = new ConnectionHealth();
+        let motionSensorManager = new MotionSensorManager(); // STEP 3: New manager
 
         // DOM elements
         const setupScreen = document.getElementById('setupScreen');
@@ -651,8 +887,9 @@
         const statusIndicator = document.getElementById('statusIndicator');
         const errorDisplay = document.getElementById('errorDisplay');
         const errorMessage = document.getElementById('errorMessage');
+        const motionIndicator = document.getElementById('motionIndicator');
 
-        // STEP 2: Enhanced error display with motion diagnostics
+        // STEP 3: Enhanced error display with motion diagnostics
         function showError(message, isTemporary = true) {
             errorDisplay.style.display = 'block';
             errorMessage.textContent = message;
@@ -666,14 +903,16 @@
         }
 
         function showMotionDiagnostic() {
-            const health = spaceshipProcessor.getHealthInfo();
+            const motionHealth = motionSensorManager.getHealthReport();
+            const processorHealth = spaceshipProcessor.getHealthInfo();
             const connHealth = connectionHealth.getHealthReport();
             
-            const diagnostic = `Motion: ${health.successRate.toFixed(0)}% | Conn: ${connHealth.successRate}% | Resp: ${connHealth.avgResponseTime}ms`;
+            const diagnostic = `Motion: ${motionHealth.totalEvents} events, ${motionHealth.timeSinceLastMotion}ms ago | Conn: ${connHealth.successRate}%`;
             showError(diagnostic, true);
             
-            console.log('📊 Full Diagnostic:', {
-                motion: health,
+            console.log('📊 STEP 3 Full Diagnostic:', {
+                motion: motionHealth,
+                processor: processorHealth,
                 connection: connHealth,
                 currentVelocity: { x: velocityX, y: velocityY },
                 restPosition: { x: restPositionX, y: restPositionY },
@@ -713,7 +952,7 @@
             }, 100);
         }
 
-        // STEP 2: Enhanced connect handler with comprehensive error handling
+        // STEP 3: Completely rewritten connect handler with motion sensor manager
         async function handleConnect() {
             const isReconnect = connected && token;
             const startTime = Date.now();
@@ -723,7 +962,7 @@
             hideError();
 
             try {
-                console.log('🔗 STEP 2: Attempting enhanced connection to /start');
+                console.log('🔗 STEP 3: Attempting connection with motion sensor keep-alive');
                 
                 const response = await fetch('/start', {
                     method: 'POST',
@@ -742,30 +981,21 @@
                 }
 
                 const data = await response.json();
-                console.log('📦 Enhanced server data:', data);
+                console.log('📦 Server data:', data);
                 
                 if (!data.token) throw new Error('No token received from server');
 
                 token = data.token;
                 tokenElement.textContent = token;
                 console.log(`🎯 Token received: ${token}`);
-                console.log(`📊 Session info:`, data.sessionInfo);
 
                 if (!connected) {
-                    // First time connection - request motion permission
-                    if (typeof DeviceMotionEvent !== 'undefined') {
-                        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                            console.log('📱 Requesting motion permission...');
-                            const permission = await DeviceMotionEvent.requestPermission();
-                            if (permission !== 'granted') {
-                                throw new Error('Motion sensor permission denied');
-                            }
-                            console.log('✅ Motion permission granted');
-                        }
-                        window.addEventListener('devicemotion', handleMotion, { passive: true });
-                        console.log('📱 Motion listener added');
-                    } else {
-                        throw new Error('Device motion not supported on this device');
+                    // STEP 3: Initialize motion sensor manager instead of direct listener
+                    try {
+                        await motionSensorManager.initialize();
+                        console.log('✅ Motion sensor keep-alive system activated');
+                    } catch (motionError) {
+                        throw new Error(`Motion sensor setup failed: ${motionError.message}`);
                     }
 
                     connected = true;
@@ -794,7 +1024,7 @@
                     updateStatus('', 'error');
                 }
                 
-                // STEP 2: Enhanced error handling with specific messages
+                // Enhanced error handling
                 let errorMsg = error.message;
                 if (error.message.includes('Failed to fetch')) {
                     errorMsg = 'Сървърът не отговаря - проверете интернет връзката';
@@ -804,11 +1034,11 @@
                     errorMsg = 'Няма разрешение за сензори - рестартирайте приложението';
                 } else if (error.message.includes('Device motion not supported')) {
                     errorMsg = 'Устройството не поддържа motion сензори';
+                } else if (error.message.includes('Motion sensor setup failed')) {
+                    errorMsg = 'Грешка в motion сензора - опитайте отново';
                 }
                 
                 showError(errorMsg, false);
-                
-                // Show health info in console
                 console.log('📊 Connection Health:', connectionHealth.getHealthReport());
             }
         }
@@ -818,7 +1048,8 @@
                 'success': 'Готов',
                 'error': 'Грешка',
                 'info': 'Некалибриран',
-                'calibrating': 'Калибриране'
+                'calibrating': 'Калибриране',
+                'motion-active': 'Активен'
             };
 
             if (isCalibrating && type !== 'calibrating') {
@@ -827,7 +1058,7 @@
 
             statusIndicator.textContent = messages[type] || 'Некалибриран';
             statusIndicator.className = `status-indicator ${type}`;
-            connectionIndicator.classList.toggle('connected', type === 'success');
+            connectionIndicator.classList.toggle('connected', type === 'success' || type === 'motion-active');
         }
 
         function startCalibration() {
@@ -843,16 +1074,17 @@
             recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
-            console.log('🎯 Starting enhanced calibration - need 120 samples');
+            console.log('🎯 Starting calibration with motion sensor keep-alive');
         }
 
-        // STEP 2: Enhanced motion handling with error recovery
+        // STEP 3: Enhanced motion handling - now called by MotionSensorManager
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
         let motionErrorCount = 0;
 
-        function handleMotion(event) {
+        // Make this function global so MotionSensorManager can call it
+        window.handleMotion = function(event) {
             if (!connected || !token) {
                 console.log('❌ Motion ignored - not connected');
                 return;
@@ -870,7 +1102,7 @@
 
                 updateCounter++;
 
-                // STEP 2: Motion data validation
+                // Motion data validation
                 if (isNaN(rawX) || isNaN(rawY) || isNaN(rawZ)) {
                     motionErrorCount++;
                     console.warn('⚠️ Invalid motion data received');
@@ -908,9 +1140,9 @@
                             recalibrateButton.classList.add('ready');
                             recalibrateButton.disabled = false;
 
-                            updateStatus('', 'success');
+                            updateStatus('', 'motion-active');
                             hideError();
-                            console.log('🎯 Enhanced calibration complete - motion control ready!');
+                            console.log('🎯 Calibration complete with motion sensor keep-alive!');
                         }
                     }
                     return;
@@ -940,25 +1172,31 @@
                     yElement.textContent = velocityY.toFixed(1);
                     xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
                     yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
+                    
+                    // STEP 3: Update status to show active motion
+                    if (Math.abs(velocityX) > 0.5 || Math.abs(velocityY) > 0.5) {
+                        updateStatus('', 'motion-active');
+                    }
                 }
 
-                // STEP 2: Enhanced motion data transmission with health info
+                // Enhanced motion data transmission
                 if (updateCounter % 50 === 0) {
                     const health = spaceshipProcessor.getHealthInfo();
-                    console.log(`📊 Motion Health: ${health.successRate.toFixed(1)}% success, ${health.samples} samples`);
+                    const motionHealth = motionSensorManager.getHealthReport();
+                    console.log(`📊 Motion Health: Processor ${health.successRate.toFixed(1)}% | Sensor ${motionHealth.totalEvents} events`);
                 }
 
                 console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
-                debouncedSendUpdate(velocityX, velocityY, 200);
+                debouncedSendUpdate(velocityX, velocityY, 150); // Slightly faster updates
 
             } catch (error) {
                 motionErrorCount++;
                 console.error('❌ Motion handling error:', error);
                 showError(`Motion error: ${error.message}`, true);
             }
-        }
+        };
 
-        function debouncedSendUpdate(x, y, delay = 200) {
+        function debouncedSendUpdate(x, y, delay = 150) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
                 sendUpdate(x, y);
@@ -968,7 +1206,7 @@
         let requestInProgress = false;
         let lastSuccessfulUpdate = Date.now();
 
-        // STEP 2: Significantly enhanced server communication
+        // Enhanced server communication (from Step 2)
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
 
@@ -976,7 +1214,7 @@
                 requestInProgress = true;
                 const startTime = Date.now();
                 
-                console.log(`📡 STEP 2: Sending enhanced update to: ${window.location.origin}/update`);
+                console.log(`📡 STEP 3: Enhanced update to: ${window.location.origin}/update`);
                 console.log(`📡 Data: token=${token}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
 
                 const response = await fetch('/update', {
@@ -990,14 +1228,13 @@
                 });
 
                 connectionHealth.recordResponseTime(startTime);
-                console.log(`📡 Enhanced response: ${response.status} ${response.statusText}`);
+                console.log(`📡 Response: ${response.status} ${response.statusText}`);
 
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.log(`❌ Server error response: ${errorText}`);
                     updateStatus('', 'error');
                     
-                    // STEP 2: Better error handling for different status codes
                     if (response.status === 400) {
                         showError('Невалидни данни - проверете връзката', true);
                     } else if (response.status === 500) {
@@ -1009,17 +1246,16 @@
                     connectionHealth.recordFailure(`${response.status}: ${errorText}`);
                 } else {
                     const result = await response.json();
-                    console.log(`✅ Enhanced server response:`, result);
+                    console.log(`✅ Server response:`, result);
                     
                     lastSuccessfulUpdate = Date.now();
                     connectionHealth.recordSuccess();
                     
                     if (!isCalibrating) {
-                        updateStatus('', 'success');
+                        updateStatus('', 'motion-active');
                         hideError();
                     }
                     
-                    // STEP 2: Log update count and health info
                     if (result.updateCount && result.updateCount % 10 === 0) {
                         console.log(`📊 Update milestone: ${result.updateCount} updates sent`);
                         const health = connectionHealth.getHealthReport();
@@ -1027,11 +1263,10 @@
                     }
                 }
             } catch (error) {
-                console.log(`❌ Enhanced network error:`, error);
+                console.log(`❌ Network error:`, error);
                 connectionHealth.recordFailure(error.message);
                 updateStatus('', 'error');
                 
-                // STEP 2: More specific error messages
                 let errorMsg = 'Мрежова грешка';
                 if (error.message.includes('Failed to fetch')) {
                     errorMsg = 'Няма връзка със сървъра';
@@ -1043,7 +1278,6 @@
                 
                 showError(errorMsg, true);
                 
-                // STEP 2: Show detailed health report on errors
                 const health = connectionHealth.getHealthReport();
                 console.log(`📊 Error - Connection Health Report:`, health);
             } finally {
@@ -1051,19 +1285,19 @@
             }
         }
 
-        // Initialize everything with enhanced error handling
+        // STEP 3: Initialize everything with motion sensor keep-alive
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 STEP 2: Enhanced Spaceship Controller initialized');
+            console.log('🚀 STEP 3: Motion Sensor Keep-Alive System initialized');
 
-            // SIMPLE START BUTTON
+            // Start button
             startButton.onclick = () => {
-                console.log('🚀 Starting enhanced spaceship mission...');
+                console.log('🚀 Starting mission with motion sensor keep-alive...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
-                console.log('✅ Enhanced spaceship mission started successfully');
+                console.log('✅ Mission started with enhanced motion system');
             };
 
             // Enhanced button handlers
@@ -1072,15 +1306,18 @@
             let resetTimer;
             recalibrateButton.onmousedown = recalibrateButton.ontouchstart = () => {
                 resetTimer = setTimeout(() => {
-                    console.log('🔧 FORCE RESET - clearing calibration state');
+                    console.log('🔧 FORCE RESET - clearing all states');
                     isCalibrating = false;
                     recalibrateButton.textContent = 'Рекалибрирай';
                     recalibrateButton.classList.remove('calibrating');
                     recalibrateButton.classList.add('ready');
                     recalibrateButton.disabled = false;
-                    updateStatus('', 'success');
+                    updateStatus('', 'motion-active');
                     hideError();
-                    showError('Force reset завършен - опитайте движение', true);
+                    showError('Force reset завършен', true);
+                    
+                    // Restart motion sensor
+                    motionSensorManager.restartMotionSensor();
                 }, 3000);
             };
             
@@ -1089,27 +1326,56 @@
                 if (!recalibrateButton.disabled && recalibrateButton.classList.contains('ready')) {
                     startCalibration();
                 } else {
-                    // Show diagnostic when button is pressed but not ready
+                    // Show enhanced diagnostic
                     showMotionDiagnostic();
                 }
             };
 
             hideAddressBar();
 
-            // STEP 2: Periodic health reporting
+            // STEP 3: Enhanced health monitoring with motion sensor status
             setInterval(() => {
                 if (connected) {
                     const timeSinceLastUpdate = Date.now() - lastSuccessfulUpdate;
-                    if (timeSinceLastUpdate > 10000) { // 10 seconds without update
+                    const motionHealth = motionSensorManager.getHealthReport();
+                    
+                    if (timeSinceLastUpdate > 10000) {
                         console.warn(`⚠️ No successful updates for ${timeSinceLastUpdate}ms`);
                         showError(`Няма актуализации ${Math.floor(timeSinceLastUpdate/1000)}s`, true);
                     }
+                    
+                    // Log comprehensive health every 30 seconds
+                    if (Date.now() % 30000 < 15000) {
+                        console.log('📊 STEP 3 System Health:', {
+                            motion: motionHealth,
+                            connection: connectionHealth.getHealthReport(),
+                            processor: spaceshipProcessor.getHealthInfo()
+                        });
+                    }
                 }
             }, 15000);
+
+            // STEP 3: Keep screen active for motion sensors
+            setInterval(() => {
+                if (connected && !isCalibrating) {
+                    // Gentle screen interaction to prevent sleep
+                    document.body.style.opacity = '0.999';
+                    setTimeout(() => {
+                        document.body.style.opacity = '1';
+                    }, 10);
+                }
+            }, 30000); // Every 30 seconds
         });
 
         window.addEventListener('load', hideAddressBar);
         window.addEventListener('resize', hideAddressBar);
+
+        // STEP 3: Prevent page unload to maintain wake lock
+        window.addEventListener('beforeunload', async () => {
+            if (motionSensorManager.wakeLock) {
+                await motionSensorManager.releaseWakeLock();
+            }
+        });
     </script>
 </body>
 </html>
