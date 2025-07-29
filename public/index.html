@@ -1132,18 +1132,18 @@
                 const steeringTilt = rawSteering - restPositionX;
                 const throttleTilt = rawThrottle - restPositionY;
 
-                // PROGRESSIVE SENSITIVITY: Replace hard dead zones with smooth curves
+                // PROGRESSIVE SENSITIVITY: Adjusted threshold for less twitchy movement
                 const applyProgressiveDeadZone = (tilt, threshold) => {
                     const absTilt = Math.abs(tilt);
                     const sign = Math.sign(tilt);
                     
-                    if (absTilt < 0.5) {
-                        // Very small movements: minimal response to avoid noise
-                        return sign * absTilt * 0.1;
+                    if (absTilt < 1.0) {
+                        // Ignore very small movements to avoid twitchiness
+                        return 0;
                     } else if (absTilt < threshold) {
-                        // Gradual ramp-up from 0.5° to threshold
-                        const progress = (absTilt - 0.5) / (threshold - 0.5);
-                        return sign * (0.05 + progress * (absTilt - 0.05));
+                        // Gradual ramp-up from 1.0° to threshold
+                        const progress = (absTilt - 1.0) / (threshold - 1.0);
+                        return sign * progress * (absTilt * 0.3);
                     } else {
                         // Above threshold: full sensitivity
                         return tilt;
