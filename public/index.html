@@ -944,17 +944,39 @@
             hideAddressBar();
         });
 
-        // Add page visibility debugging
+        // Enhanced page visibility debugging with motion control
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
-                console.log('📱 Page hidden - screen turned off or app backgrounded');
-                if (connected && !isCalibrating) {
-                    console.log('📡 Sending final position before page hidden');
-                    sendUpdate(velocityX, velocityY);
+                console.log('📱 Page hidden - clearing motion and sending neutral');
+                // Clear any pending motion updates
+                clearTimeout(sendTimeout);
+                // Send neutral position immediately
+                if (connected) {
+                    sendUpdate(0, 0);
                 }
+                // Reset motion processor
+                spaceshipProcessor = new SpaceshipMotionProcessor();
+                velocityX = 0;
+                velocityY = 0;
             } else {
-                console.log('📱 Page visible - screen turned on or app foregrounded');
+                console.log('📱 Page visible - motion control resumed');
+                // Reset motion processor when returning
+                spaceshipProcessor = new SpaceshipMotionProcessor();
             }
+        });
+
+        // Prevent motion accumulation when page loses focus
+        window.addEventListener('blur', () => {
+            console.log('📱 Window blur - clearing motion');
+            clearTimeout(sendTimeout);
+            if (connected && !isCalibrating) {
+                sendUpdate(0, 0);
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            console.log('📱 Window focus - motion ready');
+            spaceshipProcessor = new SpaceshipMotionProcessor();
         });
     </script>
 </body>
