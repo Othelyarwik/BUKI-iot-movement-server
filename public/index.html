@@ -277,17 +277,17 @@
             background: rgba(255, 136, 0, 0.2);
             color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
-            font-family: 'Courier New', monospace; /* Fixed-width font for stable text */
-            font-size: 14px; /* Slightly smaller to fit percentage */
-            letter-spacing: 0; /* Tighter spacing for percentage text */
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 0;
         }
 
         .recalibrate-button.calibrating {
             background: linear-gradient(135deg, #ffaa00, #ff8800);
             color: #001122;
             cursor: not-allowed;
-            font-family: 'Courier New', monospace; /* Fixed-width font prevents jumping */
-            font-size: 14px; /* Smaller text for percentage display */
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
             letter-spacing: 0;
         }
 
@@ -295,8 +295,8 @@
             background: linear-gradient(135deg, #ff8800, #ff4400);
             color: white;
             cursor: pointer;
-            font-family: 'Orbitron', monospace; /* Back to original font when ready */
-            font-size: 16px; /* Back to original size */
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
             letter-spacing: normal;
         }
 
@@ -356,45 +356,6 @@
             font-family: 'Orbitron', monospace;
         }
 
-        .status-area {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(255, 100, 100, 0.4);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            min-width: 120px;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .status-text {
-            font-size: 14px;
-            color: #ffaaaa;
-            font-weight: 600;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .calibration-progress {
-            width: 100px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            margin: 12px 0;
-            overflow: hidden;
-        }
-
-        .calibration-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ffff);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
         .connection-indicator {
             position: fixed;
             top: 15px;
@@ -407,23 +368,8 @@
             z-index: 1000;
         }
 
-        .debug-overlay {
-            position: fixed;
-            top: 50px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            padding: 5px;
-            border-radius: 5px;
-            z-index: 9999;
-            max-width: 200px;
-            display: none;
-        }
-
-        .debug-overlay.show {
-            display: block;
+        .connection-indicator.connected {
+            background: #44ff44;
         }
 
         /* RESPONSIVE DESIGN */
@@ -477,11 +423,6 @@
 </head>
 <body>
     <div class="connection-indicator" id="connectionIndicator"></div>
-
-    <!-- Debug panel for mobile -->
-    <div id="debugPanel" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #00ff00; font-family: 'Courier New', monospace; font-size: 10px; padding: 5px; border-radius: 5px; max-width: 90%; max-height: 150px; overflow-y: auto; z-index: 9999; display: none;">
-        <div id="debugLog"></div>
-    </div>
 
     <div class="setup-screen" id="setupScreen">
         <div class="main-content">
@@ -585,22 +526,7 @@
             }
         }
 
-        // Global debug system for mobile
-        const debugLog = document.getElementById('debugLog');
-        const debugPanel = document.getElementById('debugPanel');
-        let debugMessages = [];
-
-        function addDebugLog(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            debugMessages.push(`${timestamp}: ${message}`);
-            if (debugMessages.length > 20) debugMessages.shift(); // Keep last 20
-            
-            debugLog.innerHTML = debugMessages.map(msg => `<div>${msg}</div>`).join('');
-            debugPanel.scrollTop = debugPanel.scrollHeight;
-            
-            // Also log to console
-            console.log(message);
-        }
+        // Global variables
         let connected = false;
         let token = '';
         let velocityX = 0;
@@ -621,10 +547,6 @@
         const yElement = document.getElementById('y');
         const xValueElement = document.getElementById('xValue');
         const yValueElement = document.getElementById('yValue');
-        const statusArea = document.getElementById('statusArea');
-        const statusText = document.getElementById('statusText');
-        const calibrationProgress = document.getElementById('calibrationProgress');
-        const calibrationFill = document.getElementById('calibrationFill');
         const recalibrateButton = document.getElementById('recalibrateButton');
         const connectionIndicator = document.getElementById('connectionIndicator');
         const statusIndicator = document.getElementById('statusIndicator');
@@ -665,38 +587,47 @@
             connectButton.textContent = isReconnect ? 'Генериране...' : 'Свързване...';
 
             try {
+                console.log('🔗 Attempting connection to /start');
+                
                 const response = await fetch('/start', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
 
-        window.addEventListener('load', hideAddressBar);
-        window.addEventListener('resize', hideAddressBar);
+                console.log(`📡 Connection response: ${response.status} ${response.statusText}`);
 
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
 
                 const data = await response.json();
+                console.log('📦 Server data:', data);
+                
                 if (!data.token) throw new Error('No token received');
 
                 token = data.token;
                 tokenElement.textContent = token;
+                console.log(`🎯 Token received: ${token}`);
 
                 if (!connected) {
                     // First time connection - request motion permission
                     if (typeof DeviceMotionEvent !== 'undefined') {
                         if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                            console.log('📱 Requesting motion permission...');
                             const permission = await DeviceMotionEvent.requestPermission();
                             if (permission !== 'granted') {
                                 throw new Error('Motion sensor permission denied');
                             }
+                            console.log('✅ Motion permission granted');
                         }
                         window.addEventListener('devicemotion', handleMotion, { passive: true });
+                        console.log('📱 Motion listener added');
                     } else {
                         throw new Error('Device motion not supported');
                     }
 
                     connected = true;
-                    startCalibration();
                 }
 
                 // Update button states
@@ -704,14 +635,13 @@
                 connectButton.textContent = '🔄 Нов код';
                 connectButton.classList.add('connected');
                 
-                if (isReconnect) {
-                    updateStatus('', 'success');
-                    console.log('🔄 New token generated:', token);
-                } else {
-                    console.log('🚀 First connection established:', token);
+                // Start calibration only on first connection
+                if (!isReconnect) {
+                    startCalibration();
                 }
 
             } catch (error) {
+                console.log('❌ Connection failed:', error);
                 connectButton.disabled = false;
                 connectButton.textContent = connected ? '🔄 Нов код' : '🔗 Свържи се';
                 if (!connected) {
@@ -719,7 +649,16 @@
                     tokenElement.textContent = 'Грешка при свързване';
                     updateStatus('', 'error');
                 }
-                alert(`Грешка при свързване: ${error.message}`);
+                
+                // Show specific error message
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = 'Сървърът не отговаря';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMsg = 'Мрежова грешка';
+                }
+                
+                alert(`Грешка при свързване: ${errorMsg}`);
             }
         }
 
@@ -732,9 +671,9 @@
                 'calibrating': 'Калибриране'
             };
 
-            // FIXED: Don't change status during calibration unless explicitly told
+            // Don't change status during calibration unless explicitly told
             if (isCalibrating && type !== 'calibrating') {
-                return; // Ignore status changes during calibration
+                return;
             }
 
             statusIndicator.textContent = messages[type] || 'Некалибриран';
@@ -746,9 +685,6 @@
             isCalibrating = true;
             calibrationSamples = [];
 
-            // CRITICAL FIX: Send neutral data immediately when calibration starts
-            sendUpdate(0, 0);
-
             // Update central status indicator
             updateStatus('', 'calibrating');
 
@@ -759,22 +695,22 @@
             recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
-            console.log('🎯 Starting calibration - sending neutral data to server');
+            console.log('🎯 Starting calibration - need 120 samples');
         }
 
-        // Motion handling with velocity-based smoothing and better debugging
+        // Simplified motion handling
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
 
         function handleMotion(event) {
             if (!connected || !token) {
-                console.log('❌ Motion ignored - not connected or no token');
+                console.log('❌ Motion ignored - not connected');
                 return;
             }
 
             const now = Date.now();
-            if (now - lastMotionTime < 50) return; // 20 FPS processing
+            if (now - lastMotionTime < 50) return;
             lastMotionTime = now;
 
             const accel = event.accelerationIncludingGravity || {};
@@ -782,24 +718,21 @@
             const rawY = parseFloat(accel.y) || 0;
             const rawZ = parseFloat(accel.z) || 0;
 
-            console.log(`📱 Raw motion: x=${rawX.toFixed(2)}, y=${rawY.toFixed(2)}, z=${rawZ.toFixed(2)}`);
-
             updateCounter++;
 
             let rawSteering = rawY;
             let rawThrottle = rawZ;
 
+            // Handle calibration
             if (isCalibrating) {
                 if (calibrationSamples.length < 120) {
                     calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
 
-                    // Update progress on button text with clean percentage only
                     const progress = Math.floor((calibrationSamples.length / 120) * 100);
                     recalibrateButton.textContent = `${progress.toString().padStart(3, ' ')}%`;
 
-                    console.log(`📊 Calibration progress: ${calibrationSamples.length}/120 (${progress}%)`);
-
                     if (calibrationSamples.length === 120) {
+                        // Calculate rest position
                         const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
                         const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
 
@@ -809,29 +742,23 @@
                         restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
                         restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
 
-                        console.log(`🎯 Calibration complete! Rest position: X=${restPositionX.toFixed(2)}, Y=${restPositionY.toFixed(2)}`);
-
+                        // Finish calibration
                         calibrationSamples = null;
                         isCalibrating = false;
 
-                        // CRITICAL FIX: Send neutral data immediately after calibration
-                        sendUpdate(0, 0);
-
-                        // Update button states after calibration
                         recalibrateButton.textContent = 'Рекалибрирай';
                         recalibrateButton.classList.remove('calibrating');
                         recalibrateButton.classList.add('ready');
                         recalibrateButton.disabled = false;
 
                         updateStatus('', 'success');
-                        console.log('🎯 Spaceship calibration complete - sending neutral data and ready for motion control!');
+                        console.log('🎯 Calibration complete - motion control ready!');
                     }
                 }
-                return;
+                return; // Don't send any data during calibration
             }
 
-            if (isCalibrating) return;
-
+            // Process and send motion data when NOT calibrating
             const steeringTilt = rawSteering - restPositionX;
             const throttleTilt = rawThrottle - restPositionY;
 
@@ -849,36 +776,23 @@
             velocityX = Math.max(-6, Math.min(6, processed.x));
             velocityY = Math.max(-6, Math.min(6, processed.y));
 
-            console.log(`🎮 Processed motion: steering=${processedSteering.toFixed(2)}, throttle=${processedThrottle.toFixed(2)} → velocityX=${velocityX.toFixed(1)}, velocityY=${velocityY.toFixed(1)}`);
-
+            // Update display
             if (updateCounter % 3 === 0) {
                 xElement.textContent = velocityX.toFixed(1);
                 yElement.textContent = velocityY.toFixed(1);
-
-                // Active value highlighting
                 xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
                 yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
             }
 
-            // Velocity-based update rate - faster for rapid movement
-            const intensity = Math.abs(velocityX) + Math.abs(velocityY);
-            const updateRate = intensity > 4 ? 150 : 200;
-            
-            // FIXED: Only send real data when NOT calibrating
-            if (!isCalibrating) {
-                console.log(`🎮 Normal play mode - sending real data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
-                debouncedSendUpdate(velocityX, velocityY, updateRate);
-            } else {
-                console.log(`🎯 Calibration mode - sending neutral data: x=0, y=0`);
-                // Send neutral data during calibration
-                debouncedSendUpdate(0, 0, updateRate);
-            }
+            // Send motion data with debugging
+            console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
+            debouncedSendUpdate(velocityX, velocityY, 200);
         }
 
         function debouncedSendUpdate(x, y, delay = 200) {
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
-                sendUpdate(x, y); // Send whatever values are passed
+                sendUpdate(x, y);
             }, delay);
         }
 
@@ -889,34 +803,39 @@
 
             try {
                 requestInProgress = true;
-
-                console.log(`📡 Sending to server: x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
+                
+                console.log(`📡 Sending to: ${window.location.origin}/update`);
+                console.log(`📡 Data: token=${token}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
 
                 const response = await fetch('/update', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ token, x, y })
                 });
 
+                console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+
                 if (!response.ok) {
-                    console.log('❌ Server update failed:', response.status);
-                    // FIXED: Don't change status during calibration
-                    if (!isCalibrating) {
-                        updateStatus('', 'error');
-                    }
+                    const errorText = await response.text();
+                    console.log(`❌ Server error response: ${errorText}`);
+                    updateStatus('', 'error');
+                    alert(`Server error: ${response.status} - ${errorText}`);
                 } else {
-                    console.log('✅ Server update success');
-                    // FIXED: Don't change status during calibration  
+                    const result = await response.json();
+                    console.log(`✅ Server response:`, result);
                     if (!isCalibrating) {
                         updateStatus('', 'success');
                     }
                 }
             } catch (error) {
-                console.log('❌ Network error:', error);
-                // FIXED: Don't change status during calibration
-                if (!isCalibrating) {
-                    updateStatus('', 'error');
-                }
+                console.log(`❌ Network error:`, error);
+                updateStatus('', 'error');
+                
+                // Show error in alert for debugging
+                alert(`Network Error: ${error.message}`);
             } finally {
                 requestInProgress = false;
             }
@@ -926,7 +845,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Spaceship Controller initialized');
 
-            // SIMPLE START BUTTON - No complex event handling
+            // SIMPLE START BUTTON
             startButton.onclick = () => {
                 console.log('🚀 Starting spaceship mission...');
                 setupScreen.style.display = 'none';
@@ -964,40 +883,8 @@
             hideAddressBar();
         });
 
-        // Enhanced page visibility debugging with motion control
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                console.log('📱 Page hidden - clearing motion and sending neutral');
-                // Clear any pending motion updates
-                clearTimeout(sendTimeout);
-                // Send neutral position immediately
-                if (connected) {
-                    sendUpdate(0, 0);
-                }
-                // Reset motion processor
-                spaceshipProcessor = new SpaceshipMotionProcessor();
-                velocityX = 0;
-                velocityY = 0;
-            } else {
-                console.log('📱 Page visible - motion control resumed');
-                // Reset motion processor when returning
-                spaceshipProcessor = new SpaceshipMotionProcessor();
-            }
-        });
-
-        // Prevent motion accumulation when page loses focus
-        window.addEventListener('blur', () => {
-            console.log('📱 Window blur - clearing motion');
-            clearTimeout(sendTimeout);
-            if (connected && !isCalibrating) {
-                sendUpdate(0, 0);
-            }
-        });
-
-        window.addEventListener('focus', () => {
-            console.log('📱 Window focus - motion ready');
-            spaceshipProcessor = new SpaceshipMotionProcessor();
-        });
+        window.addEventListener('load', hideAddressBar);
+        window.addEventListener('resize', hideAddressBar);
     </script>
 </body>
 </html>
