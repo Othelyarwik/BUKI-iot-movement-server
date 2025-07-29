@@ -246,7 +246,7 @@ app.post('/update', (req, res) => {
     }
 });
 
-// STEP 2: Enhanced X endpoint with detailed error handling
+// RANGE FIX: Enhanced X endpoint with EXPANDED range (-4 to +4 becomes -8 to +8)
 app.get('/x/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -271,9 +271,10 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        const movement = Math.max(-4, Math.min(4, Math.round(session.x * 1.0)));
+        // RANGE FIX: Expanded from -4 to +4 → -8 to +8, increased multiplier 1.0 → 1.5
+        const movement = Math.max(-8, Math.min(8, Math.round(session.x * 1.5)));
         
-        console.log(`📤 X endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
+        console.log(`📤 EXPANDED X endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/x', token, true, `Value: ${movement}`);
         
         res.status(200).end(movement.toString());
@@ -283,7 +284,7 @@ app.get('/x/:token', (req, res) => {
     }
 });
 
-// STEP 2: Enhanced Y endpoint with detailed error handling
+// RANGE FIX: Enhanced Y endpoint with EXPANDED range (-4 to +4 becomes -8 to +8)
 app.get('/y/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -308,9 +309,10 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        const movement = Math.max(-4, Math.min(4, Math.round(session.y * 1.0)));
+        // RANGE FIX: Expanded from -4 to +4 → -8 to +8, increased multiplier 1.0 → 1.5
+        const movement = Math.max(-8, Math.min(8, Math.round(session.y * 1.5)));
         
-        console.log(`📤 Y endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
+        console.log(`📤 EXPANDED Y endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/y', token, true, `Value: ${movement}`);
         
         res.status(200).end(movement.toString());
@@ -320,7 +322,7 @@ app.get('/y/:token', (req, res) => {
     }
 });
 
-// STEP 2: SIGNIFICANTLY ENHANCED /simple endpoint for PictoBlox with comprehensive monitoring
+// RANGE FIX: Enhanced /simple endpoint with EXPANDED input range
 app.get('/simple/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -366,10 +368,11 @@ app.get('/simple/:token', (req, res) => {
             validY = 0;
         }
 
-        // Smoother mapping to 1-9 scale
+        // RANGE FIX: Smoother mapping to 1-9 scale with EXPANDED input range
         const mapToScale = (velocity) => {
-            const clamped = Math.max(-10, Math.min(10, velocity));
-            const normalized = clamped / 10;
+            // RANGE FIX: Expanded from -10 to +10 → -15 to +15 for wider range
+            const clamped = Math.max(-15, Math.min(15, velocity));
+            const normalized = clamped / 15; // Divide by 15 instead of 10
             const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5);
             const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
@@ -379,10 +382,10 @@ app.get('/simple/:token', (req, res) => {
         const yScaled = mapToScale(validY);
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
         
-        // STEP 2: Comprehensive PictoBlox logging
-        console.log(`🎮 PICTOBLOX REQUEST #${session.health.pictobloxRequestCount}`);
+        // STEP 2: Comprehensive PictoBlox logging with RANGE FIX info
+        console.log(`🎮 EXPANDED RANGE PICTOBLOX REQUEST #${session.health.pictobloxRequestCount}`);
         console.log(`📍 Token: ${token} | Session Age: ${sessionAge}ms`);
-        console.log(`📊 Raw Motion: X=${validX.toFixed(2)}, Y=${validY.toFixed(2)}`);
+        console.log(`📊 Raw Motion: X=${validX.toFixed(2)}, Y=${validY.toFixed(2)} [EXPANDED RANGE]`);
         console.log(`📤 PictoBlox Response: ${result}`);
         console.log(`📈 Phone Updates: ${session.updateCount} | PictoBlox Requests: ${session.health.pictobloxRequestCount}`);
         console.log(`─────────────────────────────────────────────`);
@@ -427,6 +430,7 @@ app.get('/health', (req, res) => {
         stats: sessionStats,
         activeSessions: activeSessions.length,
         sessions: sessionDetails,
+        rangeUpgrade: 'EXPANDED: X/Y ±8, Simple ±15 input',
         endpoints: {
             phone: '/',
             start: '/start',
@@ -459,14 +463,16 @@ app.get('/debug/:token?', (req, res) => {
                 history: session.history,
                 health: session.health
             },
-            serverStats: sessionStats
+            serverStats: sessionStats,
+            rangeInfo: 'EXPANDED RANGES ACTIVE'
         });
     } else {
         res.json({
             message: token ? `Token ${token} not found` : 'System debug info',
             activeSessions: Object.keys(sessions),
             serverStats: sessionStats,
-            availableTokens: Object.keys(sessions)
+            availableTokens: Object.keys(sessions),
+            rangeUpgrade: 'X/Y endpoints: ±8, Simple endpoint: ±15 input'
         });
     }
 });
@@ -494,7 +500,7 @@ app.get('/cache-test', (req, res) => {
 // Start server with enhanced startup info
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 STEP 2 IMPLEMENTATION: Enhanced Data Reliability & Error Handling`);
+    console.log(`🚀 WORKING VERSION + RANGE FIX: Expanded Movement Range`);
     console.log(`🚀 Spaceship Controller Server running on port ${PORT}`);
     console.log(`📱 Phone Interface: http://localhost:${PORT}`);
     console.log(`🧪 Cache Test: http://localhost:${PORT}/cache-test`);
@@ -503,12 +509,14 @@ app.listen(PORT, () => {
     console.log(`🎮 PictoBlox Endpoints:`);
     console.log(`  - Simple: /simple/TOKEN`);
     console.log(`  - X/Y: /x/TOKEN, /y/TOKEN`);
-    console.log(`✨ STEP 2 FEATURES:`);
+    console.log(`✨ ALL WORKING FEATURES PRESERVED:`);
     console.log(`  ✅ Cache prevention (Step 1)`);
-    console.log(`  ✅ Enhanced error handling`);
-    console.log(`  ✅ Comprehensive logging`);
-    console.log(`  ✅ Session health monitoring`);
-    console.log(`  ✅ PictoBlox request tracking`);
-    console.log(`  ✅ Debug endpoints for troubleshooting`);
-    console.log(`📡 Ready for enhanced debugging!`);
+    console.log(`  ✅ Enhanced error handling (Step 2)`);
+    console.log(`  ✅ Throttled updates (Step 3 Fix)`);
+    console.log(`  ✅ Motion sensor keep-alive (Step 3)`);
+    console.log(`🎯 RANGE FIX APPLIED:`);
+    console.log(`  📈 X/Y endpoints: -4 to +4 → -8 to +8 (doubled range)`);
+    console.log(`  📈 Multiplier: 1.0 → 1.5 (50% more sensitive)`);
+    console.log(`  📈 Simple input: -10 to +10 → -15 to +15 (50% wider)`);
+    console.log(`📡 EXPANDED RANGE - LEASH LOOSENED!`);
 });
