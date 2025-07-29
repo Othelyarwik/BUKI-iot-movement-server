@@ -1157,10 +1157,31 @@
                 let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
                 let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
 
-                // SENSITIVITY FIX: DRAMATICALLY INCREASED sensitivity multipliers
+                // SENSITIVITY FIX: Progressive sensitivity curve for better control
+                // Apply progressive curve for finer control at low speeds
+                const applyProgressiveCurve = (value, multiplier) => {
+                    const sign = Math.sign(value);
+                    const abs = Math.abs(value);
+                    
+                    // Progressive curve: gentle at low values, full power at high values
+                    let curved;
+                    if (abs < 2.0) {
+                        // Fine control zone: 50% sensitivity for precise movements
+                        curved = abs * 0.5;
+                    } else if (abs < 4.0) {
+                        // Transition zone: gradually increase sensitivity
+                        curved = 1.0 + (abs - 2.0) * 0.75;
+                    } else {
+                        // Full power zone: full sensitivity for fast movements
+                        curved = 2.5 + (abs - 4.0) * 1.0;
+                    }
+                    
+                    return sign * curved * multiplier;
+                };
+
                 const processed = spaceshipProcessor.addSample(
-                    processedSteering * 4.0,  // SENSITIVITY FIX: Increased from 1.5 to 4.0
-                    processedThrottle * 3.0   // SENSITIVITY FIX: Increased from 1.0 to 3.0
+                    applyProgressiveCurve(processedSteering, 3.2),  // Reduced from 4.0 to 3.2
+                    applyProgressiveCurve(processedThrottle, 2.4)   // Reduced from 3.0 to 2.4
                 );
 
                 velocityX = Math.max(-6, Math.min(6, processed.x));
