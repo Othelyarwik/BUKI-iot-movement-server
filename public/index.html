@@ -372,6 +372,31 @@
             background: #44ff44;
         }
 
+        /* STEP 2: Error message styling */
+        .error-display {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid rgba(255, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .error-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #ff6666;
+            font-weight: 600;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #ffaaaa;
+            font-family: 'Courier New', monospace;
+        }
+
         /* RESPONSIVE DESIGN */
         @media screen and (max-width: 480px) {
             .main-content h1 {
@@ -488,6 +513,12 @@
                     </div>
                 </div>
             </div>
+
+            <!-- STEP 2: Error display for debugging -->
+            <div class="error-display" id="errorDisplay">
+                <div class="error-title">Диагностика</div>
+                <div class="error-message" id="errorMessage">Няма грешки</div>
+            </div>
         </div>
 
         <div class="right-controls">
@@ -496,7 +527,7 @@
     </div>
 
     <script>
-        // Simple Motion Processor for Spaceship Navigation
+        // STEP 2: Enhanced Motion Processor with error tracking
         class SpaceshipMotionProcessor {
             constructor() {
                 this.samples = [];
@@ -504,25 +535,90 @@
                 this.smoothedX = 0;
                 this.smoothedY = 0;
                 this.lastTime = Date.now();
+                this.errorCount = 0;
+                this.successCount = 0;
             }
 
             addSample(rawX, rawY) {
-                const now = Date.now();
-                const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
-                this.lastTime = now;
+                try {
+                    const now = Date.now();
+                    const deltaTime = Math.min((now - this.lastTime) / 1000, 0.1);
+                    this.lastTime = now;
 
-                this.samples.push({ x: rawX, y: rawY });
-                if (this.samples.length > this.maxSamples) {
-                    this.samples.shift();
+                    this.samples.push({ x: rawX, y: rawY });
+                    if (this.samples.length > this.maxSamples) {
+                        this.samples.shift();
+                    }
+
+                    const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
+                    const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
+
+                    this.smoothedX = avgX;
+                    this.smoothedY = avgY;
+                    this.successCount++;
+
+                    return { x: this.smoothedX, y: this.smoothedY };
+                } catch (error) {
+                    this.errorCount++;
+                    console.error('Motion processing error:', error);
+                    return { x: 0, y: 0 };
                 }
+            }
 
-                const avgX = this.samples.reduce((sum, s) => sum + s.x, 0) / this.samples.length;
-                const avgY = this.samples.reduce((sum, s) => sum + s.y, 0) / this.samples.length;
+            getHealthInfo() {
+                return {
+                    samples: this.samples.length,
+                    successCount: this.successCount,
+                    errorCount: this.errorCount,
+                    successRate: this.successCount / (this.successCount + this.errorCount) * 100
+                };
+            }
+        }
 
-                this.smoothedX = avgX;
-                this.smoothedY = avgY;
+        // STEP 2: Enhanced connection health tracking
+        class ConnectionHealth {
+            constructor() {
+                this.connectionAttempts = 0;
+                this.successfulConnections = 0;
+                this.failedConnections = 0;
+                this.lastErrorMessage = '';
+                this.lastErrorTime = null;
+                this.serverResponseTimes = [];
+            }
 
-                return { x: this.smoothedX, y: this.smoothedY };
+            recordSuccess() {
+                this.successfulConnections++;
+                this.connectionAttempts++;
+            }
+
+            recordFailure(errorMessage) {
+                this.failedConnections++;
+                this.connectionAttempts++;
+                this.lastErrorMessage = errorMessage;
+                this.lastErrorTime = Date.now();
+            }
+
+            recordResponseTime(startTime) {
+                const responseTime = Date.now() - startTime;
+                this.serverResponseTimes.push(responseTime);
+                if (this.serverResponseTimes.length > 10) {
+                    this.serverResponseTimes.shift();
+                }
+            }
+
+            getAverageResponseTime() {
+                if (this.serverResponseTimes.length === 0) return 0;
+                return this.serverResponseTimes.reduce((sum, time) => sum + time, 0) / this.serverResponseTimes.length;
+            }
+
+            getHealthReport() {
+                return {
+                    attempts: this.connectionAttempts,
+                    successRate: this.connectionAttempts > 0 ? (this.successfulConnections / this.connectionAttempts * 100).toFixed(1) : 0,
+                    avgResponseTime: this.getAverageResponseTime().toFixed(0),
+                    lastError: this.lastErrorMessage,
+                    lastErrorTime: this.lastErrorTime ? new Date(this.lastErrorTime).toLocaleTimeString() : null
+                };
             }
         }
 
@@ -536,6 +632,7 @@
         let restPositionY = 0;
         let isCalibrating = false;
         let spaceshipProcessor = new SpaceshipMotionProcessor();
+        let connectionHealth = new ConnectionHealth(); // STEP 2: Health tracking
 
         // DOM elements
         const setupScreen = document.getElementById('setupScreen');
@@ -550,6 +647,25 @@
         const recalibrateButton = document.getElementById('recalibrateButton');
         const connectionIndicator = document.getElementById('connectionIndicator');
         const statusIndicator = document.getElementById('statusIndicator');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // STEP 2: Enhanced error display
+        function showError(message, isTemporary = true) {
+            errorDisplay.style.display = 'block';
+            errorMessage.textContent = message;
+            console.log(`🚨 Error shown: ${message}`);
+            
+            if (isTemporary) {
+                setTimeout(() => {
+                    errorDisplay.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function hideError() {
+            errorDisplay.style.display = 'none';
+        }
 
         // Simple fullscreen function
         function enterFullscreen() {
@@ -579,21 +695,27 @@
             }, 100);
         }
 
-        // Connect button handler with new code functionality
+        // STEP 2: Enhanced connect handler with comprehensive error handling
         async function handleConnect() {
             const isReconnect = connected && token;
+            const startTime = Date.now();
             
             connectButton.disabled = true;
             connectButton.textContent = isReconnect ? 'Генериране...' : 'Свързване...';
+            hideError();
 
             try {
-                console.log('🔗 Attempting connection to /start');
+                console.log('🔗 STEP 2: Attempting enhanced connection to /start');
                 
                 const response = await fetch('/start', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Timestamp': Date.now().toString()
+                    }
                 });
 
+                connectionHealth.recordResponseTime(startTime);
                 console.log(`📡 Connection response: ${response.status} ${response.statusText}`);
 
                 if (!response.ok) {
@@ -602,13 +724,14 @@
                 }
 
                 const data = await response.json();
-                console.log('📦 Server data:', data);
+                console.log('📦 Enhanced server data:', data);
                 
-                if (!data.token) throw new Error('No token received');
+                if (!data.token) throw new Error('No token received from server');
 
                 token = data.token;
                 tokenElement.textContent = token;
                 console.log(`🎯 Token received: ${token}`);
+                console.log(`📊 Session info:`, data.sessionInfo);
 
                 if (!connected) {
                     // First time connection - request motion permission
@@ -624,7 +747,7 @@
                         window.addEventListener('devicemotion', handleMotion, { passive: true });
                         console.log('📱 Motion listener added');
                     } else {
-                        throw new Error('Device motion not supported');
+                        throw new Error('Device motion not supported on this device');
                     }
 
                     connected = true;
@@ -634,6 +757,7 @@
                 connectButton.disabled = false;
                 connectButton.textContent = '🔄 Нов код';
                 connectButton.classList.add('connected');
+                connectionHealth.recordSuccess();
                 
                 // Start calibration only on first connection
                 if (!isReconnect) {
@@ -642,6 +766,8 @@
 
             } catch (error) {
                 console.log('❌ Connection failed:', error);
+                connectionHealth.recordFailure(error.message);
+                
                 connectButton.disabled = false;
                 connectButton.textContent = connected ? '🔄 Нов код' : '🔗 Свържи се';
                 if (!connected) {
@@ -650,20 +776,26 @@
                     updateStatus('', 'error');
                 }
                 
-                // Show specific error message
+                // STEP 2: Enhanced error handling with specific messages
                 let errorMsg = error.message;
                 if (error.message.includes('Failed to fetch')) {
-                    errorMsg = 'Сървърът не отговаря';
+                    errorMsg = 'Сървърът не отговаря - проверете интернет връзката';
                 } else if (error.message.includes('NetworkError')) {
-                    errorMsg = 'Мрежова грешка';
+                    errorMsg = 'Мрежова грешка - проверете WiFi/данни';
+                } else if (error.message.includes('Motion sensor permission')) {
+                    errorMsg = 'Няма разрешение за сензори - рестартирайте приложението';
+                } else if (error.message.includes('Device motion not supported')) {
+                    errorMsg = 'Устройството не поддържа motion сензори';
                 }
                 
-                alert(`Грешка при свързване: ${errorMsg}`);
+                showError(errorMsg, false);
+                
+                // Show health info in console
+                console.log('📊 Connection Health:', connectionHealth.getHealthReport());
             }
         }
 
         function updateStatus(message, type = 'info') {
-            // Update the central status indicator with text
             const messages = {
                 'success': 'Готов',
                 'error': 'Грешка',
@@ -671,7 +803,6 @@
                 'calibrating': 'Калибриране'
             };
 
-            // Don't change status during calibration unless explicitly told
             if (isCalibrating && type !== 'calibrating') {
                 return;
             }
@@ -684,24 +815,24 @@
         function startCalibration() {
             isCalibrating = true;
             calibrationSamples = [];
+            hideError();
 
-            // Update central status indicator
             updateStatus('', 'calibrating');
 
-            // Update button states
             recalibrateButton.textContent = '  0%';
             recalibrateButton.classList.remove('ready');
             recalibrateButton.classList.add('calibrating');
             recalibrateButton.disabled = true;
 
             spaceshipProcessor = new SpaceshipMotionProcessor();
-            console.log('🎯 Starting calibration - need 120 samples');
+            console.log('🎯 Starting enhanced calibration - need 120 samples');
         }
 
-        // Simplified motion handling
+        // STEP 2: Enhanced motion handling with error recovery
         let lastMotionTime = 0;
         let sendTimeout;
         let updateCounter = 0;
+        let motionErrorCount = 0;
 
         function handleMotion(event) {
             if (!connected || !token) {
@@ -713,80 +844,100 @@
             if (now - lastMotionTime < 50) return;
             lastMotionTime = now;
 
-            const accel = event.accelerationIncludingGravity || {};
-            const rawX = parseFloat(accel.x) || 0;
-            const rawY = parseFloat(accel.y) || 0;
-            const rawZ = parseFloat(accel.z) || 0;
+            try {
+                const accel = event.accelerationIncludingGravity || {};
+                const rawX = parseFloat(accel.x) || 0;
+                const rawY = parseFloat(accel.y) || 0;
+                const rawZ = parseFloat(accel.z) || 0;
 
-            updateCounter++;
+                updateCounter++;
 
-            let rawSteering = rawY;
-            let rawThrottle = rawZ;
-
-            // Handle calibration
-            if (isCalibrating) {
-                if (calibrationSamples.length < 120) {
-                    calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
-
-                    const progress = Math.floor((calibrationSamples.length / 120) * 100);
-                    recalibrateButton.textContent = `${progress.toString().padStart(3, ' ')}%`;
-
-                    if (calibrationSamples.length === 120) {
-                        // Calculate rest position
-                        const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
-                        const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
-
-                        const start = Math.floor(sortedSteering.length * 0.25);
-                        const end = Math.floor(sortedSteering.length * 0.75);
-
-                        restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-                        restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
-
-                        // Finish calibration
-                        calibrationSamples = null;
-                        isCalibrating = false;
-
-                        recalibrateButton.textContent = 'Рекалибрирай';
-                        recalibrateButton.classList.remove('calibrating');
-                        recalibrateButton.classList.add('ready');
-                        recalibrateButton.disabled = false;
-
-                        updateStatus('', 'success');
-                        console.log('🎯 Calibration complete - motion control ready!');
-                    }
+                // STEP 2: Motion data validation
+                if (isNaN(rawX) || isNaN(rawY) || isNaN(rawZ)) {
+                    motionErrorCount++;
+                    console.warn('⚠️ Invalid motion data received');
+                    return;
                 }
-                return; // Don't send any data during calibration
+
+                let rawSteering = rawY;
+                let rawThrottle = rawZ;
+
+                // Handle calibration
+                if (isCalibrating) {
+                    if (calibrationSamples.length < 120) {
+                        calibrationSamples.push({ steering: rawSteering, throttle: rawThrottle });
+
+                        const progress = Math.floor((calibrationSamples.length / 120) * 100);
+                        recalibrateButton.textContent = `${progress.toString().padStart(3, ' ')}%`;
+
+                        if (calibrationSamples.length === 120) {
+                            // Calculate rest position
+                            const sortedSteering = calibrationSamples.map(s => s.steering).sort((a, b) => a - b);
+                            const sortedThrottle = calibrationSamples.map(s => s.throttle).sort((a, b) => a - b);
+
+                            const start = Math.floor(sortedSteering.length * 0.25);
+                            const end = Math.floor(sortedSteering.length * 0.75);
+
+                            restPositionX = sortedSteering.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+                            restPositionY = sortedThrottle.slice(start, end).reduce((sum, val) => sum + val, 0) / (end - start);
+
+                            // Finish calibration
+                            calibrationSamples = null;
+                            isCalibrating = false;
+
+                            recalibrateButton.textContent = 'Рекалибрирай';
+                            recalibrateButton.classList.remove('calibrating');
+                            recalibrateButton.classList.add('ready');
+                            recalibrateButton.disabled = false;
+
+                            updateStatus('', 'success');
+                            hideError();
+                            console.log('🎯 Enhanced calibration complete - motion control ready!');
+                        }
+                    }
+                    return;
+                }
+
+                // Process and send motion data when NOT calibrating
+                const steeringTilt = rawSteering - restPositionX;
+                const throttleTilt = rawThrottle - restPositionY;
+
+                const steeringDeadZone = 1.5;
+                const throttleDeadZone = 2.0;
+
+                let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
+                let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
+
+                const processed = spaceshipProcessor.addSample(
+                    processedSteering * 1.5,
+                    processedThrottle * 1.0
+                );
+
+                velocityX = Math.max(-6, Math.min(6, processed.x));
+                velocityY = Math.max(-6, Math.min(6, processed.y));
+
+                // Update display
+                if (updateCounter % 3 === 0) {
+                    xElement.textContent = velocityX.toFixed(1);
+                    yElement.textContent = velocityY.toFixed(1);
+                    xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
+                    yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
+                }
+
+                // STEP 2: Enhanced motion data transmission with health info
+                if (updateCounter % 50 === 0) {
+                    const health = spaceshipProcessor.getHealthInfo();
+                    console.log(`📊 Motion Health: ${health.successRate.toFixed(1)}% success, ${health.samples} samples`);
+                }
+
+                console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
+                debouncedSendUpdate(velocityX, velocityY, 200);
+
+            } catch (error) {
+                motionErrorCount++;
+                console.error('❌ Motion handling error:', error);
+                showError(`Motion error: ${error.message}`, true);
             }
-
-            // Process and send motion data when NOT calibrating
-            const steeringTilt = rawSteering - restPositionX;
-            const throttleTilt = rawThrottle - restPositionY;
-
-            const steeringDeadZone = 1.5;
-            const throttleDeadZone = 2.0;
-
-            let processedSteering = Math.abs(steeringTilt) > steeringDeadZone ? steeringTilt : 0;
-            let processedThrottle = Math.abs(throttleTilt) > throttleDeadZone ? throttleTilt : 0;
-
-            const processed = spaceshipProcessor.addSample(
-                processedSteering * 1.5,
-                processedThrottle * 1.0
-            );
-
-            velocityX = Math.max(-6, Math.min(6, processed.x));
-            velocityY = Math.max(-6, Math.min(6, processed.y));
-
-            // Update display
-            if (updateCounter % 3 === 0) {
-                xElement.textContent = velocityX.toFixed(1);
-                yElement.textContent = velocityY.toFixed(1);
-                xValueElement.classList.toggle('active', Math.abs(velocityX) > 1);
-                yValueElement.classList.toggle('active', Math.abs(velocityY) > 1);
-            }
-
-            // Send motion data with debugging
-            console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
-            debouncedSendUpdate(velocityX, velocityY, 200);
         }
 
         function debouncedSendUpdate(x, y, delay = 200) {
@@ -797,66 +948,107 @@
         }
 
         let requestInProgress = false;
+        let lastSuccessfulUpdate = Date.now();
 
+        // STEP 2: Significantly enhanced server communication
         async function sendUpdate(x, y) {
             if (requestInProgress) return;
 
             try {
                 requestInProgress = true;
+                const startTime = Date.now();
                 
-                console.log(`📡 Sending to: ${window.location.origin}/update`);
+                console.log(`📡 STEP 2: Sending enhanced update to: ${window.location.origin}/update`);
                 console.log(`📡 Data: token=${token}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
 
                 const response = await fetch('/update', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-Timestamp': Date.now().toString()
                     },
                     body: JSON.stringify({ token, x, y })
                 });
 
-                console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+                connectionHealth.recordResponseTime(startTime);
+                console.log(`📡 Enhanced response: ${response.status} ${response.statusText}`);
 
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.log(`❌ Server error response: ${errorText}`);
                     updateStatus('', 'error');
-                    alert(`Server error: ${response.status} - ${errorText}`);
+                    
+                    // STEP 2: Better error handling for different status codes
+                    if (response.status === 400) {
+                        showError('Невалидни данни - проверете връзката', true);
+                    } else if (response.status === 500) {
+                        showError('Грешка в сървъра - опитайте отново', true);
+                    } else {
+                        showError(`Грешка ${response.status}: ${errorText}`, true);
+                    }
+                    
+                    connectionHealth.recordFailure(`${response.status}: ${errorText}`);
                 } else {
                     const result = await response.json();
-                    console.log(`✅ Server response:`, result);
+                    console.log(`✅ Enhanced server response:`, result);
+                    
+                    lastSuccessfulUpdate = Date.now();
+                    connectionHealth.recordSuccess();
+                    
                     if (!isCalibrating) {
                         updateStatus('', 'success');
+                        hideError();
+                    }
+                    
+                    // STEP 2: Log update count and health info
+                    if (result.updateCount && result.updateCount % 10 === 0) {
+                        console.log(`📊 Update milestone: ${result.updateCount} updates sent`);
+                        const health = connectionHealth.getHealthReport();
+                        console.log(`📊 Connection health: ${health.successRate}% success, ${health.avgResponseTime}ms avg`);
                     }
                 }
             } catch (error) {
-                console.log(`❌ Network error:`, error);
+                console.log(`❌ Enhanced network error:`, error);
+                connectionHealth.recordFailure(error.message);
                 updateStatus('', 'error');
                 
-                // Show error in alert for debugging
-                alert(`Network Error: ${error.message}`);
+                // STEP 2: More specific error messages
+                let errorMsg = 'Мрежова грешка';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = 'Няма връзка със сървъра';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMsg = 'Проблем с мрежата';
+                } else if (error.message.includes('timeout')) {
+                    errorMsg = 'Сървърът е бавен';
+                }
+                
+                showError(errorMsg, true);
+                
+                // STEP 2: Show detailed health report on errors
+                const health = connectionHealth.getHealthReport();
+                console.log(`📊 Error - Connection Health Report:`, health);
             } finally {
                 requestInProgress = false;
             }
         }
 
-        // Initialize everything
+        // Initialize everything with enhanced error handling
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Spaceship Controller initialized');
+            console.log('🚀 STEP 2: Enhanced Spaceship Controller initialized');
 
             // SIMPLE START BUTTON
             startButton.onclick = () => {
-                console.log('🚀 Starting spaceship mission...');
+                console.log('🚀 Starting enhanced spaceship mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
-                console.log('✅ Spaceship mission started successfully');
+                console.log('✅ Enhanced spaceship mission started successfully');
             };
 
-            // Simple button handlers with debug reset
+            // Enhanced button handlers
             connectButton.onclick = handleConnect;
             
             let resetTimer;
@@ -869,8 +1061,9 @@
                     recalibrateButton.classList.add('ready');
                     recalibrateButton.disabled = false;
                     updateStatus('', 'success');
-                    alert('Force reset complete - try moving phone now');
-                }, 3000); // 3 second hold
+                    hideError();
+                    showError('Force reset завършен - опитайте движение', true);
+                }, 3000);
             };
             
             recalibrateButton.onmouseup = recalibrateButton.ontouchend = recalibrateButton.onclick = () => {
@@ -881,6 +1074,17 @@
             };
 
             hideAddressBar();
+
+            // STEP 2: Periodic health reporting
+            setInterval(() => {
+                if (connected) {
+                    const timeSinceLastUpdate = Date.now() - lastSuccessfulUpdate;
+                    if (timeSinceLastUpdate > 10000) { // 10 seconds without update
+                        console.warn(`⚠️ No successful updates for ${timeSinceLastUpdate}ms`);
+                        showError(`Няма актуализации ${Math.floor(timeSinceLastUpdate/1000)}s`, true);
+                    }
+                }
+            }, 15000);
         });
 
         window.addEventListener('load', hideAddressBar);
