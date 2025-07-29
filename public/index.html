@@ -1187,7 +1187,9 @@
                 }
 
                 console.log(`🚀 Motion data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
-                debouncedSendUpdate(velocityX, velocityY, 150); // Slightly faster updates
+                
+                // STEP 3 FIX: Replace broken debounce with working throttle
+                throttledSendUpdate(velocityX, velocityY);
 
             } catch (error) {
                 motionErrorCount++;
@@ -1196,11 +1198,28 @@
             }
         };
 
-        function debouncedSendUpdate(x, y, delay = 150) {
+        // STEP 3 FIX: Throttle instead of debounce - guarantees regular updates
+        let lastSendTime = 0;
+        const SEND_INTERVAL = 100; // Send every 100ms during motion
+
+        function throttledSendUpdate(x, y) {
+            const now = Date.now();
+            
+            // Send immediately if enough time has passed
+            if (now - lastSendTime >= SEND_INTERVAL) {
+                lastSendTime = now;
+                sendUpdate(x, y);
+                console.log(`📤 THROTTLED SEND: ${now - lastSendTime}ms since last send`);
+            }
+            
+            // Also ensure we send the final position after motion stops
             clearTimeout(sendTimeout);
             sendTimeout = setTimeout(() => {
-                sendUpdate(x, y);
-            }, delay);
+                if (Date.now() - lastSendTime >= SEND_INTERVAL) {
+                    sendUpdate(x, y);
+                    console.log(`📤 FINAL POSITION SEND`);
+                }
+            }, 200);
         }
 
         let requestInProgress = false;
