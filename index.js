@@ -40,7 +40,7 @@ app.use(express.static('public', {
     }
 }));
 
-// STEP 3 FINAL: Enhanced session storage with reduced auto-centering
+// STEP 2: ENHANCED SESSION STORAGE WITH HEALTH MONITORING
 const sessions = {};
 const sessionStats = {
     totalCreated: 0,
@@ -50,7 +50,7 @@ const sessionStats = {
     lastActivity: null
 };
 
-// Enhanced session cleanup with health monitoring
+// STEP 2: Enhanced session cleanup with health monitoring
 setInterval(() => {
     const now = Date.now();
     let expiredCount = 0;
@@ -69,7 +69,7 @@ setInterval(() => {
     }
 }, 120000);
 
-// Connection health monitoring
+// STEP 2: Connection health monitoring
 function logConnectionHealth(endpoint, token, success, details = '') {
     const timestamp = new Date().toISOString();
     const sessionAge = sessions[token] ? Date.now() - sessions[token].ts : 'N/A';
@@ -94,7 +94,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-// Enhanced session creation with better error handling
+// STEP 2: Enhanced session creation with better error handling
 app.post('/start', (req, res) => {
     try {
         console.log('🚀 POST /start - Creating new session');
@@ -106,13 +106,13 @@ app.post('/start', (req, res) => {
             token += clearChars.charAt(Math.floor(Math.random() * clearChars.length));
         }
 
-        // STEP 3 FINAL: Enhanced session with minimal auto-centering
+        // STEP 2: Enhanced session with health data
         sessions[token] = {
             x: 0,
             y: 0,
             ts: Date.now(),
             created: Date.now(),
-            history: [], // Reduced history for less smoothing
+            history: [],
             updateCount: 0,
             lastUpdateTime: Date.now(),
             health: {
@@ -140,8 +140,7 @@ app.post('/start', (req, res) => {
             timestamp: Date.now(),
             sessionInfo: {
                 created: sessions[token].created,
-                serverHealth: 'optimal',
-                ranges: 'full-range-unlocked'
+                serverHealth: 'optimal'
             }
         });
     } catch (error) {
@@ -154,7 +153,7 @@ app.post('/start', (req, res) => {
     }
 });
 
-// STEP 3 FINAL: Motion data update with minimal smoothing and no auto-centering
+// STEP 2: Enhanced motion data update with comprehensive error handling
 app.post('/update', (req, res) => {
     try {
         const { token, x, y } = req.body;
@@ -162,7 +161,7 @@ app.post('/update', (req, res) => {
         
         console.log(`📱 POST /update - Token: ${token}, X: ${x}, Y: ${y}, Time: ${timestamp}`);
 
-        // Enhanced validation
+        // STEP 2: Enhanced validation
         if (!token) {
             console.log(`❌ Missing token in update request`);
             return res.status(400).json({ 
@@ -187,7 +186,7 @@ app.post('/update', (req, res) => {
         const newX = parseFloat(x);
         const newY = parseFloat(y);
 
-        // Enhanced data validation
+        // STEP 2: Enhanced data validation
         if (isNaN(newX) || isNaN(newY)) {
             console.log(`❌ Invalid motion data - X: ${x} (${typeof x}), Y: ${y} (${typeof y})`);
             return res.status(400).json({
@@ -197,20 +196,20 @@ app.post('/update', (req, res) => {
             });
         }
 
-        // STEP 3 EMERGENCY REVERT: Go back to working smoothing with slight range increase
+        // Simple smoothing: average with previous values
         session.history.push({ x: newX, y: newY, timestamp });
         if (session.history.length > 3) {
             session.history.shift();
         }
 
-        // Calculate smooth average (back to original working method)
+        // Calculate smooth average
         const avgX = session.history.reduce((sum, sample) => sum + sample.x, 0) / session.history.length;
         const avgY = session.history.reduce((sum, sample) => sum + sample.y, 0) / session.history.length;
 
-        // STEP 3 FINAL: Enhanced session update with minimal centering
+        // STEP 2: Enhanced session update with health tracking
         sessions[token] = {
             ...session,
-            x: avgX, // Direct assignment - no centering bias
+            x: avgX,
             y: avgY,
             ts: timestamp,
             updateCount: session.updateCount + 1,
@@ -223,7 +222,7 @@ app.post('/update', (req, res) => {
 
         sessionStats.totalUpdates++;
 
-        console.log(`✅ FULL-RANGE Motion updated - Token: ${token}, Count: ${session.updateCount + 1}, Raw X: ${avgX.toFixed(2)}, Y: ${avgY.toFixed(2)}`);
+        console.log(`✅ Motion updated - Token: ${token}, Count: ${session.updateCount + 1}, Smoothed X: ${avgX.toFixed(2)}, Y: ${avgY.toFixed(2)}`);
         logConnectionHealth('/update', token, true, `Update #${session.updateCount + 1}`);
 
         res.set({
@@ -235,8 +234,7 @@ app.post('/update', (req, res) => {
             ok: true,
             processed: { x: avgX, y: avgY },
             updateCount: session.updateCount + 1,
-            timestamp,
-            range: 'full-unlocked'
+            timestamp
         });
     } catch (error) {
         console.error('❌ Update error:', error);
@@ -248,7 +246,7 @@ app.post('/update', (req, res) => {
     }
 });
 
-// STEP 3 FINAL: X endpoint with EXPANDED range (-15 to +15)
+// STEP 2: Enhanced X endpoint with detailed error handling
 app.get('/x/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -273,10 +271,9 @@ app.get('/x/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // STEP 3 EMERGENCY REVERT: Moderate range increase only -8 to +8
-        const movement = Math.max(-8, Math.min(8, Math.round(session.x * 1.2))); // Gentle increase
+        const movement = Math.max(-4, Math.min(4, Math.round(session.x * 1.0)));
         
-        console.log(`📤 FULL-RANGE X endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
+        console.log(`📤 X endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/x', token, true, `Value: ${movement}`);
         
         res.status(200).end(movement.toString());
@@ -286,7 +283,7 @@ app.get('/x/:token', (req, res) => {
     }
 });
 
-// STEP 3 FINAL: Y endpoint with EXPANDED range (-15 to +15)
+// STEP 2: Enhanced Y endpoint with detailed error handling
 app.get('/y/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -311,10 +308,9 @@ app.get('/y/:token', (req, res) => {
             return res.status(200).end('0');
         }
 
-        // STEP 3 EMERGENCY REVERT: Moderate range increase only -8 to +8
-        const movement = Math.max(-8, Math.min(8, Math.round(session.y * 1.2))); // Gentle increase
+        const movement = Math.max(-4, Math.min(4, Math.round(session.y * 1.0)));
         
-        console.log(`📤 FULL-RANGE Y endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
+        console.log(`📤 Y endpoint - Token: ${token}, Value: ${movement}, Session Age: ${timestamp - session.ts}ms`);
         logConnectionHealth('/y', token, true, `Value: ${movement}`);
         
         res.status(200).end(movement.toString());
@@ -324,7 +320,7 @@ app.get('/y/:token', (req, res) => {
     }
 });
 
-// STEP 3 FINAL: MASSIVELY ENHANCED /simple endpoint with full-range mapping
+// STEP 2: SIGNIFICANTLY ENHANCED /simple endpoint for PictoBlox with comprehensive monitoring
 app.get('/simple/:token', (req, res) => {
     try {
         const token = req.params.token;
@@ -339,6 +335,7 @@ app.get('/simple/:token', (req, res) => {
             'X-Timestamp': timestamp.toString()
         });
         
+        // STEP 2: Enhanced PictoBlox request tracking
         sessionStats.totalPictobloxRequests++;
         
         if (!session) {
@@ -355,32 +352,26 @@ app.get('/simple/:token', (req, res) => {
             return res.status(200).end('X05Y05');
         }
 
-        // Update session health with PictoBlox activity
+        // STEP 2: Update session health with PictoBlox activity
         session.health.lastPictobloxRequest = timestamp;
         session.health.pictobloxRequestCount++;
 
-        // STEP 3 FINAL: EXPANDED range validation - allow much larger values
+        // Range validation with smoothed values
         let validX = session.x;
         let validY = session.y;
 
-        // Increased from ±12 to ±25 for wider range
-        if (Math.abs(validX) > 25 || Math.abs(validY) > 25) {
-            console.log(`⚠️ PICTOBLOX - Extreme values X:${validX} Y:${validY}, clamping`);
-            validX = Math.max(-25, Math.min(25, validX));
-            validY = Math.max(-25, Math.min(25, validY));
+        if (Math.abs(validX) > 12 || Math.abs(validY) > 12) {
+            console.log(`⚠️ PICTOBLOX - Extreme values X:${validX} Y:${validY}, centering`);
+            validX = 0;
+            validY = 0;
         }
 
-        // STEP 3 FINAL: FULL-RANGE mapping to 1-9 scale - much more sensitive
+        // Smoother mapping to 1-9 scale
         const mapToScale = (velocity) => {
-            // Expanded input range from ±10 to ±20 for full range
-            const clamped = Math.max(-20, Math.min(20, velocity));
-            const normalized = clamped / 20; // Divide by 20 instead of 10
-            
-            // REMOVED the curve for more linear response
-            const linear = normalized; // Direct linear mapping, no power curve
-            
-            // Map to 1-9 scale with full range utilization
-            const scaled = Math.round(((linear + 1) / 2) * 8) + 1;
+            const clamped = Math.max(-10, Math.min(10, velocity));
+            const normalized = clamped / 10;
+            const curved = Math.sign(normalized) * Math.pow(Math.abs(normalized), 0.5);
+            const scaled = Math.round(((curved + 1) / 2) * 8) + 1;
             return Math.max(1, Math.min(9, scaled));
         };
 
@@ -388,11 +379,11 @@ app.get('/simple/:token', (req, res) => {
         const yScaled = mapToScale(validY);
         const result = `X${String(xScaled).padStart(2, '0')}Y${String(yScaled).padStart(2, '0')}`;
         
-        // STEP 3 FINAL: Enhanced PictoBlox logging with range info
-        console.log(`🎮 FULL-RANGE PICTOBLOX REQUEST #${session.health.pictobloxRequestCount}`);
+        // STEP 2: Comprehensive PictoBlox logging
+        console.log(`🎮 PICTOBLOX REQUEST #${session.health.pictobloxRequestCount}`);
         console.log(`📍 Token: ${token} | Session Age: ${sessionAge}ms`);
-        console.log(`📊 Raw Motion: X=${validX.toFixed(2)}, Y=${validY.toFixed(2)} [EXPANDED RANGE]`);
-        console.log(`📤 PictoBlox Response: ${result} [FULL-RANGE MAPPING]`);
+        console.log(`📊 Raw Motion: X=${validX.toFixed(2)}, Y=${validY.toFixed(2)}`);
+        console.log(`📤 PictoBlox Response: ${result}`);
         console.log(`📈 Phone Updates: ${session.updateCount} | PictoBlox Requests: ${session.health.pictobloxRequestCount}`);
         console.log(`─────────────────────────────────────────────`);
         
@@ -406,7 +397,7 @@ app.get('/simple/:token', (req, res) => {
     }
 });
 
-// Enhanced health check with detailed system status
+// STEP 2: Enhanced health check with detailed system status
 app.get('/health', (req, res) => {
     res.set({
         'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -436,11 +427,6 @@ app.get('/health', (req, res) => {
         stats: sessionStats,
         activeSessions: activeSessions.length,
         sessions: sessionDetails,
-        ranges: {
-            individual: '±15 (expanded)',
-            simple: '1-9 full-range',
-            rawInput: '±25 accepted'
-        },
         endpoints: {
             phone: '/',
             start: '/start',
@@ -451,7 +437,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Detailed debugging endpoint
+// STEP 2: Detailed debugging endpoint
 app.get('/debug/:token?', (req, res) => {
     const token = req.params.token;
     
@@ -471,13 +457,7 @@ app.get('/debug/:token?', (req, res) => {
                 motionData: { x: session.x, y: session.y },
                 updateCount: session.updateCount,
                 history: session.history,
-                health: session.health,
-                ranges: {
-                    currentX: session.x,
-                    currentY: session.y,
-                    scaledX: Math.max(-15, Math.min(15, Math.round(session.x * 2.0))),
-                    scaledY: Math.max(-15, Math.min(15, Math.round(session.y * 2.0)))
-                }
+                health: session.health
             },
             serverStats: sessionStats
         });
@@ -486,8 +466,7 @@ app.get('/debug/:token?', (req, res) => {
             message: token ? `Token ${token} not found` : 'System debug info',
             activeSessions: Object.keys(sessions),
             serverStats: sessionStats,
-            availableTokens: Object.keys(sessions),
-            ranges: 'FULL-RANGE UNLOCKED'
+            availableTokens: Object.keys(sessions)
         });
     }
 });
@@ -515,7 +494,7 @@ app.get('/cache-test', (req, res) => {
 // Start server with enhanced startup info
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 STEP 3 FINAL: FULL-RANGE MOTION CONTROL UNLEASHED!`);
+    console.log(`🚀 STEP 2 IMPLEMENTATION: Enhanced Data Reliability & Error Handling`);
     console.log(`🚀 Spaceship Controller Server running on port ${PORT}`);
     console.log(`📱 Phone Interface: http://localhost:${PORT}`);
     console.log(`🧪 Cache Test: http://localhost:${PORT}/cache-test`);
@@ -524,13 +503,12 @@ app.listen(PORT, () => {
     console.log(`🎮 PictoBlox Endpoints:`);
     console.log(`  - Simple: /simple/TOKEN`);
     console.log(`  - X/Y: /x/TOKEN, /y/TOKEN`);
-    console.log(`✨ STEP 3 FINAL FEATURES:`);
+    console.log(`✨ STEP 2 FEATURES:`);
     console.log(`  ✅ Cache prevention (Step 1)`);
-    console.log(`  ✅ Enhanced error handling (Step 2)`);
-    console.log(`  ✅ Motion sensor keep-alive (Step 3)`);
-    console.log(`  ✅ Throttled updates (Step 3 Fix)`);
-    console.log(`  🚀 EXPANDED RANGE: ±15 individual, 1-9 full-range simple`);
-    console.log(`  🚀 MINIMAL AUTO-CENTERING: Responsive control unleashed`);
-    console.log(`  🚀 LINEAR MAPPING: No curve smoothing, direct response`);
-    console.log(`📡 LEASH REMOVED - FULL SPACESHIP CONTROL ACTIVATED!`);
+    console.log(`  ✅ Enhanced error handling`);
+    console.log(`  ✅ Comprehensive logging`);
+    console.log(`  ✅ Session health monitoring`);
+    console.log(`  ✅ PictoBlox request tracking`);
+    console.log(`  ✅ Debug endpoints for troubleshooting`);
+    console.log(`📡 Ready for enhanced debugging!`);
 });
