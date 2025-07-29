@@ -902,26 +902,12 @@
             }
         }
 
-        // STEP 3 EMERGENCY FIX: Stop diagnostic spam with rate limiting
-        let lastDiagnosticTime = 0;
-        
         function showMotionDiagnostic() {
-            const now = Date.now();
-            
-            // Rate limit: only show diagnostics once every 3 seconds
-            if (now - lastDiagnosticTime < 3000) {
-                console.log('🚫 Diagnostic rate limited - too frequent');
-                return;
-            }
-            
-            lastDiagnosticTime = now;
-            
             const motionHealth = motionSensorManager.getHealthReport();
             const processorHealth = spaceshipProcessor.getHealthInfo();
             const connHealth = connectionHealth.getHealthReport();
             
-            // Simplified diagnostic message to prevent screen spam
-            const diagnostic = `Motion OK | Conn: ${connHealth.successRate}%`;
+            const diagnostic = `Motion: ${motionHealth.totalEvents} events, ${motionHealth.timeSinceLastMotion}ms ago | Conn: ${connHealth.successRate}%`;
             showError(diagnostic, true);
             
             console.log('📊 STEP 3 Full Diagnostic:', {
