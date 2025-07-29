@@ -407,8 +407,23 @@
             z-index: 1000;
         }
 
-        .connection-indicator.connected {
-            background: #44ff44;
+        .debug-overlay {
+            position: fixed;
+            top: 50px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 9999;
+            max-width: 200px;
+            display: none;
+        }
+
+        .debug-overlay.show {
+            display: block;
         }
 
         /* RESPONSIVE DESIGN */
@@ -635,6 +650,9 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
 
+        window.addEventListener('load', hideAddressBar);
+        window.addEventListener('resize', hideAddressBar);
+
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
                 const data = await response.json();
@@ -693,6 +711,11 @@
                 'info': 'Некалибриран',
                 'calibrating': 'Калибриране'
             };
+
+            // FIXED: Don't change status during calibration unless explicitly told
+            if (isCalibrating && type !== 'calibrating') {
+                return; // Ignore status changes during calibration
+            }
 
             statusIndicator.textContent = messages[type] || 'Некалибриран';
             statusIndicator.className = `status-indicator ${type}`;
@@ -823,8 +846,10 @@
             
             // FIXED: Only send real data when NOT calibrating
             if (!isCalibrating) {
+                console.log(`🎮 Normal play mode - sending real data: x=${velocityX.toFixed(1)}, y=${velocityY.toFixed(1)}`);
                 debouncedSendUpdate(velocityX, velocityY, updateRate);
             } else {
+                console.log(`🎯 Calibration mode - sending neutral data: x=0, y=0`);
                 // Send neutral data during calibration
                 debouncedSendUpdate(0, 0, updateRate);
             }
@@ -855,14 +880,23 @@
 
                 if (!response.ok) {
                     console.log('❌ Server update failed:', response.status);
-                    updateStatus('', 'error');
+                    // FIXED: Don't change status during calibration
+                    if (!isCalibrating) {
+                        updateStatus('', 'error');
+                    }
                 } else {
                     console.log('✅ Server update success');
-                    updateStatus('', 'success');
+                    // FIXED: Don't change status during calibration  
+                    if (!isCalibrating) {
+                        updateStatus('', 'success');
+                    }
                 }
             } catch (error) {
                 console.log('❌ Network error:', error);
-                updateStatus('', 'error');
+                // FIXED: Don't change status during calibration
+                if (!isCalibrating) {
+                    updateStatus('', 'error');
+                }
             } finally {
                 requestInProgress = false;
             }
@@ -883,9 +917,25 @@
                 console.log('✅ Spaceship mission started successfully');
             };
 
-            // Simple button handlers
+            // Simple button handlers with debug reset
             connectButton.onclick = handleConnect;
-            recalibrateButton.onclick = () => {
+            
+            let resetTimer;
+            recalibrateButton.onmousedown = recalibrateButton.ontouchstart = () => {
+                resetTimer = setTimeout(() => {
+                    console.log('🔧 FORCE RESET - clearing calibration state');
+                    isCalibrating = false;
+                    recalibrateButton.textContent = 'Рекалибрирай';
+                    recalibrateButton.classList.remove('calibrating');
+                    recalibrateButton.classList.add('ready');
+                    recalibrateButton.disabled = false;
+                    updateStatus('', 'success');
+                    alert('Force reset complete - try moving phone now');
+                }, 3000); // 3 second hold
+            };
+            
+            recalibrateButton.onmouseup = recalibrateButton.ontouchend = recalibrateButton.onclick = () => {
+                clearTimeout(resetTimer);
                 if (!recalibrateButton.disabled && recalibrateButton.classList.contains('ready')) {
                     startCalibration();
                 }
@@ -894,8 +944,18 @@
             hideAddressBar();
         });
 
-        window.addEventListener('load', hideAddressBar);
-        window.addEventListener('resize', hideAddressBar);
+        // Add page visibility debugging
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                console.log('📱 Page hidden - screen turned off or app backgrounded');
+                if (connected && !isCalibrating) {
+                    console.log('📡 Sending final position before page hidden');
+                    sendUpdate(velocityX, velocityY);
+                }
+            } else {
+                console.log('📱 Page visible - screen turned on or app foregrounded');
+            }
+        });
     </script>
 </body>
 </html>
