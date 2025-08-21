@@ -18,11 +18,38 @@
             padding: 0;
         }
 
+        /* ADAPTIVE VIEWPORT SYSTEM */
+        :root {
+            /* Base font size that scales with viewport */
+            --base-font: clamp(12px, 3.5vw, 20px);
+            --title-font: clamp(20px, 6vw, 32px);
+            --subtitle-font: clamp(14px, 4vw, 18px);
+            --button-font: clamp(14px, 4.5vw, 18px);
+            --instruction-font: clamp(11px, 3vw, 16px);
+            --number-font: clamp(10px, 2.8vw, 14px);
+            
+            /* Adaptive spacing */
+            --spacing-xs: clamp(4px, 1vw, 8px);
+            --spacing-sm: clamp(8px, 2vw, 16px);
+            --spacing-md: clamp(12px, 3vw, 24px);
+            --spacing-lg: clamp(16px, 4vw, 32px);
+            --spacing-xl: clamp(20px, 5vw, 40px);
+            
+            /* Adaptive component sizes */
+            --button-height: clamp(40px, 12vw, 60px);
+            --button-width: clamp(140px, 40vw, 200px);
+            --instruction-number: clamp(20px, 6vw, 32px);
+            --border-radius: clamp(8px, 2vw, 16px);
+            
+            /* Screen height considerations */
+            --vh: 1vh;
+        }
+
         body {
             font-family: 'Orbitron', monospace;
             color: #e0e0ff;
             height: 100vh;
-            height: 100dvh;
+            height: calc(var(--vh, 1vh) * 100);
             overflow: hidden;
             position: fixed;
             top: 0;
@@ -32,6 +59,7 @@
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            font-size: var(--base-font);
         }
 
         body::before {
@@ -50,13 +78,19 @@
             backface-visibility: hidden;
         }
 
+        /* ADAPTIVE SETUP SCREEN - FIXED BUTTON OVERLAP */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            padding: 15px 20px 80px 20px;
+            height: calc(var(--vh, 1vh) * 100);
+            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(16px, 4vh, 32px) clamp(12px, 3vw, 24px);
             max-height: 100vh;
+            max-height: calc(var(--vh, 1vh) * 100);
             overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            justify-content: space-between; /* Distribute space between content and button */
         }
 
         .main-content {
@@ -64,97 +98,128 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             text-align: center;
+            gap: clamp(12px, 3vh, 24px);
+            min-height: 0;
+            padding-top: clamp(20px, 8vh, 60px);
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: clamp(16px, 4vh, 32px); /* Ensure space for button */
         }
 
         .main-content h1 {
-            font-size: 28px;
+            font-size: var(--title-font);
             font-weight: 900;
-            margin-bottom: 12px;
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            letter-spacing: 1px;
+            letter-spacing: clamp(0.5px, 0.2vw, 2px);
+            line-height: 1.1;
+            margin: 0 0 clamp(8px, 2vh, 16px) 0;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .main-content h2 {
-            font-size: 16px;
-            margin-bottom: 28px;
+            font-size: var(--subtitle-font);
             color: #b0b0ff;
             font-weight: 700;
             text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
+            line-height: 1.3;
+            margin: 0 0 clamp(16px, 4vh, 32px) 0;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .instructions {
             background: rgba(0, 20, 40, 0.8);
             border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 24px;
-            max-width: 400px;
+            border-radius: var(--border-radius);
+            padding: clamp(16px, 4vw, 24px);
+            max-width: min(92vw, 420px);
+            width: 100%;
             backdrop-filter: blur(10px);
+            margin: 0 auto 0 auto; /* Remove bottom margin that was causing overlap */
+            box-sizing: border-box;
         }
 
         .instruction {
             display: flex;
             align-items: flex-start;
-            margin: 16px 0;
-            font-size: 14px;
+            margin: clamp(10px, 2.5vh, 18px) 0;
+            font-size: var(--instruction-font);
             text-align: left;
-            line-height: 1.4;
+            line-height: 1.5;
+            gap: clamp(8px, 2vw, 16px);
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .instruction div:last-child {
+            flex: 1;
+            min-width: 0;
         }
 
         .instruction-number {
             background: linear-gradient(135deg, #00ffff, #0080ff);
             color: #001122;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: var(--instruction-number);
+            height: var(--instruction-number);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 12px;
             flex-shrink: 0;
-            font-size: 12px;
+            font-size: var(--number-font);
         }
 
         .sub-instructions {
-            margin-left: 40px;
-            margin-top: 8px;
-            margin-bottom: 8px;
+            margin-left: calc(var(--instruction-number) + clamp(8px, 2vw, 16px));
+            margin-top: clamp(6px, 1.5vh, 12px);
+            margin-bottom: clamp(6px, 1.5vh, 12px);
         }
 
         .sub-instruction {
-            margin: 4px 0;
-            font-size: 13px;
+            margin: clamp(6px, 1.5vh, 10px) 0;
+            font-size: calc(var(--instruction-font) * 0.92);
             color: #e0e0ff;
-            line-height: 1.4;
+            line-height: 1.5;
             text-align: left;
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-size: 16px;
+            border-radius: var(--border-radius);
+            padding: clamp(12px, 3vh, 18px) clamp(20px, 5vw, 32px);
+            font-size: var(--button-font);
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            letter-spacing: 1px;
-            min-width: 180px;
-            min-height: 52px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            align-self: center;
+            letter-spacing: clamp(0.5px, 0.1vw, 1.5px);
+            min-width: clamp(160px, 45vw, 220px);
+            min-height: clamp(48px, 12vh, 64px);
             transition: transform 0.2s ease;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-            position: relative;
-            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            align-self: center;
+            flex-shrink: 0; /* Prevent button from shrinking */
+            margin: 0; /* Remove all margins - let flexbox handle spacing */
         }
 
         .start-button:hover, .start-button:active {
@@ -165,7 +230,7 @@
             transform: translateY(1px);
         }
 
-        /* GAME SCREEN WITH ROTATED LAYOUT */
+        /* ADAPTIVE GAME SCREEN WITH ROTATED LAYOUT */
         .game-screen {
             display: none;
             width: 100vw;
@@ -186,22 +251,23 @@
 
         .game-screen.active {
             display: grid;
-            grid-template-columns: 150px 1fr 150px;
+            grid-template-columns: clamp(120px, 20vw, 180px) 1fr clamp(120px, 20vw, 180px);
             grid-template-rows: auto 1fr;
-            gap: 20px;
+            gap: clamp(10px, 2vw, 25px);
             align-items: center;
-            padding: 20px;
+            padding: clamp(10px, 2vw, 25px);
         }
 
-        /* Status indicator at the top center */
+        /* ADAPTIVE STATUS INDICATOR */
         .status-indicator {
             grid-column: 1 / -1;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            height: 40px;
-            margin-bottom: 10px;
+            font-size: clamp(16px, 4vw, 28px);
+            height: clamp(30px, 6vw, 50px);
+            margin-bottom: clamp(5px, 1vw, 15px);
+            font-weight: 600;
         }
 
         .status-indicator.success {
@@ -234,13 +300,14 @@
             50% { opacity: 0.6; }
         }
 
+        /* ADAPTIVE CONTROL SECTIONS */
         .left-controls, .right-controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            gap: 20px;
+            gap: clamp(15px, 3vw, 30px);
         }
 
         .center-display {
@@ -248,19 +315,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 30px;
+            gap: clamp(20px, 4vw, 40px);
             height: 100%;
         }
 
+        /* ADAPTIVE BUTTONS */
         .connect-button, .recalibrate-button {
             border: none;
-            border-radius: 12px;
-            padding: 15px 25px;
-            font-size: 16px;
+            border-radius: var(--border-radius);
+            padding: clamp(10px, 2.5vw, 18px) clamp(15px, 3vw, 25px);
+            font-size: clamp(12px, 3vw, 18px);
             font-weight: bold;
             cursor: pointer;
-            width: 140px;
-            height: 50px;
+            width: clamp(100px, 25vw, 160px);
+            height: clamp(40px, 10vw, 60px);
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
@@ -270,6 +338,7 @@
             overflow: hidden;
             margin: 0 auto;
             transition: all 0.3s ease;
+            line-height: 1.2;
         }
 
         .connect-button {
@@ -292,7 +361,7 @@
             color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: clamp(10px, 2.5vw, 16px);
             letter-spacing: 0;
         }
 
@@ -301,7 +370,7 @@
             color: #001122;
             cursor: not-allowed;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: clamp(10px, 2.5vw, 16px);
             letter-spacing: 0;
         }
 
@@ -310,48 +379,49 @@
             color: white;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            font-size: 16px;
+            font-size: clamp(12px, 3vw, 18px);
             letter-spacing: normal;
         }
 
+        /* ADAPTIVE DISPLAY PANELS */
         .token-display, .values-display {
             background: rgba(0, 20, 40, 0.9);
             border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: var(--border-radius);
+            padding: clamp(12px, 3vw, 25px);
             text-align: center;
-            min-width: 280px;
+            min-width: clamp(200px, 40vw, 320px);
             backdrop-filter: blur(10px);
         }
 
         .token-label, .value-label {
-            font-size: 12px;
-            margin-bottom: 8px;
+            font-size: clamp(10px, 2.2vw, 14px);
+            margin-bottom: clamp(4px, 1vw, 10px);
             color: #b0b0ff;
             font-weight: 500;
         }
 
         .token-value {
             font-family: 'Orbitron', monospace;
-            font-size: 20px;
+            font-size: clamp(14px, 3.5vw, 22px);
             font-weight: bold;
-            letter-spacing: 2px;
-            padding: 12px;
+            letter-spacing: clamp(1px, 0.3vw, 3px);
+            padding: clamp(8px, 2vw, 15px);
             background: rgba(0, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: clamp(4px, 1vw, 10px);
             color: #00ffff;
         }
 
         .values-row {
             display: flex;
             justify-content: space-between;
-            gap: 20px;
+            gap: clamp(10px, 2vw, 25px);
         }
 
         .value-item {
             background: rgba(0, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 8px;
+            padding: clamp(8px, 2vw, 15px);
+            border-radius: clamp(4px, 1vw, 10px);
             text-align: center;
             flex: 1;
             transition: all 0.3s ease;
@@ -364,18 +434,19 @@
         }
 
         .value-number {
-            font-size: 18px;
+            font-size: clamp(14px, 3.5vw, 20px);
             font-weight: bold;
             color: #00ffff;
             font-family: 'Orbitron', monospace;
         }
 
+        /* ADAPTIVE INDICATORS */
         .connection-indicator {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 12px;
-            height: 12px;
+            top: clamp(10px, 2vw, 20px);
+            right: clamp(10px, 2vw, 20px);
+            width: clamp(8px, 2vw, 15px);
+            height: clamp(8px, 2vw, 15px);
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
@@ -386,13 +457,12 @@
             background: #44ff44;
         }
 
-        /* STEP 3: Motion sensor indicator */
         .motion-indicator {
             position: fixed;
-            top: 15px;
-            right: 30px;
-            width: 12px;
-            height: 12px;
+            top: clamp(10px, 2vw, 20px);
+            right: clamp(25px, 5vw, 40px);
+            width: clamp(8px, 2vw, 15px);
+            height: clamp(8px, 2vw, 15px);
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
@@ -404,76 +474,188 @@
             animation: pulse 1s infinite;
         }
 
-        /* Error message styling */
+        /* ERROR MESSAGE STYLING */
         .error-display {
             background: rgba(255, 0, 0, 0.1);
             border: 2px solid rgba(255, 0, 0, 0.4);
-            border-radius: 15px;
-            padding: 15px;
+            border-radius: var(--border-radius);
+            padding: clamp(10px, 2.5vw, 20px);
             text-align: center;
-            min-width: 280px;
+            min-width: clamp(200px, 40vw, 320px);
             backdrop-filter: blur(10px);
             display: none;
         }
 
         .error-title {
-            font-size: 14px;
-            margin-bottom: 8px;
+            font-size: clamp(12px, 2.8vw, 16px);
+            margin-bottom: clamp(4px, 1vw, 10px);
             color: #ff6666;
             font-weight: 600;
         }
 
         .error-message {
-            font-size: 12px;
+            font-size: clamp(10px, 2.2vw, 14px);
             color: #ffaaaa;
             font-family: 'Courier New', monospace;
         }
 
-        /* RESPONSIVE DESIGN */
-        @media screen and (max-width: 480px) {
-            .main-content h1 {
-                font-size: 28px;
-                margin-bottom: 12px;
+        /* SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
+        @media screen and (max-height: 700px) {
+            :root {
+                --title-font: clamp(18px, 5.5vw, 28px);
+                --subtitle-font: clamp(13px, 3.8vw, 16px);
+                --instruction-font: clamp(11px, 3.2vw, 15px);
+            }
+            
+            .setup-screen {
+                padding: clamp(6px, 1.5vh, 16px) clamp(10px, 2.5vw, 20px) clamp(12px, 3vh, 24px) clamp(10px, 2.5vw, 20px);
             }
 
-            .main-content h2 {
-                font-size: 14px;
-                margin-bottom: 24px;
+            .main-content {
+                padding-top: clamp(15px, 6vh, 40px);
+                gap: clamp(10px, 2.5vh, 20px);
+                margin-bottom: clamp(12px, 3vh, 24px);
             }
 
             .instructions {
-                padding: 20px;
-                max-width: 360px;
+                padding: clamp(12px, 3vw, 20px);
             }
 
             .instruction {
-                font-size: 13px;
-                margin: 12px 0;
-            }
-
-            .start-button {
-                padding: 14px 28px;
-                font-size: 16px;
-                min-width: 180px;
+                margin: clamp(8px, 2vh, 14px) 0;
             }
         }
 
-        @media screen and (max-height: 640px) {
+        /* VERY SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
+        @media screen and (max-height: 600px) {
+            :root {
+                --title-font: clamp(16px, 5vw, 24px);
+                --subtitle-font: clamp(12px, 3.5vw, 15px);
+                --instruction-font: clamp(10px, 3vw, 13px);
+            }
+
             .setup-screen {
-                padding: 15px;
+                padding: clamp(4px, 1vh, 12px) clamp(8px, 2vw, 16px) clamp(8px, 2vh, 16px) clamp(8px, 2vw, 16px);
+            }
+
+            .main-content {
+                padding-top: clamp(10px, 4vh, 30px);
+                gap: clamp(8px, 2vh, 16px);
+                margin-bottom: clamp(8px, 2vh, 16px);
             }
 
             .main-content h1 {
-                font-size: 24px;
-                margin-bottom: 8px;
+                margin-bottom: clamp(4px, 1vh, 8px);
+            }
+
+            .main-content h2 {
+                margin-bottom: clamp(12px, 3vh, 24px);
             }
 
             .instructions {
-                padding: 16px;
+                padding: clamp(10px, 2.5vw, 16px);
             }
 
             .instruction {
-                margin: 10px 0;
+                margin: clamp(6px, 1.5vh, 10px) 0;
+            }
+
+            .sub-instruction {
+                margin: clamp(4px, 1vh, 8px) 0;
+            }
+
+            .start-button {
+                min-height: clamp(44px, 11vh, 60px);
+            }
+        }
+
+        /* EXTRA SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
+        @media screen and (max-height: 500px) {
+            :root {
+                --title-font: clamp(14px, 4.5vw, 20px);
+                --subtitle-font: clamp(11px, 3vw, 14px);
+                --instruction-font: clamp(9px, 2.8vw, 12px);
+            }
+
+            .setup-screen {
+                padding: clamp(2px, 0.5vh, 8px) clamp(6px, 1.5vw, 12px) clamp(6px, 1.5vh, 12px) clamp(6px, 1.5vw, 12px);
+            }
+
+            .main-content {
+                padding-top: clamp(8px, 3vh, 20px);
+                gap: clamp(6px, 1.5vh, 12px);
+                margin-bottom: clamp(6px, 1.5vh, 12px);
+            }
+
+            .instructions {
+                padding: clamp(8px, 2vw, 12px);
+                max-width: min(95vw, 420px);
+            }
+
+            .instruction {
+                margin: clamp(4px, 1vh, 8px) 0;
+            }
+
+            .start-button {
+                min-height: clamp(40px, 9vh, 52px);
+            }
+        }
+
+        /* WIDE SCREEN OPTIMIZATIONS */
+        @media screen and (min-width: 400px) {
+            .instructions {
+                max-width: 400px;
+            }
+        }
+
+        /* EXTRA WIDE SCREEN LIMITS */
+        @media screen and (min-width: 500px) {
+            :root {
+                --base-font: 16px;
+                --title-font: 28px;
+                --subtitle-font: 16px;
+                --button-font: 16px;
+                --instruction-font: 14px;
+                --button-width: 180px;
+                --button-height: 52px;
+            }
+        }
+
+        /* LANDSCAPE ORIENTATION ADJUSTMENTS FOR SETUP */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .setup-screen {
+                flex-direction: row;
+                align-items: stretch;
+                padding: clamp(8px, 2vh, 16px);
+                gap: clamp(16px, 4vw, 32px);
+                overflow-y: auto;
+            }
+
+            .main-content {
+                flex: 1;
+                justify-content: flex-start;
+                text-align: left;
+                gap: clamp(8px, 2vh, 16px);
+                padding-top: clamp(8px, 2vh, 20px);
+                max-height: none;
+            }
+
+            .main-content h1,
+            .main-content h2 {
+                text-align: center;
+            }
+
+            .instructions {
+                flex: 1;
+                max-width: none;
+                margin: 0;
+                align-self: flex-start;
+            }
+
+            .start-button {
+                align-self: flex-end;
+                margin: 0;
+                min-width: clamp(140px, 35vw, 180px);
             }
         }
     </style>
@@ -509,7 +691,7 @@
                 </div>
 
                 <div class="sub-instructions">
-                    <div class="sub-instruction">• Натисни бутона "СВЪРЖИ СЕ"</div>
+                    <div class="sub-instruction">• Натисни бутона "СВЪРЖЕ СЕ"</div>
                     <div class="sub-instruction">• Позволи на смартфона да се калибрира</div>
                     <div class="sub-instruction">• Въведи генерирания 8-цифрен код в PictoBlox играта</div>
                     <div class="sub-instruction">• Използвай смартфона като волан с накланяне за да управляваш космическия кораб</div>
@@ -525,7 +707,7 @@
         <div class="status-indicator" id="statusIndicator">Некалибриран</div>
 
         <div class="left-controls">
-            <button class="connect-button" id="connectButton">🔗 Свържи се</button>
+            <button class="connect-button" id="connectButton">🔗 Свърже се</button>
         </div>
 
         <div class="center-display">
@@ -549,7 +731,6 @@
         </div>
 
         <div class="right-controls">
-            <!-- Diagnostics box removed for production -->
             <button class="recalibrate-button" id="recalibrateButton">Рекалибрирай</button>
         </div>
     </div>
@@ -923,12 +1104,16 @@
             }
         }
 
-        // Simple address bar hiding
+        // ADAPTIVE: Enhanced address bar hiding with viewport height calculation
         function hideAddressBar() {
             setTimeout(() => {
                 window.scrollTo(0, 1);
+                
+                // Calculate and set CSS custom property for viewport height
                 const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                console.log(`📱 Viewport adjusted: ${window.innerHeight}px (${vh}px per vh unit)`);
             }, 100);
         }
 
@@ -996,7 +1181,7 @@
                 connectionHealth.recordFailure(error.message);
                 
                 connectButton.disabled = false;
-                connectButton.textContent = connected ? '🔄 Нов код' : '🔗 Свържи се';
+                connectButton.textContent = connected ? '🔄 Нов код' : '🔗 Свърже се';
                 if (!connected) {
                     connectButton.classList.remove('connected');
                     tokenElement.textContent = 'Грешка при свързване';
@@ -1029,7 +1214,7 @@
                 'info': 'Некалибриран',
                 'calibrating': 'Калибриране',
                 'motion-active': 'Активен',
-                'timeout': 'Прекъсната връзка'  // New timeout status
+                'timeout': 'Прекъсната връзка'
             };
 
             if (isCalibrating && type !== 'calibrating') {
@@ -1154,7 +1339,6 @@
                 let processedThrottle = applyProgressiveDeadZone(throttleTilt, 2.0);
 
                 // SENSITIVITY FIX: Progressive sensitivity curve for better control
-                // Apply progressive curve for finer control at low speeds
                 const applyProgressiveCurve = (value, multiplier) => {
                     const sign = Math.sign(value);
                     const abs = Math.abs(value);
@@ -1176,8 +1360,8 @@
                 };
 
                 const processed = spaceshipProcessor.addSample(
-                    applyProgressiveCurve(processedSteering, 3.2),  // Reduced from 4.0 to 3.2
-                    applyProgressiveCurve(processedThrottle, 2.4)   // Reduced from 3.0 to 2.4
+                    applyProgressiveCurve(processedSteering, 3.2),
+                    applyProgressiveCurve(processedThrottle, 2.4)
                 );
 
                 velocityX = Math.max(-6, Math.min(6, processed.x));
@@ -1321,19 +1505,36 @@
             }
         }
 
-        // Initialize everything with motion sensor keep-alive
+        // Initialize everything with motion sensor keep-alive and adaptive viewport
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 HIGH SENSITIVITY: Motion Sensor Keep-Alive System initialized');
+            console.log('🚀 ADAPTIVE DESIGN: Motion Sensor Keep-Alive System initialized');
+
+            // ADAPTIVE: Set up viewport height monitoring
+            const updateViewport = () => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+                console.log(`📱 Viewport updated: ${window.innerHeight}px`);
+            };
+
+            // Update viewport on resize and orientation change
+            window.addEventListener('resize', updateViewport);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(updateViewport, 500); // Delay to let orientation settle
+            });
+
+            // Initial viewport setup
+            updateViewport();
 
             // Start button
             startButton.onclick = () => {
-                console.log('🚀 Starting HIGH SENSITIVITY mission...');
+                console.log('🚀 Starting ADAPTIVE mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
-                console.log('✅ HIGH SENSITIVITY mission started with enhanced motion system');
+                updateViewport(); // Ensure viewport is correct after transition
+                console.log('✅ ADAPTIVE mission started with enhanced motion system');
             };
 
             // Enhanced button handlers
@@ -1402,8 +1603,17 @@
             }, 30000); // Every 30 seconds
         });
 
-        window.addEventListener('load', hideAddressBar);
-        window.addEventListener('resize', hideAddressBar);
+        window.addEventListener('load', () => {
+            hideAddressBar();
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        });
+        
+        window.addEventListener('resize', () => {
+            hideAddressBar();
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        });
 
         // Prevent page unload to maintain wake lock
         window.addEventListener('beforeunload', async () => {
