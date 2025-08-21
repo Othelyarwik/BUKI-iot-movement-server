@@ -443,40 +443,26 @@
             letter-spacing: normal;
         }
 
-        /* CENTERED BUTTONS */
+        /* CLEAN BUTTON STYLES - NO CONFLICTS */
         .connect-button, .recalibrate-button {
             border: none;
             border-radius: 10px;
-            padding: 10px 8px;
-            font-size: 12px;
+            padding: 10px 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            width: 75px; /* Slightly larger since they're now closer to center */
-            height: 42px;
+            width: 80px;
+            height: 40px;
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            margin: 0 auto;
             transition: all 0.3s ease;
             line-height: 1.1;
-            word-wrap: break-word;
-            hyphens: auto;
         }
 
-        /* FIXED PANELS */
-        .token-display, .values-display {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            min-width: 250px;
-            backdrop-filter: blur(10px);
-        }
+        /* REMOVED OLD PANEL STYLES - PANELS NOW POSITIONED BY GRID */
 
         .token-label, .value-label {
             font-size: clamp(10px, 2.2vw, 14px);
@@ -685,132 +671,11 @@
             }
         }
 
-        /* SMALL SCREEN GAME OPTIMIZATIONS */
-        @media screen and (max-width: 600px) {
-            .game-screen.active {
-                /* Even closer together on very small screens */
-                grid-template-columns: 
-                    clamp(70px, 12vw, 120px)   /* Left column - very close */
-                    1fr                        /* Center column */
-                    clamp(70px, 12vw, 120px);  /* Right column - very close */
-                gap: clamp(6px, 1vw, 15px);
-                padding: clamp(6px, 1vw, 15px);
-            }
+        /* REMOVED ALL CONFLICTING RESPONSIVE MEDIA QUERIES */
+        
+        /* ONLY KEEP ESSENTIAL STYLES */
 
-            .connect-button, .recalibrate-button {
-                /* Larger and more visible on small screens */
-                width: clamp(80px, 20vw, 130px);
-                height: clamp(32px, 8vw, 50px);
-                font-size: clamp(10px, 2.5vw, 15px);
-                padding: clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 15px);
-            }
-
-            .token-display, .values-display {
-                /* Smaller center panels to make room */
-                min-width: clamp(160px, 32vw, 280px);
-                max-width: clamp(220px, 45vw, 350px);
-                padding: clamp(8px, 2vw, 20px);
-            }
-
-            .center-display {
-                gap: clamp(12px, 2.5vw, 30px);
-                padding: 0 clamp(4px, 1vw, 12px);
-            }
-        }
-
-        /* SAFARI iOS GAME SCREEN SPECIFIC FIXES */
-        @media screen and (max-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
-            /* Specific fixes for iPhone Safari */
-            .game-screen {
-                /* More conservative rotation positioning */
-                transform: rotate(90deg) translateZ(0);
-                -webkit-transform: rotate(90deg) translateZ(0);
-                
-                /* Adjust for Safari's interface elements */
-                width: calc(100vh - 40px);  /* Account for Safari bars */
-                height: calc(100vw - 20px);
-                
-                left: calc((100vw - (100vh - 40px)) / 2);
-                top: calc((100vh - (100vw - 20px)) / 2);
-            }
-            
-            .game-screen.active {
-                /* Tighter grid for small iPhone screens */
-                grid-template-columns: 
-                    clamp(60px, 12vw, 100px)   /* Very tight side columns */
-                    1fr                        /* Center takes most space */
-                    clamp(60px, 12vw, 100px);
-                
-                /* Minimal but safe padding */
-                padding: 
-                    clamp(6px, 1.5vh, 15px)    /* Top */
-                    clamp(4px, 1vw, 12px)      /* Right */
-                    clamp(20px, 5vh, 35px)     /* Bottom - extra for Safari */
-                    clamp(4px, 1vw, 12px);     /* Left */
-                
-                gap: clamp(4px, 1vw, 10px);
-            }
-
-            .connect-button, .recalibrate-button {
-                /* Maximum compactness for tiny iPhone screens */
-                width: clamp(55px, 15vw, 85px);
-                height: clamp(24px, 6vw, 35px);
-                font-size: clamp(8px, 2vw, 11px);
-                padding: clamp(2px, 0.5vw, 6px) clamp(4px, 1vw, 8px);
-                line-height: 1.0;
-            }
-
-            .token-display, .values-display {
-                /* Compact center panels for iPhone */
-                min-width: clamp(120px, 28vw, 200px);
-                max-width: clamp(160px, 35vw, 250px);
-                padding: clamp(4px, 1vw, 12px);
-            }
-
-            .token-value {
-                font-size: clamp(10px, 2.5vw, 16px);
-                padding: clamp(4px, 1vw, 8px);
-                letter-spacing: clamp(0.5px, 0.1vw, 1.5px);
-            }
-
-            .value-number {
-                font-size: clamp(10px, 2.5vw, 14px);
-            }
-
-            .status-indicator {
-                font-size: clamp(12px, 3vw, 18px);
-                height: clamp(20px, 4vw, 30px);
-                margin-bottom: clamp(2px, 0.5vw, 6px);
-            }
-        }
-
-        /* LARGE SCREEN GAME OPTIMIZATIONS */
-        @media screen and (min-width: 800px) {
-            .game-screen.active {
-                /* Spread out more on large screens */
-                grid-template-columns: 
-                    clamp(150px, 18vw, 220px)   /* Left column - farther apart */
-                    1fr                         /* Center column */
-                    clamp(150px, 18vw, 220px);  /* Right column - farther apart */
-                gap: clamp(20px, 3vw, 35px);
-                padding: clamp(20px, 3vw, 35px);
-            }
-
-            .connect-button, .recalibrate-button {
-                /* Larger buttons on big screens */
-                width: clamp(140px, 28vw, 180px);
-                height: clamp(50px, 12vw, 70px);
-                font-size: clamp(16px, 3.5vw, 20px);
-                padding: clamp(12px, 3vw, 20px) clamp(20px, 4vw, 30px);
-            }
-
-            .token-display, .values-display {
-                /* Larger center panels on big screens */
-                min-width: clamp(280px, 45vw, 400px);
-                max-width: clamp(350px, 55vw, 500px);
-                padding: clamp(20px, 4vw, 35px);
-            }
-        }
+        /* REMOVED ALL OTHER CONFLICTING MEDIA QUERIES AND OVERRIDES */
 
         /* EXTRA WIDE SCREEN LIMITS */
         @media screen and (min-width: 500px) {
