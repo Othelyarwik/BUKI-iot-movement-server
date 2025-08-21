@@ -236,7 +236,7 @@
             transform: translateY(1px);
         }
 
-        /* ADAPTIVE GAME SCREEN WITH SAFARI ROTATION FIX */
+        /* SAFARI iOS COMPLETE LAYOUT OVERHAUL */
         .game-screen {
             display: none;
             position: fixed;
@@ -244,84 +244,114 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            /* Safari iOS rotation fix - account for interface elements */
-            transform: rotate(90deg);
-            transform-origin: center center;
-            -webkit-transform: rotate(90deg);
-            -webkit-transform-origin: center center;
             
-            /* Rotated dimensions with Safari adjustments */
+            /* Simplified rotation for Safari iOS */
+            transform: rotate(90deg);
+            transform-origin: 50% 50%;
+            -webkit-transform: rotate(90deg);
+            -webkit-transform-origin: 50% 50%;
+            
+            /* Fixed dimensions for Safari */
             width: 100vh;
             height: 100vw;
             
-            /* Dynamic positioning that accounts for Safari bars */
-            left: calc((100vw - 100vh) / 2);
-            top: calc((100vh - 100vw) / 2);
-            
-            /* Safari-specific adjustments */
-            left: calc((100vw - (100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))) / 2);
-            top: calc((100vh - (100vw - env(safe-area-inset-left) - env(safe-area-inset-right))) / 2);
+            /* Centered positioning */
+            left: 50%;
+            top: 50%;
+            margin-left: -50vw;
+            margin-top: -50vh;
             
             background:
                 url('flipped wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
-        }
-
-        /* Support for devices without env() support */
-        @supports not (padding: max(0px)) {
-            .game-screen {
-                /* Fallback positioning for older devices */
-                left: calc((100vw - 100vh) / 2);
-                top: calc((100vh - 100vw) / 2);
-            }
+            
+            /* Ensure proper layering */
+            z-index: 1000;
         }
 
         .game-screen.active {
-            display: grid;
-            /* Dynamic grid that adapts to screen size with Safari fixes */
-            grid-template-columns: 
-                clamp(70px, 15vw, 160px)   /* Left column - adjusted for Safari */
-                1fr                        /* Center column - flexible */
-                clamp(70px, 15vw, 160px);  /* Right column - adjusted for Safari */
-            grid-template-rows: 
-                auto                       /* Status row */
-                1fr;                       /* Content row */
-            
-            /* Safe area and Safari-aware spacing */
-            gap: clamp(6px, 1.2vw, 20px);
+            display: flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: space-between;
             
-            /* Enhanced padding that accounts for Safari interface */
-            padding: 
-                clamp(8px, 2vh, 25px)     /* Top */
-                clamp(8px, 2vw, 25px)     /* Right */  
-                clamp(15px, 4vh, 40px)    /* Bottom - extra for Safari bar */
-                clamp(8px, 2vw, 25px);    /* Left */
-            
-            /* Safe area insets for modern Safari */
-            padding-top: max(clamp(8px, 2vh, 25px), env(safe-area-inset-top));
-            padding-right: max(clamp(8px, 2vw, 25px), env(safe-area-inset-right));
-            padding-bottom: max(clamp(15px, 4vh, 40px), env(safe-area-inset-bottom));
-            padding-left: max(clamp(8px, 2vw, 25px), env(safe-area-inset-left));
-            
+            /* Simple padding instead of complex grid */
+            padding: 20px 15px 25px 15px;
             box-sizing: border-box;
             
-            /* Ensure content stays within safe bounds */
             width: 100%;
             height: 100%;
             overflow: hidden;
         }
 
-        /* ADAPTIVE STATUS INDICATOR */
+        /* TOP SECTION: Status */
+        .status-indicator {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(16px, 4vw, 24px);
+            height: 40px;
+            font-weight: 600;
+            color: #ffaa44;
+            background: rgba(0, 20, 40, 0.3);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* MIDDLE SECTION: Main Content */
+        .game-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            flex: 1;
+            gap: 15px;
+        }
+
+        /* LEFT SECTION: Connect Button */
+        .left-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        /* CENTER SECTION: Data Panels */
+        .center-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex: 1;
+            max-width: 60%;
+        }
+
+        /* RIGHT SECTION: Recalibrate Button */
+        .right-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        /* ADAPTIVE STATUS INDICATOR - SAFARI SAFE */
         .status-indicator {
             grid-column: 1 / -1;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: clamp(16px, 4vw, 28px);
-            height: clamp(30px, 6vw, 50px);
-            margin-bottom: clamp(5px, 1vw, 15px);
+            font-size: clamp(14px, 3.5vw, 24px);
+            height: clamp(25px, 5vw, 40px);
+            margin-bottom: clamp(4px, 1vw, 12px);
             font-weight: 600;
+            /* Ensure status stays visible */
+            z-index: 10;
+            position: relative;
         }
 
         .status-indicator.success {
@@ -377,30 +407,37 @@
             padding: 0 clamp(8px, 2vw, 20px);
         }
 
-        /* ADAPTIVE BUTTONS - DYNAMIC SIZING AND POSITIONING */
+        /* SIMPLIFIED BUTTON STYLING FOR SAFARI */
         .connect-button, .recalibrate-button {
             border: none;
-            border-radius: var(--border-radius);
-            padding: clamp(8px, 2vw, 18px) clamp(10px, 2.5vw, 25px);
-            font-size: clamp(11px, 2.8vw, 18px);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            /* Dynamic width - much wider on small screens for visibility */
-            width: clamp(90px, 22vw, 160px);
-            height: clamp(36px, 9vw, 60px);
+            width: 80px;
+            height: 40px;
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            margin: 0 auto;
-            transition: all 0.3s ease;
             line-height: 1.1;
-            /* Better text wrapping for small screens */
-            word-wrap: break-word;
-            hyphens: auto;
+            transition: all 0.3s ease;
+            margin: 0;
+        }
+
+        /* SIMPLIFIED PANEL STYLING FOR SAFARI */
+        .token-display, .values-display {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            width: 100%;
+            max-width: 280px;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
         }
 
         .connect-button {
@@ -698,46 +735,69 @@
             }
         }
 
-        /* EXTRA SMALL SCREEN GAME OPTIMIZATIONS */
-        @media screen and (max-width: 480px) {
+        /* SAFARI iOS GAME SCREEN SPECIFIC FIXES */
+        @media screen and (max-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
+            /* Specific fixes for iPhone Safari */
+            .game-screen {
+                /* More conservative rotation positioning */
+                transform: rotate(90deg) translateZ(0);
+                -webkit-transform: rotate(90deg) translateZ(0);
+                
+                /* Adjust for Safari's interface elements */
+                width: calc(100vh - 40px);  /* Account for Safari bars */
+                height: calc(100vw - 20px);
+                
+                left: calc((100vw - (100vh - 40px)) / 2);
+                top: calc((100vh - (100vw - 20px)) / 2);
+            }
+            
             .game-screen.active {
-                /* Maximum closeness for tiny screens */
+                /* Tighter grid for small iPhone screens */
                 grid-template-columns: 
-                    clamp(60px, 10vw, 100px)   /* Left column - very tight */
-                    1fr                        /* Center column */
-                    clamp(60px, 10vw, 100px);  /* Right column - very tight */
-                gap: clamp(4px, 0.8vw, 12px);
-                padding: clamp(4px, 0.8vw, 12px);
+                    clamp(60px, 12vw, 100px)   /* Very tight side columns */
+                    1fr                        /* Center takes most space */
+                    clamp(60px, 12vw, 100px);
+                
+                /* Minimal but safe padding */
+                padding: 
+                    clamp(6px, 1.5vh, 15px)    /* Top */
+                    clamp(4px, 1vw, 12px)      /* Right */
+                    clamp(20px, 5vh, 35px)     /* Bottom - extra for Safari */
+                    clamp(4px, 1vw, 12px);     /* Left */
+                
+                gap: clamp(4px, 1vw, 10px);
             }
 
             .connect-button, .recalibrate-button {
-                /* Maximum visibility on tiny screens */
-                width: clamp(70px, 18vw, 110px);
-                height: clamp(28px, 7vw, 45px);
-                font-size: clamp(9px, 2.2vw, 13px);
-                padding: clamp(4px, 1vw, 10px) clamp(6px, 1.5vw, 12px);
+                /* Maximum compactness for tiny iPhone screens */
+                width: clamp(55px, 15vw, 85px);
+                height: clamp(24px, 6vw, 35px);
+                font-size: clamp(8px, 2vw, 11px);
+                padding: clamp(2px, 0.5vw, 6px) clamp(4px, 1vw, 8px);
                 line-height: 1.0;
             }
 
             .token-display, .values-display {
-                /* Compact center panels */
-                min-width: clamp(140px, 30vw, 240px);
-                max-width: clamp(180px, 40vw, 300px);
-                padding: clamp(6px, 1.5vw, 16px);
+                /* Compact center panels for iPhone */
+                min-width: clamp(120px, 28vw, 200px);
+                max-width: clamp(160px, 35vw, 250px);
+                padding: clamp(4px, 1vw, 12px);
             }
 
             .token-value {
-                font-size: clamp(12px, 3vw, 18px);
-                padding: clamp(6px, 1.5vw, 12px);
+                font-size: clamp(10px, 2.5vw, 16px);
+                padding: clamp(4px, 1vw, 8px);
+                letter-spacing: clamp(0.5px, 0.1vw, 1.5px);
             }
 
             .value-number {
-                font-size: clamp(12px, 3vw, 16px);
+                font-size: clamp(10px, 2.5vw, 14px);
             }
 
             .status-indicator {
-                font-size: clamp(14px, 3.5vw, 22px);
-                height: clamp(25px, 5vw, 40px);
+                font-size: clamp(12px, 3vw, 18px);
+                height: clamp(20px, 4vw, 30px);
+                margin-bottom: clamp(2px, 0.5vw, 6px);
             }
         }
 
@@ -1265,34 +1325,47 @@
             }
         }
 
-        // SAFARI & IPHONE: Enhanced address bar hiding with better viewport calculation
+        // SAFARI & IPHONE: Enhanced viewport and rotation handling
         function hideAddressBar() {
             setTimeout(() => {
                 window.scrollTo(0, 1);
                 
                 // Enhanced viewport height calculation for Safari iOS
                 let vh = window.innerHeight * 0.01;
+                let vw = window.innerWidth * 0.01;
                 
                 // Safari iOS specific adjustments
-                if (navigator.userAgent.includes('Safari') && navigator.userAgent.includes('Mobile')) {
-                    // Account for Safari's bottom address bar
-                    const safariBottomBarHeight = 44; // Approximate height of Safari bottom bar
-                    vh = (window.innerHeight - safariBottomBarHeight) * 0.01;
-                    console.log(`📱 Safari iOS detected: Adjusting for bottom bar (${safariBottomBarHeight}px)`);
+                const isSafariMobile = navigator.userAgent.includes('Safari') && 
+                                     navigator.userAgent.includes('Mobile') && 
+                                     !navigator.userAgent.includes('Chrome');
+                
+                if (isSafariMobile) {
+                    // Account for Safari's interface elements
+                    const safariAdjustment = 40; // Combined top/bottom bars
+                    vh = (window.innerHeight - safariAdjustment) * 0.01;
+                    console.log(`📱 Safari iOS detected: Adjusting viewport (${safariAdjustment}px compensation)`);
                 }
                 
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
+                document.documentElement.style.setProperty('--vw', `${vw}px`);
                 
-                console.log(`📱 Viewport adjusted: ${window.innerHeight}px (${vh}px per vh unit)`);
+                console.log(`📱 Viewport: ${window.innerWidth}×${window.innerHeight} (vh: ${vh}px, vw: ${vw}px)`);
                 
-                // Force Safari to hide address bars
-                if (window.DeviceMotionEvent) {
-                    window.addEventListener('devicemotion', function onFirstDeviceMotion() {
-                        window.removeEventListener('devicemotion', onFirstDeviceMotion);
-                        setTimeout(() => {
-                            window.scrollTo(0, 1);
-                        }, 100);
-                    });
+                // Force layout recalculation for rotated screen
+                const gameScreen = document.getElementById('gameScreen');
+                if (gameScreen && gameScreen.classList.contains('active')) {
+                    console.log('🔄 Forcing game screen layout recalculation...');
+                    gameScreen.style.display = 'none';
+                    gameScreen.offsetHeight; // Force reflow
+                    gameScreen.style.display = 'grid';
+                }
+                
+                // Safari-specific address bar hiding
+                if (isSafariMobile) {
+                    // Multiple attempts to hide Safari bars
+                    setTimeout(() => window.scrollTo(0, 1), 100);
+                    setTimeout(() => window.scrollTo(0, 1), 300);
+                    setTimeout(() => window.scrollTo(0, 1), 500);
                 }
             }, 100);
         }
