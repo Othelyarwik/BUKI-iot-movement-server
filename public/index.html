@@ -251,11 +251,15 @@
 
         .game-screen.active {
             display: grid;
-            grid-template-columns: clamp(120px, 20vw, 180px) 1fr clamp(120px, 20vw, 180px);
+            /* Dynamic grid that adapts to screen size */
+            grid-template-columns: 
+                clamp(80px, 15vw, 180px)   /* Left column - closer on small screens */
+                1fr                        /* Center column - flexible */
+                clamp(80px, 15vw, 180px);  /* Right column - closer on small screens */
             grid-template-rows: auto 1fr;
-            gap: clamp(10px, 2vw, 25px);
+            gap: clamp(8px, 1.5vw, 25px); /* Smaller gaps on small screens */
             align-items: center;
-            padding: clamp(10px, 2vw, 25px);
+            padding: clamp(8px, 1.5vw, 25px); /* Adaptive padding */
         }
 
         /* ADAPTIVE STATUS INDICATOR */
@@ -300,14 +304,16 @@
             50% { opacity: 0.6; }
         }
 
-        /* ADAPTIVE CONTROL SECTIONS */
+        /* ADAPTIVE CONTROL SECTIONS - DYNAMIC POSITIONING */
         .left-controls, .right-controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
-            gap: clamp(15px, 3vw, 30px);
+            gap: clamp(10px, 2vw, 30px);
+            /* Dynamic positioning based on screen size */
+            padding: 0 clamp(4px, 1vw, 12px);
         }
 
         .center-display {
@@ -315,20 +321,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: clamp(20px, 4vw, 40px);
+            gap: clamp(15px, 3vw, 40px);
             height: 100%;
+            /* Adaptive center spacing */
+            padding: 0 clamp(8px, 2vw, 20px);
         }
 
-        /* ADAPTIVE BUTTONS */
+        /* ADAPTIVE BUTTONS - DYNAMIC SIZING AND POSITIONING */
         .connect-button, .recalibrate-button {
             border: none;
             border-radius: var(--border-radius);
-            padding: clamp(10px, 2.5vw, 18px) clamp(15px, 3vw, 25px);
-            font-size: clamp(12px, 3vw, 18px);
+            padding: clamp(8px, 2vw, 18px) clamp(10px, 2.5vw, 25px);
+            font-size: clamp(11px, 2.8vw, 18px);
             font-weight: bold;
             cursor: pointer;
-            width: clamp(100px, 25vw, 160px);
-            height: clamp(40px, 10vw, 60px);
+            /* Dynamic width - much wider on small screens for visibility */
+            width: clamp(90px, 22vw, 160px);
+            height: clamp(36px, 9vw, 60px);
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
@@ -338,7 +347,10 @@
             overflow: hidden;
             margin: 0 auto;
             transition: all 0.3s ease;
-            line-height: 1.2;
+            line-height: 1.1;
+            /* Better text wrapping for small screens */
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         .connect-button {
@@ -383,14 +395,16 @@
             letter-spacing: normal;
         }
 
-        /* ADAPTIVE DISPLAY PANELS */
+        /* ADAPTIVE DISPLAY PANELS - DYNAMIC SIZING */
         .token-display, .values-display {
             background: rgba(0, 20, 40, 0.9);
             border: 2px solid rgba(0, 255, 255, 0.4);
             border-radius: var(--border-radius);
-            padding: clamp(12px, 3vw, 25px);
+            padding: clamp(10px, 2.5vw, 25px);
             text-align: center;
-            min-width: clamp(200px, 40vw, 320px);
+            /* Dynamic width - smaller on small screens to make room for buttons */
+            min-width: clamp(180px, 35vw, 320px);
+            max-width: clamp(260px, 50vw, 400px);
             backdrop-filter: blur(10px);
         }
 
@@ -601,10 +615,107 @@
             }
         }
 
-        /* WIDE SCREEN OPTIMIZATIONS */
-        @media screen and (min-width: 400px) {
-            .instructions {
-                max-width: 400px;
+        /* SMALL SCREEN GAME OPTIMIZATIONS */
+        @media screen and (max-width: 600px) {
+            .game-screen.active {
+                /* Even closer together on very small screens */
+                grid-template-columns: 
+                    clamp(70px, 12vw, 120px)   /* Left column - very close */
+                    1fr                        /* Center column */
+                    clamp(70px, 12vw, 120px);  /* Right column - very close */
+                gap: clamp(6px, 1vw, 15px);
+                padding: clamp(6px, 1vw, 15px);
+            }
+
+            .connect-button, .recalibrate-button {
+                /* Larger and more visible on small screens */
+                width: clamp(80px, 20vw, 130px);
+                height: clamp(32px, 8vw, 50px);
+                font-size: clamp(10px, 2.5vw, 15px);
+                padding: clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 15px);
+            }
+
+            .token-display, .values-display {
+                /* Smaller center panels to make room */
+                min-width: clamp(160px, 32vw, 280px);
+                max-width: clamp(220px, 45vw, 350px);
+                padding: clamp(8px, 2vw, 20px);
+            }
+
+            .center-display {
+                gap: clamp(12px, 2.5vw, 30px);
+                padding: 0 clamp(4px, 1vw, 12px);
+            }
+        }
+
+        /* EXTRA SMALL SCREEN GAME OPTIMIZATIONS */
+        @media screen and (max-width: 480px) {
+            .game-screen.active {
+                /* Maximum closeness for tiny screens */
+                grid-template-columns: 
+                    clamp(60px, 10vw, 100px)   /* Left column - very tight */
+                    1fr                        /* Center column */
+                    clamp(60px, 10vw, 100px);  /* Right column - very tight */
+                gap: clamp(4px, 0.8vw, 12px);
+                padding: clamp(4px, 0.8vw, 12px);
+            }
+
+            .connect-button, .recalibrate-button {
+                /* Maximum visibility on tiny screens */
+                width: clamp(70px, 18vw, 110px);
+                height: clamp(28px, 7vw, 45px);
+                font-size: clamp(9px, 2.2vw, 13px);
+                padding: clamp(4px, 1vw, 10px) clamp(6px, 1.5vw, 12px);
+                line-height: 1.0;
+            }
+
+            .token-display, .values-display {
+                /* Compact center panels */
+                min-width: clamp(140px, 30vw, 240px);
+                max-width: clamp(180px, 40vw, 300px);
+                padding: clamp(6px, 1.5vw, 16px);
+            }
+
+            .token-value {
+                font-size: clamp(12px, 3vw, 18px);
+                padding: clamp(6px, 1.5vw, 12px);
+            }
+
+            .value-number {
+                font-size: clamp(12px, 3vw, 16px);
+            }
+
+            .status-indicator {
+                font-size: clamp(14px, 3.5vw, 22px);
+                height: clamp(25px, 5vw, 40px);
+            }
+        }
+
+        /* LARGE SCREEN GAME OPTIMIZATIONS */
+        @media screen and (min-width: 800px) {
+            .game-screen.active {
+                /* Spread out more on large screens */
+                grid-template-columns: 
+                    clamp(150px, 18vw, 220px)   /* Left column - farther apart */
+                    1fr                         /* Center column */
+                    clamp(150px, 18vw, 220px);  /* Right column - farther apart */
+                gap: clamp(20px, 3vw, 35px);
+                padding: clamp(20px, 3vw, 35px);
+            }
+
+            .connect-button, .recalibrate-button {
+                /* Larger buttons on big screens */
+                width: clamp(140px, 28vw, 180px);
+                height: clamp(50px, 12vw, 70px);
+                font-size: clamp(16px, 3.5vw, 20px);
+                padding: clamp(12px, 3vw, 20px) clamp(20px, 4vw, 30px);
+            }
+
+            .token-display, .values-display {
+                /* Larger center panels on big screens */
+                min-width: clamp(280px, 45vw, 400px);
+                max-width: clamp(350px, 55vw, 500px);
+                padding: clamp(20px, 4vw, 35px);
             }
         }
 
