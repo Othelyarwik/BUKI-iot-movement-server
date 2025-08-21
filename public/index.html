@@ -257,9 +257,9 @@
 
         .game-screen.active {
             display: grid;
-            grid-template-columns: 90px 1fr 90px; /* Reduced from 120px to 90px */
+            grid-template-columns: 60px 1fr 60px; /* Much smaller side columns - from 90px to 60px */
             grid-template-rows: auto 1fr;
-            gap: 12px; /* Reduced gap from 15px to 12px */
+            gap: 8px; /* Even smaller gap - from 12px to 8px */
             align-items: center;
             padding: 15px;
             box-sizing: border-box;
@@ -431,16 +431,16 @@
             letter-spacing: normal;
         }
 
-        /* CLOSER BUTTONS */
+        /* MUCH CLOSER BUTTONS */
         .connect-button, .recalibrate-button {
             border: none;
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 13px;
+            border-radius: 8px;
+            padding: 8px 6px;
+            font-size: 11px;
             font-weight: bold;
             cursor: pointer;
-            width: 85px; /* Reduced from 100px to 85px to fit in 90px column */
-            height: 45px;
+            width: 55px; /* Much smaller to fit in 60px column */
+            height: 40px;
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
@@ -450,7 +450,9 @@
             overflow: hidden;
             margin: 0 auto;
             transition: all 0.3s ease;
-            line-height: 1.2;
+            line-height: 1.1;
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         /* FIXED PANELS */
