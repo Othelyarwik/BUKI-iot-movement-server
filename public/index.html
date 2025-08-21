@@ -11,6 +11,33 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
+        /* ADAPTIVE VIEWPORT SYSTEM */
+        :root {
+            /* Base font size that scales with viewport */
+            --base-font: clamp(12px, 3.5vw, 20px);
+            --title-font: clamp(20px, 6vw, 32px);
+            --subtitle-font: clamp(14px, 4vw, 18px);
+            --button-font: clamp(14px, 4.5vw, 18px);
+            --instruction-font: clamp(11px, 3vw, 16px);
+            --number-font: clamp(10px, 2.8vw, 14px);
+            
+            /* Adaptive spacing */
+            --spacing-xs: clamp(4px, 1vw, 8px);
+            --spacing-sm: clamp(8px, 2vw, 16px);
+            --spacing-md: clamp(12px, 3vw, 24px);
+            --spacing-lg: clamp(16px, 4vw, 32px);
+            --spacing-xl: clamp(20px, 5vw, 40px);
+            
+            /* Adaptive component sizes */
+            --button-height: clamp(40px, 12vw, 60px);
+            --button-width: clamp(140px, 40vw, 200px);
+            --instruction-number: clamp(20px, 6vw, 32px);
+            --border-radius: clamp(8px, 2vw, 16px);
+            
+            /* Screen height considerations */
+            --vh: 1vh;
+        }
+
         /* RESET & BASE */
         * {
             box-sizing: border-box;
@@ -22,7 +49,10 @@
             font-family: 'Orbitron', monospace;
             color: #e0e0ff;
             height: 100vh;
-            height: 100dvh;
+            height: calc(var(--vh, 1vh) * 100);
+            /* Safari-specific height fixes */
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             overflow: hidden;
             position: fixed;
             top: 0;
@@ -32,6 +62,9 @@
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            font-size: var(--base-font);
+            /* Safari iOS viewport fix */
+            -webkit-appearance: none;
         }
 
         body::before {
@@ -50,13 +83,19 @@
             backface-visibility: hidden;
         }
 
+        /* ADAPTIVE SETUP SCREEN - FIXED BUTTON POSITIONING */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            padding: 15px 20px 80px 20px;
+            height: calc(var(--vh, 1vh) * 100);
+            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px);
             max-height: 100vh;
+            max-height: calc(var(--vh, 1vh) * 100);
             overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            justify-content: space-between; /* Distribute space between content and button */
         }
 
         .main-content {
@@ -64,97 +103,128 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             text-align: center;
+            gap: clamp(12px, 3vh, 24px);
+            min-height: 0;
+            padding-top: clamp(20px, 8vh, 60px);
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: clamp(16px, 4vh, 32px); /* Ensure space for button */
         }
 
         .main-content h1 {
-            font-size: 28px;
+            font-size: var(--title-font);
             font-weight: 900;
-            margin-bottom: 12px;
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            letter-spacing: 1px;
+            letter-spacing: clamp(0.5px, 0.2vw, 2px);
+            line-height: 1.1;
+            margin: 0 0 clamp(8px, 2vh, 16px) 0;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .main-content h2 {
-            font-size: 16px;
-            margin-bottom: 28px;
+            font-size: var(--subtitle-font);
             color: #b0b0ff;
             font-weight: 700;
             text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
+            line-height: 1.3;
+            margin: 0 0 clamp(16px, 4vh, 32px) 0;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .instructions {
             background: rgba(0, 20, 40, 0.8);
             border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 24px;
-            max-width: 400px;
+            border-radius: var(--border-radius);
+            padding: clamp(16px, 4vw, 24px);
+            max-width: min(92vw, 420px);
+            width: 100%;
             backdrop-filter: blur(10px);
+            margin: 0 auto 0 auto; /* Remove bottom margin that was causing overlap */
+            box-sizing: border-box;
         }
 
         .instruction {
             display: flex;
             align-items: flex-start;
-            margin: 16px 0;
-            font-size: 14px;
+            margin: clamp(10px, 2.5vh, 18px) 0;
+            font-size: var(--instruction-font);
             text-align: left;
-            line-height: 1.4;
+            line-height: 1.5; /* Increased for better readability */
+            gap: clamp(8px, 2vw, 16px);
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .instruction div:last-child {
+            flex: 1;
+            min-width: 0; /* Allows text to wrap properly */
         }
 
         .instruction-number {
             background: linear-gradient(135deg, #00ffff, #0080ff);
             color: #001122;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: var(--instruction-number);
+            height: var(--instruction-number);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            margin-right: 12px;
             flex-shrink: 0;
-            font-size: 12px;
+            font-size: var(--number-font);
         }
 
         .sub-instructions {
-            margin-left: 40px;
-            margin-top: 8px;
-            margin-bottom: 8px;
+            margin-left: calc(var(--instruction-number) + clamp(8px, 2vw, 16px));
+            margin-top: clamp(6px, 1.5vh, 12px);
+            margin-bottom: clamp(6px, 1.5vh, 12px);
         }
 
         .sub-instruction {
-            margin: 4px 0;
-            font-size: 13px;
+            margin: clamp(6px, 1.5vh, 10px) 0;
+            font-size: calc(var(--instruction-font) * 0.92);
             color: #e0e0ff;
-            line-height: 1.4;
+            line-height: 1.5; /* Increased for better readability */
             text-align: left;
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-size: 16px;
+            border-radius: var(--border-radius);
+            padding: clamp(12px, 3vh, 18px) clamp(20px, 5vw, 32px);
+            font-size: var(--button-font);
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            letter-spacing: 1px;
-            min-width: 180px;
-            min-height: 52px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            align-self: center;
+            letter-spacing: clamp(0.5px, 0.1vw, 1.5px);
+            min-width: clamp(160px, 45vw, 220px);
+            min-height: clamp(48px, 12vh, 64px);
             transition: transform 0.2s ease;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-            position: relative;
-            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            align-self: center;
+            flex-shrink: 0; /* Prevent button from shrinking */
+            margin: 0; /* Remove all margins - let flexbox handle spacing */
         }
 
         .start-button:hover, .start-button:active {
@@ -938,12 +1008,37 @@
             }
         }
 
-        // Simple address bar hiding
+        // SAFARI & IPHONE: Enhanced address bar hiding with better viewport calculation
         function hideAddressBar() {
             setTimeout(() => {
                 window.scrollTo(0, 1);
-                const vh = window.innerHeight * 0.01;
+                
+                // Enhanced viewport height calculation for Safari iOS
+                let vh = window.innerHeight * 0.01;
+                
+                // Safari iOS specific adjustments
+                const isSafariMobile = navigator.userAgent.includes('Safari') && 
+                                     navigator.userAgent.includes('Mobile') && 
+                                     !navigator.userAgent.includes('Chrome');
+                
+                if (isSafariMobile) {
+                    // Account for Safari's interface elements
+                    const safariAdjustment = 40; // Combined top/bottom bars
+                    vh = (window.innerHeight - safariAdjustment) * 0.01;
+                    console.log(`📱 Safari iOS detected: Adjusting viewport (${safariAdjustment}px compensation)`);
+                }
+                
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
+                
+                console.log(`📱 Viewport adjusted: ${window.innerHeight}px (${vh}px per vh unit)`);
+                
+                // Safari-specific address bar hiding
+                if (isSafariMobile) {
+                    // Multiple attempts to hide Safari bars
+                    setTimeout(() => window.scrollTo(0, 1), 100);
+                    setTimeout(() => window.scrollTo(0, 1), 300);
+                    setTimeout(() => window.scrollTo(0, 1), 500);
+                }
             }, 100);
         }
 
