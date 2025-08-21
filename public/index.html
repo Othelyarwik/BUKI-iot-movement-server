@@ -1228,7 +1228,7 @@
             }, 100);
         }
 
-        // STEP 3: Connect handler with motion sensor manager
+        // STEP 3: Connect handler with enhanced iPhone debugging
         async function handleConnect() {
             const isReconnect = connected && token;
             const startTime = Date.now();
@@ -1237,39 +1237,61 @@
             connectButton.textContent = isReconnect ? 'Генериране...' : 'Свързване...';
             hideError();
 
+            // Enhanced iPhone debugging
+            console.log('🔗 iPhone DEBUG: Starting connection attempt');
+            console.log(`📱 User Agent: ${navigator.userAgent}`);
+            console.log(`🌐 URL: ${window.location.origin}/start`);
+            console.log(`📡 Protocol: ${window.location.protocol}`);
+            console.log(`🔒 HTTPS: ${window.location.protocol === 'https:'}`);
+
             try {
                 console.log('🔗 STEP 3: Attempting connection with motion sensor keep-alive');
                 
-                const response = await fetch('/start', {
+                // iPhone-specific fetch configuration
+                const requestConfig = {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Timestamp': Date.now().toString()
-                    }
-                });
+                        'X-Timestamp': Date.now().toString(),
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    mode: 'cors', // Explicit CORS mode
+                    credentials: 'same-origin', // iPhone-friendly credentials
+                    body: JSON.stringify({}) // Send empty body for POST
+                };
+
+                console.log('📤 iPhone DEBUG: Request config:', requestConfig);
+
+                const response = await fetch('/start', requestConfig);
 
                 connectionHealth.recordResponseTime(startTime);
-                console.log(`📡 Connection response: ${response.status} ${response.statusText}`);
+                console.log(`📡 iPhone DEBUG: Response received`);
+                console.log(`📡 Status: ${response.status} ${response.statusText}`);
+                console.log(`📡 Headers:`, [...response.headers.entries()]);
 
                 if (!response.ok) {
                     const errorText = await response.text();
+                    console.log(`❌ iPhone DEBUG: Server error response: ${errorText}`);
                     throw new Error(`Server error: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
-                console.log('📦 Server data:', data);
+                console.log('📦 iPhone DEBUG: Server data:', data);
                 
                 if (!data.token) throw new Error('No token received from server');
 
                 token = data.token;
                 tokenElement.textContent = token;
-                console.log(`🎯 Token received: ${token}`);
+                console.log(`🎯 iPhone DEBUG: Token received: ${token}`);
 
                 if (!connected) {
                     try {
+                        console.log('📱 iPhone DEBUG: Initializing motion sensors...');
                         await motionSensorManager.initialize();
-                        console.log('✅ Motion sensor keep-alive system activated');
+                        console.log('✅ iPhone DEBUG: Motion sensor system activated');
                     } catch (motionError) {
+                        console.log('❌ iPhone DEBUG: Motion sensor error:', motionError);
                         throw new Error(`Motion sensor setup failed: ${motionError.message}`);
                     }
 
@@ -1287,8 +1309,14 @@
                     startCalibration();
                 }
 
+                console.log('✅ iPhone DEBUG: Connection successful!');
+
             } catch (error) {
-                console.log('❌ Connection failed:', error);
+                console.log('❌ iPhone DEBUG: Connection failed with error:', error);
+                console.log('❌ iPhone DEBUG: Error name:', error.name);
+                console.log('❌ iPhone DEBUG: Error message:', error.message);
+                console.log('❌ iPhone DEBUG: Error stack:', error.stack);
+                
                 connectionHealth.recordFailure(error.message);
                 
                 connectButton.disabled = false;
@@ -1299,22 +1327,51 @@
                     updateStatus('', 'error');
                 }
                 
-                // Enhanced error handling
-                let errorMsg = error.message;
-                if (error.message.includes('Failed to fetch')) {
-                    errorMsg = 'Сървърът не отговаря - проверете интернет връзката';
-                } else if (error.message.includes('NetworkError')) {
-                    errorMsg = 'Мрежова грешка - проверете WiFi/данни';
+                // Enhanced iPhone-specific error handling
+                let errorMsg = 'Неизвестна грешка';
+                
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    errorMsg = 'iPhone мрежова грешка - проверете WiFi/данни';
+                    console.log('📱 iPhone DEBUG: Network connectivity issue detected');
+                } else if (error.name === 'NetworkError' || error.message.includes('NetworkError')) {
+                    errorMsg = 'iPhone мрежов проблем - опитайте с Safari';
+                    console.log('📱 iPhone DEBUG: Browser network issue detected');
+                } else if (error.message.includes('HTTPS') || window.location.protocol !== 'https:') {
+                    errorMsg = 'iPhone изисква HTTPS - използвайте https://';
+                    console.log('📱 iPhone DEBUG: HTTPS requirement detected');
+                } else if (error.message.includes('CORS')) {
+                    errorMsg = 'iPhone CORS проблем - проверете сървъра';
+                    console.log('📱 iPhone DEBUG: CORS issue detected');
                 } else if (error.message.includes('Motion sensor permission')) {
-                    errorMsg = 'Няма разрешение за сензори - рестартирайте приложението';
+                    errorMsg = 'iPhone няма разрешение за сензори - рестартирайте';
+                    console.log('📱 iPhone DEBUG: Motion permission issue detected');
                 } else if (error.message.includes('Device motion not supported')) {
-                    errorMsg = 'Устройството не поддържа motion сензори';
+                    errorMsg = 'iPhone не поддържа motion сензори в този браузър';
+                    console.log('📱 iPhone DEBUG: Motion sensor compatibility issue detected');
                 } else if (error.message.includes('Motion sensor setup failed')) {
-                    errorMsg = 'Грешка в motion сензора - опитайте отново';
+                    errorMsg = 'iPhone motion сензор грешка - опитайте Safari';
+                    console.log('📱 iPhone DEBUG: Motion sensor setup issue detected');
+                } else if (error.message.includes('Server error: 5')) {
+                    errorMsg = 'Сървър проблем - опитайте след малко';
+                    console.log('📱 iPhone DEBUG: Server error detected');
+                } else if (error.message.includes('timeout')) {
+                    errorMsg = 'iPhone timeout - бавна връзка';
+                    console.log('📱 iPhone DEBUG: Timeout issue detected');
+                } else {
+                    errorMsg = `iPhone грешка: ${error.message}`;
+                    console.log('📱 iPhone DEBUG: Unknown error type detected');
                 }
                 
+                // Show error with iPhone-specific context
                 showError(errorMsg, false);
-                console.log('📊 Connection Health:', connectionHealth.getHealthReport());
+                console.log('📊 iPhone DEBUG: Connection Health:', connectionHealth.getHealthReport());
+                
+                // iPhone-specific troubleshooting info
+                console.log('🔧 iPhone DEBUG: Troubleshooting info:');
+                console.log(`   - Protocol: ${window.location.protocol}`);
+                console.log(`   - Host: ${window.location.host}`);
+                console.log(`   - Online: ${navigator.onLine}`);
+                console.log(`   - Connection: ${navigator.connection ? navigator.connection.effectiveType : 'unknown'}`);
             }
         }
 
@@ -1616,21 +1673,57 @@
             }
         }
 
-        // Initialize everything with motion sensor keep-alive and adaptive viewport
+        // Initialize everything with iPhone debugging and connectivity test
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 ADAPTIVE DESIGN: Motion Sensor Keep-Alive System initialized');
+            console.log('🚀 iPhone DEBUG: Motion Sensor Keep-Alive System initialized');
+            console.log(`📱 iPhone DEBUG: User Agent: ${navigator.userAgent}`);
+            console.log(`📱 iPhone DEBUG: Platform: ${navigator.platform}`);
+            console.log(`📱 iPhone DEBUG: Online: ${navigator.onLine}`);
+            console.log(`📱 iPhone DEBUG: Protocol: ${window.location.protocol}`);
+            console.log(`📱 iPhone DEBUG: Origin: ${window.location.origin}`);
+
+            // iPhone connectivity test
+            async function testConnectivity() {
+                try {
+                    console.log('🔍 iPhone DEBUG: Testing basic connectivity...');
+                    const testResponse = await fetch('/health', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        },
+                        mode: 'cors',
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (testResponse.ok) {
+                        const healthData = await testResponse.json();
+                        console.log('✅ iPhone DEBUG: Server connectivity OK');
+                        console.log('📊 iPhone DEBUG: Server health:', healthData);
+                    } else {
+                        console.log('⚠️ iPhone DEBUG: Server responded but with error:', testResponse.status);
+                    }
+                } catch (error) {
+                    console.log('❌ iPhone DEBUG: Basic connectivity test failed:', error);
+                    console.log('🔧 iPhone DEBUG: This may indicate network/CORS/HTTPS issues');
+                }
+            }
+
+            // Run connectivity test after a short delay
+            setTimeout(testConnectivity, 1000);
 
             // ADAPTIVE: Set up viewport height monitoring
             const updateViewport = () => {
                 const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
-                console.log(`📱 Viewport updated: ${window.innerHeight}px`);
+                console.log(`📱 iPhone DEBUG: Viewport updated: ${window.innerHeight}px`);
             };
 
             // Update viewport on resize and orientation change
             window.addEventListener('resize', updateViewport);
             window.addEventListener('orientationchange', () => {
                 setTimeout(updateViewport, 500); // Delay to let orientation settle
+                console.log('📱 iPhone DEBUG: Orientation changed');
             });
 
             // Initial viewport setup
@@ -1638,14 +1731,14 @@
 
             // Start button
             startButton.onclick = () => {
-                console.log('🚀 Starting ADAPTIVE mission...');
+                console.log('🚀 iPhone DEBUG: Starting ADAPTIVE mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
                 updateViewport(); // Ensure viewport is correct after transition
-                console.log('✅ ADAPTIVE mission started with enhanced motion system');
+                console.log('✅ iPhone DEBUG: ADAPTIVE mission started');
             };
 
             // Enhanced button handlers
