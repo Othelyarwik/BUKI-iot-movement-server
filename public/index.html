@@ -83,19 +83,18 @@
             backface-visibility: hidden;
         }
 
-        /* ADAPTIVE SETUP SCREEN - FIXED BUTTON POSITIONING */
+        /* ADAPTIVE SETUP SCREEN - PROPER BUTTON BELOW TEXT */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
             height: calc(var(--vh, 1vh) * 100);
-            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px);
+            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(16px, 4vh, 32px) clamp(12px, 3vw, 24px);
             max-height: 100vh;
             max-height: calc(var(--vh, 1vh) * 100);
             overflow-y: auto;
             overflow-x: hidden;
             box-sizing: border-box;
-            justify-content: space-between; /* Distribute space between content and button */
         }
 
         .main-content {
@@ -110,7 +109,6 @@
             padding-top: clamp(20px, 8vh, 60px);
             width: 100%;
             max-width: 100%;
-            margin-bottom: clamp(16px, 4vh, 32px); /* Ensure space for button */
         }
 
         .main-content h1 {
@@ -146,7 +144,7 @@
             max-width: min(92vw, 420px);
             width: 100%;
             backdrop-filter: blur(10px);
-            margin: 0 auto 0 auto; /* Remove bottom margin that was causing overlap */
+            margin: 0 auto clamp(20px, 5vh, 40px) auto; /* Add bottom margin for button space */
             box-sizing: border-box;
         }
 
@@ -223,8 +221,7 @@
             overflow: hidden;
             box-sizing: border-box;
             align-self: center;
-            flex-shrink: 0; /* Prevent button from shrinking */
-            margin: 0; /* Remove all margins - let flexbox handle spacing */
+            margin: 0 auto clamp(16px, 4vh, 32px) auto; /* Proper margin for positioning below content */
         }
 
         .start-button:hover, .start-button:active {
