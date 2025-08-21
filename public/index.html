@@ -236,47 +236,80 @@
             transform: translateY(1px);
         }
 
-        /* ADAPTIVE GAME SCREEN WITH SAFARI BOTTOM BAR FIX */
+        /* ADAPTIVE GAME SCREEN WITH SAFARI ROTATION FIX */
         .game-screen {
             display: none;
-            width: 100vw;
-            height: 100vh;
-            /* Safari iOS bottom bar protection */
-            height: calc(var(--vh, 1vh) * 100);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
             position: fixed;
             top: 0;
             left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Safari iOS rotation fix - account for interface elements */
             transform: rotate(90deg);
             transform-origin: center center;
+            -webkit-transform: rotate(90deg);
+            -webkit-transform-origin: center center;
+            
+            /* Rotated dimensions with Safari adjustments */
             width: 100vh;
-            width: calc(var(--vh, 1vh) * 100);
             height: 100vw;
+            
+            /* Dynamic positioning that accounts for Safari bars */
             left: calc((100vw - 100vh) / 2);
             top: calc((100vh - 100vw) / 2);
+            
+            /* Safari-specific adjustments */
+            left: calc((100vw - (100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))) / 2);
+            top: calc((100vh - (100vw - env(safe-area-inset-left) - env(safe-area-inset-right))) / 2);
+            
             background:
                 url('flipped wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
-            /* Safari-specific properties */
-            -webkit-transform: rotate(90deg);
-            -webkit-transform-origin: center center;
+        }
+
+        /* Support for devices without env() support */
+        @supports not (padding: max(0px)) {
+            .game-screen {
+                /* Fallback positioning for older devices */
+                left: calc((100vw - 100vh) / 2);
+                top: calc((100vh - 100vw) / 2);
+            }
         }
 
         .game-screen.active {
             display: grid;
-            /* Dynamic grid that adapts to screen size */
+            /* Dynamic grid that adapts to screen size with Safari fixes */
             grid-template-columns: 
-                clamp(80px, 15vw, 180px)   /* Left column - closer on small screens */
+                clamp(70px, 15vw, 160px)   /* Left column - adjusted for Safari */
                 1fr                        /* Center column - flexible */
-                clamp(80px, 15vw, 180px);  /* Right column - closer on small screens */
-            grid-template-rows: auto 1fr;
-            gap: clamp(8px, 1.5vw, 25px); /* Smaller gaps on small screens */
+                clamp(70px, 15vw, 160px);  /* Right column - adjusted for Safari */
+            grid-template-rows: 
+                auto                       /* Status row */
+                1fr;                       /* Content row */
+            
+            /* Safe area and Safari-aware spacing */
+            gap: clamp(6px, 1.2vw, 20px);
             align-items: center;
-            padding: clamp(8px, 1.5vw, 25px); /* Adaptive padding */
-            /* Safari bottom bar protection */
-            padding-bottom: clamp(12px, 3vh, 35px); /* Extra bottom padding for Safari */
+            
+            /* Enhanced padding that accounts for Safari interface */
+            padding: 
+                clamp(8px, 2vh, 25px)     /* Top */
+                clamp(8px, 2vw, 25px)     /* Right */  
+                clamp(15px, 4vh, 40px)    /* Bottom - extra for Safari bar */
+                clamp(8px, 2vw, 25px);    /* Left */
+            
+            /* Safe area insets for modern Safari */
+            padding-top: max(clamp(8px, 2vh, 25px), env(safe-area-inset-top));
+            padding-right: max(clamp(8px, 2vw, 25px), env(safe-area-inset-right));
+            padding-bottom: max(clamp(15px, 4vh, 40px), env(safe-area-inset-bottom));
+            padding-left: max(clamp(8px, 2vw, 25px), env(safe-area-inset-left));
+            
             box-sizing: border-box;
+            
+            /* Ensure content stays within safe bounds */
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         /* ADAPTIVE STATUS INDICATOR */
