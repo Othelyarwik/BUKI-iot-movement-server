@@ -45,11 +45,15 @@
             --vh: 1vh;
         }
 
+        /* SAFARI BOTTOM ADDRESS BAR FIX */
         body {
             font-family: 'Orbitron', monospace;
             color: #e0e0ff;
             height: 100vh;
             height: calc(var(--vh, 1vh) * 100);
+            /* Safari-specific height fixes */
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             overflow: hidden;
             position: fixed;
             top: 0;
@@ -60,6 +64,8 @@
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             font-size: var(--base-font);
+            /* Safari iOS viewport fix */
+            -webkit-appearance: none;
         }
 
         body::before {
@@ -230,23 +236,31 @@
             transform: translateY(1px);
         }
 
-        /* ADAPTIVE GAME SCREEN WITH ROTATED LAYOUT */
+        /* ADAPTIVE GAME SCREEN WITH SAFARI BOTTOM BAR FIX */
         .game-screen {
             display: none;
             width: 100vw;
             height: 100vh;
+            /* Safari iOS bottom bar protection */
+            height: calc(var(--vh, 1vh) * 100);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
             position: fixed;
             top: 0;
             left: 0;
             transform: rotate(90deg);
             transform-origin: center center;
             width: 100vh;
+            width: calc(var(--vh, 1vh) * 100);
             height: 100vw;
             left: calc((100vw - 100vh) / 2);
             top: calc((100vh - 100vw) / 2);
             background:
                 url('flipped wallpaper.png') center/cover no-repeat,
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
+            /* Safari-specific properties */
+            -webkit-transform: rotate(90deg);
+            -webkit-transform-origin: center center;
         }
 
         .game-screen.active {
@@ -260,6 +274,9 @@
             gap: clamp(8px, 1.5vw, 25px); /* Smaller gaps on small screens */
             align-items: center;
             padding: clamp(8px, 1.5vw, 25px); /* Adaptive padding */
+            /* Safari bottom bar protection */
+            padding-bottom: clamp(12px, 3vh, 35px); /* Extra bottom padding for Safari */
+            box-sizing: border-box;
         }
 
         /* ADAPTIVE STATUS INDICATOR */
@@ -1215,16 +1232,35 @@
             }
         }
 
-        // ADAPTIVE: Enhanced address bar hiding with viewport height calculation
+        // SAFARI & IPHONE: Enhanced address bar hiding with better viewport calculation
         function hideAddressBar() {
             setTimeout(() => {
                 window.scrollTo(0, 1);
                 
-                // Calculate and set CSS custom property for viewport height
-                const vh = window.innerHeight * 0.01;
+                // Enhanced viewport height calculation for Safari iOS
+                let vh = window.innerHeight * 0.01;
+                
+                // Safari iOS specific adjustments
+                if (navigator.userAgent.includes('Safari') && navigator.userAgent.includes('Mobile')) {
+                    // Account for Safari's bottom address bar
+                    const safariBottomBarHeight = 44; // Approximate height of Safari bottom bar
+                    vh = (window.innerHeight - safariBottomBarHeight) * 0.01;
+                    console.log(`📱 Safari iOS detected: Adjusting for bottom bar (${safariBottomBarHeight}px)`);
+                }
+                
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
                 
                 console.log(`📱 Viewport adjusted: ${window.innerHeight}px (${vh}px per vh unit)`);
+                
+                // Force Safari to hide address bars
+                if (window.DeviceMotionEvent) {
+                    window.addEventListener('devicemotion', function onFirstDeviceMotion() {
+                        window.removeEventListener('devicemotion', onFirstDeviceMotion);
+                        setTimeout(() => {
+                            window.scrollTo(0, 1);
+                        }, 100);
+                    });
+                }
             }, 100);
         }
 
@@ -1682,10 +1718,14 @@
             console.log(`📱 iPhone DEBUG: Protocol: ${window.location.protocol}`);
             console.log(`📱 iPhone DEBUG: Origin: ${window.location.origin}`);
 
-            // iPhone connectivity test
+            // iPhone/Safari connectivity test with multiple fallbacks
             async function testConnectivity() {
+                console.log('🔍 iPhone/Safari DEBUG: Testing connectivity...');
+                console.log(`📱 Testing URL: ${window.location.origin}`);
+                
+                // Test 1: Basic server health check
                 try {
-                    console.log('🔍 iPhone DEBUG: Testing basic connectivity...');
+                    console.log('🔍 Test 1: Basic server health...');
                     const testResponse = await fetch('/health', {
                         method: 'GET',
                         headers: {
@@ -1698,14 +1738,67 @@
                     
                     if (testResponse.ok) {
                         const healthData = await testResponse.json();
-                        console.log('✅ iPhone DEBUG: Server connectivity OK');
-                        console.log('📊 iPhone DEBUG: Server health:', healthData);
+                        console.log('✅ Test 1 PASSED: Server connectivity OK');
+                        console.log('📊 Server health:', healthData);
                     } else {
-                        console.log('⚠️ iPhone DEBUG: Server responded but with error:', testResponse.status);
+                        console.log(`⚠️ Test 1 PARTIAL: Server responded with status ${testResponse.status}`);
                     }
                 } catch (error) {
-                    console.log('❌ iPhone DEBUG: Basic connectivity test failed:', error);
-                    console.log('🔧 iPhone DEBUG: This may indicate network/CORS/HTTPS issues');
+                    console.log('❌ Test 1 FAILED: Basic connectivity failed:', error);
+                    console.log('🔧 This indicates network/CORS/DNS issues');
+                }
+
+                // Test 2: Simple GET request to same origin
+                try {
+                    console.log('🔍 Test 2: Simple same-origin request...');
+                    const simpleResponse = await fetch('/', {
+                        method: 'GET',
+                        cache: 'no-store'
+                    });
+                    
+                    if (simpleResponse.ok) {
+                        console.log('✅ Test 2 PASSED: Same-origin requests work');
+                    } else {
+                        console.log(`⚠️ Test 2 PARTIAL: Response status ${simpleResponse.status}`);
+                    }
+                } catch (error) {
+                    console.log('❌ Test 2 FAILED: Same-origin request failed:', error);
+                }
+
+                // Test 3: Check if we can reach any endpoint
+                try {
+                    console.log('🔍 Test 3: Testing cache-test endpoint...');
+                    const cacheTestResponse = await fetch('/cache-test', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (cacheTestResponse.ok) {
+                        const cacheData = await cacheTestResponse.json();
+                        console.log('✅ Test 3 PASSED: Cache test endpoint works');
+                        console.log('📊 Cache test data:', cacheData);
+                    } else {
+                        console.log(`⚠️ Test 3 PARTIAL: Cache test status ${cacheTestResponse.status}`);
+                    }
+                } catch (error) {
+                    console.log('❌ Test 3 FAILED: Cache test failed:', error);
+                }
+
+                // Network environment info
+                console.log('🌐 Network Environment Info:');
+                console.log(`   - Protocol: ${window.location.protocol}`);
+                console.log(`   - Host: ${window.location.host}`);
+                console.log(`   - Port: ${window.location.port}`);
+                console.log(`   - Online: ${navigator.onLine}`);
+                console.log(`   - Connection: ${navigator.connection ? navigator.connection.effectiveType : 'unknown'}`);
+                console.log(`   - User Agent: ${navigator.userAgent.substring(0, 100)}...`);
+                
+                // Safari-specific info
+                if (navigator.userAgent.includes('Safari')) {
+                    console.log(`   - Safari detected: ${navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'}`);
+                    console.log(`   - Webkit: ${navigator.userAgent.includes('WebKit')}`);
                 }
             }
 
