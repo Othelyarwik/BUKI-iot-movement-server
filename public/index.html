@@ -83,13 +83,13 @@
             backface-visibility: hidden;
         }
 
-        /* ADAPTIVE SETUP SCREEN - PROPER BUTTON BELOW TEXT */
+        /* ADAPTIVE SETUP SCREEN - PROPER FLEXBOX LAYOUT */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
             height: calc(var(--vh, 1vh) * 100);
-            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(16px, 4vh, 32px) clamp(12px, 3vw, 24px);
+            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px);
             max-height: 100vh;
             max-height: calc(var(--vh, 1vh) * 100);
             overflow-y: auto;
@@ -107,6 +107,7 @@
             gap: clamp(12px, 3vh, 24px);
             min-height: 0;
             padding-top: clamp(20px, 8vh, 60px);
+            padding-bottom: clamp(16px, 4vh, 32px); /* Add bottom padding to create space */
             width: 100%;
             max-width: 100%;
         }
@@ -221,7 +222,8 @@
             overflow: hidden;
             box-sizing: border-box;
             align-self: center;
-            margin: clamp(20px, 5vh, 40px) auto clamp(16px, 4vh, 32px) auto; /* Top and bottom margins for proper spacing */
+            flex-shrink: 0; /* Prevent button from shrinking */
+            margin: 0 auto clamp(20px, 5vh, 40px) auto; /* Bottom margin for spacing from edge */
         }
 
         .start-button:hover, .start-button:active {
