@@ -257,9 +257,9 @@
 
         .game-screen.active {
             display: grid;
-            grid-template-columns: 120px 1fr 120px;
+            grid-template-columns: 90px 1fr 90px; /* Reduced from 120px to 90px */
             grid-template-rows: auto 1fr;
-            gap: 15px;
+            gap: 12px; /* Reduced gap from 15px to 12px */
             align-items: center;
             padding: 15px;
             box-sizing: border-box;
@@ -333,37 +333,60 @@
             padding: 0 clamp(8px, 2vw, 20px);
         }
 
-        /* SIMPLIFIED BUTTON STYLING FOR SAFARI */
-        .connect-button, .recalibrate-button {
-            border: none;
-            border-radius: 10px;
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 80px;
-            height: 40px;
-            font-family: 'Orbitron', monospace;
+        /* FIXED STATUS INDICATOR */
+        .status-indicator {
+            grid-column: 1 / -1;
             display: flex;
-            align-items: center;
             justify-content: center;
-            text-align: center;
-            line-height: 1.1;
-            transition: all 0.3s ease;
-            margin: 0;
+            align-items: center;
+            font-size: 20px;
+            height: 35px;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
-        /* SIMPLIFIED PANEL STYLING FOR SAFARI */
-        .token-display, .values-display {
-            background: rgba(0, 20, 40, 0.9);
-            border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            width: 100%;
-            max-width: 280px;
-            backdrop-filter: blur(10px);
-            box-sizing: border-box;
+        .status-indicator.success {
+            color: #44ff44;
+        }
+
+        .status-indicator.error {
+            color: #ff4444;
+        }
+
+        .status-indicator.info {
+            color: #ffaa44;
+        }
+
+        .status-indicator.calibrating {
+            color: #00ffff;
+        }
+
+        .status-indicator.motion-active {
+            color: #00ff88;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.timeout {
+            color: #ff8844;
+        }
+
+        /* FIXED CONTROL SECTIONS */
+        .left-controls, .right-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
+        }
+
+        .center-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            height: 100%;
         }
 
         .connect-button {
@@ -408,16 +431,36 @@
             letter-spacing: normal;
         }
 
-        /* ADAPTIVE DISPLAY PANELS - DYNAMIC SIZING */
+        /* CLOSER BUTTONS */
+        .connect-button, .recalibrate-button {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 85px; /* Reduced from 100px to 85px to fit in 90px column */
+            height: 45px;
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            line-height: 1.2;
+        }
+
+        /* FIXED PANELS */
         .token-display, .values-display {
             background: rgba(0, 20, 40, 0.9);
             border: 2px solid rgba(0, 255, 255, 0.4);
-            border-radius: var(--border-radius);
-            padding: clamp(10px, 2.5vw, 25px);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            /* Dynamic width - smaller on small screens to make room for buttons */
-            min-width: clamp(180px, 35vw, 320px);
-            max-width: clamp(260px, 50vw, 400px);
+            min-width: 250px;
             backdrop-filter: blur(10px);
         }
 
