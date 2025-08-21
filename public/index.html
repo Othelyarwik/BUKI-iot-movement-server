@@ -144,7 +144,7 @@
             max-width: min(92vw, 420px);
             width: 100%;
             backdrop-filter: blur(10px);
-            margin: 0 auto clamp(20px, 5vh, 40px) auto; /* Add bottom margin for button space */
+            margin: 0 auto; /* Remove bottom margin since button is now outside */
             box-sizing: border-box;
         }
 
@@ -221,7 +221,7 @@
             overflow: hidden;
             box-sizing: border-box;
             align-self: center;
-            margin: 0 auto clamp(16px, 4vh, 32px) auto; /* Proper margin for positioning below content */
+            margin: clamp(20px, 5vh, 40px) auto clamp(16px, 4vh, 32px) auto; /* Top and bottom margins for proper spacing */
         }
 
         .start-button:hover, .start-button:active {
