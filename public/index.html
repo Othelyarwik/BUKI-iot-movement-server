@@ -257,9 +257,9 @@
 
         .game-screen.active {
             display: grid;
-            grid-template-columns: 60px 1fr 60px; /* Much smaller side columns - from 90px to 60px */
+            grid-template-columns: 1fr 80px 300px 80px 1fr; /* 5 columns: empty | button | center | button | empty */
             grid-template-rows: auto 1fr;
-            gap: 8px; /* Even smaller gap - from 12px to 8px */
+            gap: 8px;
             align-items: center;
             padding: 15px;
             box-sizing: border-box;
@@ -333,9 +333,9 @@
             padding: 0 clamp(8px, 2vw, 20px);
         }
 
-        /* FIXED STATUS INDICATOR */
+        /* FIXED STATUS INDICATOR - SPANS ALL 5 COLUMNS */
         .status-indicator {
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Spans all 5 columns */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -370,8 +370,9 @@
             color: #ff8844;
         }
 
-        /* FIXED CONTROL SECTIONS */
-        .left-controls, .right-controls {
+        /* REPOSITIONED CONTROL SECTIONS */
+        .left-controls {
+            grid-column: 2; /* Second column - close to center */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -381,12 +382,23 @@
         }
 
         .center-display {
+            grid-column: 3; /* Third column - center */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 25px;
             height: 100%;
+        }
+
+        .right-controls {
+            grid-column: 4; /* Fourth column - close to center */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
         }
 
         .connect-button {
@@ -431,16 +443,16 @@
             letter-spacing: normal;
         }
 
-        /* MUCH CLOSER BUTTONS */
+        /* CENTERED BUTTONS */
         .connect-button, .recalibrate-button {
             border: none;
-            border-radius: 8px;
-            padding: 8px 6px;
-            font-size: 11px;
+            border-radius: 10px;
+            padding: 10px 8px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            width: 55px; /* Much smaller to fit in 60px column */
-            height: 40px;
+            width: 75px; /* Slightly larger since they're now closer to center */
+            height: 42px;
             font-family: 'Orbitron', monospace;
             display: flex;
             align-items: center;
