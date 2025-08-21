@@ -256,32 +256,13 @@
         }
 
         .game-screen.active {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            box-sizing: border-box;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* CENTERED GAME CONTAINER */
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        /* CENTERED CONTENT ROW */
-        .content-row {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 90px 1fr 90px; /* Left button | Center | Right button */
+            grid-template-rows: auto auto auto; /* Status | Token row | Values row */
             gap: 15px;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         /* ADAPTIVE STATUS INDICATOR - SAFARI SAFE */
