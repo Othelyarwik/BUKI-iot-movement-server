@@ -18,42 +18,11 @@
             padding: 0;
         }
 
-        /* ADAPTIVE VIEWPORT SYSTEM */
-        :root {
-            /* Base font size that scales with viewport */
-            --base-font: clamp(12px, 3.5vw, 20px);
-            --title-font: clamp(20px, 6vw, 32px);
-            --subtitle-font: clamp(14px, 4vw, 18px);
-            --button-font: clamp(14px, 4.5vw, 18px);
-            --instruction-font: clamp(11px, 3vw, 16px);
-            --number-font: clamp(10px, 2.8vw, 14px);
-            
-            /* Adaptive spacing */
-            --spacing-xs: clamp(4px, 1vw, 8px);
-            --spacing-sm: clamp(8px, 2vw, 16px);
-            --spacing-md: clamp(12px, 3vw, 24px);
-            --spacing-lg: clamp(16px, 4vw, 32px);
-            --spacing-xl: clamp(20px, 5vw, 40px);
-            
-            /* Adaptive component sizes */
-            --button-height: clamp(40px, 12vw, 60px);
-            --button-width: clamp(140px, 40vw, 200px);
-            --instruction-number: clamp(20px, 6vw, 32px);
-            --border-radius: clamp(8px, 2vw, 16px);
-            
-            /* Screen height considerations */
-            --vh: 1vh;
-        }
-
-        /* SAFARI BOTTOM ADDRESS BAR FIX */
         body {
             font-family: 'Orbitron', monospace;
             color: #e0e0ff;
             height: 100vh;
-            height: calc(var(--vh, 1vh) * 100);
-            /* Safari-specific height fixes */
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
+            height: 100dvh;
             overflow: hidden;
             position: fixed;
             top: 0;
@@ -63,9 +32,6 @@
             transform: translateZ(0);
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            font-size: var(--base-font);
-            /* Safari iOS viewport fix */
-            -webkit-appearance: none;
         }
 
         body::before {
@@ -84,19 +50,13 @@
             backface-visibility: hidden;
         }
 
-        /* ADAPTIVE SETUP SCREEN - FIXED BUTTON OVERLAP */
         .setup-screen {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            height: calc(var(--vh, 1vh) * 100);
-            padding: clamp(8px, 2vh, 20px) clamp(12px, 3vw, 24px) clamp(16px, 4vh, 32px) clamp(12px, 3vw, 24px);
+            padding: 15px 20px 80px 20px;
             max-height: 100vh;
-            max-height: calc(var(--vh, 1vh) * 100);
             overflow-y: auto;
-            overflow-x: hidden;
-            box-sizing: border-box;
-            justify-content: space-between; /* Distribute space between content and button */
         }
 
         .main-content {
@@ -104,128 +64,97 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             text-align: center;
-            gap: clamp(12px, 3vh, 24px);
-            min-height: 0;
-            padding-top: clamp(20px, 8vh, 60px);
-            width: 100%;
-            max-width: 100%;
-            margin-bottom: clamp(16px, 4vh, 32px); /* Ensure space for button */
         }
 
         .main-content h1 {
-            font-size: var(--title-font);
+            font-size: 28px;
             font-weight: 900;
+            margin-bottom: 12px;
             color: #00ffff;
             text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            letter-spacing: clamp(0.5px, 0.2vw, 2px);
-            line-height: 1.1;
-            margin: 0 0 clamp(8px, 2vh, 16px) 0;
-            word-wrap: break-word;
-            hyphens: auto;
-            max-width: 100%;
+            letter-spacing: 1px;
         }
 
         .main-content h2 {
-            font-size: var(--subtitle-font);
+            font-size: 16px;
+            margin-bottom: 28px;
             color: #b0b0ff;
             font-weight: 700;
             text-shadow: 0 0 8px rgba(176, 176, 255, 0.3);
-            line-height: 1.3;
-            margin: 0 0 clamp(16px, 4vh, 32px) 0;
-            word-wrap: break-word;
-            hyphens: auto;
-            max-width: 100%;
         }
 
         .instructions {
             background: rgba(0, 20, 40, 0.8);
             border: 2px solid rgba(0, 255, 255, 0.3);
-            border-radius: var(--border-radius);
-            padding: clamp(16px, 4vw, 24px);
-            max-width: min(92vw, 420px);
-            width: 100%;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
             backdrop-filter: blur(10px);
-            margin: 0 auto 0 auto; /* Remove bottom margin that was causing overlap */
-            box-sizing: border-box;
         }
 
         .instruction {
             display: flex;
             align-items: flex-start;
-            margin: clamp(10px, 2.5vh, 18px) 0;
-            font-size: var(--instruction-font);
+            margin: 16px 0;
+            font-size: 14px;
             text-align: left;
-            line-height: 1.5;
-            gap: clamp(8px, 2vw, 16px);
-            word-wrap: break-word;
-            hyphens: auto;
-        }
-
-        .instruction div:last-child {
-            flex: 1;
-            min-width: 0;
+            line-height: 1.4;
         }
 
         .instruction-number {
             background: linear-gradient(135deg, #00ffff, #0080ff);
             color: #001122;
             border-radius: 50%;
-            width: var(--instruction-number);
-            height: var(--instruction-number);
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            margin-right: 12px;
             flex-shrink: 0;
-            font-size: var(--number-font);
+            font-size: 12px;
         }
 
         .sub-instructions {
-            margin-left: calc(var(--instruction-number) + clamp(8px, 2vw, 16px));
-            margin-top: clamp(6px, 1.5vh, 12px);
-            margin-bottom: clamp(6px, 1.5vh, 12px);
+            margin-left: 40px;
+            margin-top: 8px;
+            margin-bottom: 8px;
         }
 
         .sub-instruction {
-            margin: clamp(6px, 1.5vh, 10px) 0;
-            font-size: calc(var(--instruction-font) * 0.92);
+            margin: 4px 0;
+            font-size: 13px;
             color: #e0e0ff;
-            line-height: 1.5;
+            line-height: 1.4;
             text-align: left;
-            word-wrap: break-word;
-            hyphens: auto;
         }
 
         .start-button {
             background: linear-gradient(135deg, #00ff88, #0088ff);
             color: #001122;
             border: none;
-            border-radius: var(--border-radius);
-            padding: clamp(12px, 3vh, 18px) clamp(20px, 5vw, 32px);
-            font-size: var(--button-font);
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            letter-spacing: clamp(0.5px, 0.1vw, 1.5px);
-            min-width: clamp(160px, 45vw, 220px);
-            min-height: clamp(48px, 12vh, 64px);
+            letter-spacing: 1px;
+            min-width: 180px;
+            min-height: 52px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            align-self: center;
             transition: transform 0.2s ease;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            box-sizing: border-box;
-            align-self: center;
-            flex-shrink: 0; /* Prevent button from shrinking */
-            margin: 0; /* Remove all margins - let flexbox handle spacing */
+            position: relative;
+            z-index: 100;
         }
 
         .start-button:hover, .start-button:active {
@@ -236,7 +165,7 @@
             transform: translateY(1px);
         }
 
-        /* FIXED GAME SCREEN - BACK TO WORKING GRID */
+        /* GAME SCREEN WITH ROTATED LAYOUT */
         .game-screen {
             display: none;
             width: 100vw;
@@ -255,29 +184,25 @@
                 linear-gradient(135deg, #0a0a1f 0%, #1a1a3a 50%, #0f0f2f 100%);
         }
 
+        /* CENTERED LAYOUT - BUTTONS CLOSER TO MIDDLE */
         .game-screen.active {
             display: grid;
-            grid-template-columns: 90px 1fr 90px; /* Left button | Center | Right button */
-            grid-template-rows: auto auto auto; /* Status | Token row | Values row */
+            grid-template-columns: 1fr 100px 300px 100px 1fr; /* Centered layout with buttons close to middle */
+            grid-template-rows: auto 1fr;
             gap: 15px;
             align-items: center;
             padding: 20px;
-            box-sizing: border-box;
         }
 
-        /* ADAPTIVE STATUS INDICATOR - SAFARI SAFE */
+        /* Status indicator at the top center */
         .status-indicator {
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Spans all 5 columns */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: clamp(14px, 3.5vw, 24px);
-            height: clamp(25px, 5vw, 40px);
-            margin-bottom: clamp(4px, 1vw, 12px);
-            font-weight: 600;
-            /* Ensure status stays visible */
-            z-index: 10;
-            position: relative;
+            font-size: 24px;
+            height: 40px;
+            margin-bottom: 10px;
         }
 
         .status-indicator.success {
@@ -310,69 +235,9 @@
             50% { opacity: 0.6; }
         }
 
-        /* ADAPTIVE CONTROL SECTIONS - DYNAMIC POSITIONING */
-        .left-controls, .right-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            gap: clamp(10px, 2vw, 30px);
-            /* Dynamic positioning based on screen size */
-            padding: 0 clamp(4px, 1vw, 12px);
-        }
-
-        .center-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(15px, 3vw, 40px);
-            height: 100%;
-            /* Adaptive center spacing */
-            padding: 0 clamp(8px, 2vw, 20px);
-        }
-
-        /* FIXED STATUS INDICATOR - SPANS ALL 5 COLUMNS */
-        .status-indicator {
-            grid-column: 1 / -1; /* Spans all 5 columns */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            height: 35px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .status-indicator.success {
-            color: #44ff44;
-        }
-
-        .status-indicator.error {
-            color: #ff4444;
-        }
-
-        .status-indicator.info {
-            color: #ffaa44;
-        }
-
-        .status-indicator.calibrating {
-            color: #00ffff;
-        }
-
-        .status-indicator.motion-active {
-            color: #00ff88;
-            animation: pulse 2s infinite;
-        }
-
-        .status-indicator.timeout {
-            color: #ff8844;
-        }
-
-        /* REPOSITIONED CONTROL SECTIONS */
+        /* LEFT BUTTON - POSITIONED IN COLUMN 2 (CLOSE TO CENTER) */
         .left-controls {
-            grid-column: 2; /* Second column - close to center */
+            grid-column: 2; /* Column 2 - close to center */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -381,24 +246,46 @@
             gap: 20px;
         }
 
+        /* CENTER PANELS - POSITIONED IN COLUMN 3 (MIDDLE) */
         .center-display {
-            grid-column: 3; /* Third column - center */
+            grid-column: 3; /* Column 3 - center */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 25px;
+            gap: 30px;
             height: 100%;
         }
 
+        /* RIGHT BUTTON - POSITIONED IN COLUMN 4 (CLOSE TO CENTER) */
         .right-controls {
-            grid-column: 4; /* Fourth column - close to center */
+            grid-column: 4; /* Column 4 - close to center */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100%;
             gap: 20px;
+        }
+
+        .connect-button, .recalibrate-button {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 95px; /* Slightly smaller to fit in 100px columns */
+            height: 50px;
+            font-family: 'Orbitron', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            margin: 0 auto;
+            transition: all 0.3s ease;
         }
 
         .connect-button {
@@ -421,7 +308,7 @@
             color: rgba(255, 255, 255, 0.4);
             cursor: not-allowed;
             font-family: 'Courier New', monospace;
-            font-size: clamp(10px, 2.5vw, 16px);
+            font-size: 12px;
             letter-spacing: 0;
         }
 
@@ -430,7 +317,7 @@
             color: #001122;
             cursor: not-allowed;
             font-family: 'Courier New', monospace;
-            font-size: clamp(10px, 2.5vw, 16px);
+            font-size: 12px;
             letter-spacing: 0;
         }
 
@@ -439,59 +326,48 @@
             color: white;
             cursor: pointer;
             font-family: 'Orbitron', monospace;
-            font-size: clamp(12px, 3vw, 18px);
+            font-size: 14px;
             letter-spacing: normal;
         }
 
-        /* CLEAN BUTTON STYLES - NO CONFLICTS */
-        .connect-button, .recalibrate-button {
-            border: none;
-            border-radius: 10px;
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 80px;
-            height: 40px;
-            font-family: 'Orbitron', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .token-display, .values-display {
+            background: rgba(0, 20, 40, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            transition: all 0.3s ease;
-            line-height: 1.1;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
         }
 
-        /* REMOVED OLD PANEL STYLES - PANELS NOW POSITIONED BY GRID */
-
         .token-label, .value-label {
-            font-size: clamp(10px, 2.2vw, 14px);
-            margin-bottom: clamp(4px, 1vw, 10px);
+            font-size: 12px;
+            margin-bottom: 8px;
             color: #b0b0ff;
             font-weight: 500;
         }
 
         .token-value {
             font-family: 'Orbitron', monospace;
-            font-size: clamp(14px, 3.5vw, 22px);
+            font-size: 20px;
             font-weight: bold;
-            letter-spacing: clamp(1px, 0.3vw, 3px);
-            padding: clamp(8px, 2vw, 15px);
+            letter-spacing: 2px;
+            padding: 12px;
             background: rgba(0, 255, 255, 0.1);
-            border-radius: clamp(4px, 1vw, 10px);
+            border-radius: 8px;
             color: #00ffff;
         }
 
         .values-row {
             display: flex;
             justify-content: space-between;
-            gap: clamp(10px, 2vw, 25px);
+            gap: 20px;
         }
 
         .value-item {
             background: rgba(0, 255, 255, 0.1);
-            padding: clamp(8px, 2vw, 15px);
-            border-radius: clamp(4px, 1vw, 10px);
+            padding: 12px;
+            border-radius: 8px;
             text-align: center;
             flex: 1;
             transition: all 0.3s ease;
@@ -504,19 +380,18 @@
         }
 
         .value-number {
-            font-size: clamp(14px, 3.5vw, 20px);
+            font-size: 18px;
             font-weight: bold;
             color: #00ffff;
             font-family: 'Orbitron', monospace;
         }
 
-        /* ADAPTIVE INDICATORS */
         .connection-indicator {
             position: fixed;
-            top: clamp(10px, 2vw, 20px);
-            right: clamp(10px, 2vw, 20px);
-            width: clamp(8px, 2vw, 15px);
-            height: clamp(8px, 2vw, 15px);
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
@@ -527,12 +402,13 @@
             background: #44ff44;
         }
 
+        /* STEP 3: Motion sensor indicator */
         .motion-indicator {
             position: fixed;
-            top: clamp(10px, 2vw, 20px);
-            right: clamp(25px, 5vw, 40px);
-            width: clamp(8px, 2vw, 15px);
-            height: clamp(8px, 2vw, 15px);
+            top: 15px;
+            right: 30px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #ff4444;
             transition: all 0.3s ease;
@@ -544,187 +420,76 @@
             animation: pulse 1s infinite;
         }
 
-        /* ERROR MESSAGE STYLING */
+        /* Error message styling */
         .error-display {
             background: rgba(255, 0, 0, 0.1);
             border: 2px solid rgba(255, 0, 0, 0.4);
-            border-radius: var(--border-radius);
-            padding: clamp(10px, 2.5vw, 20px);
+            border-radius: 15px;
+            padding: 15px;
             text-align: center;
-            min-width: clamp(200px, 40vw, 320px);
+            min-width: 280px;
             backdrop-filter: blur(10px);
             display: none;
         }
 
         .error-title {
-            font-size: clamp(12px, 2.8vw, 16px);
-            margin-bottom: clamp(4px, 1vw, 10px);
+            font-size: 14px;
+            margin-bottom: 8px;
             color: #ff6666;
             font-weight: 600;
         }
 
         .error-message {
-            font-size: clamp(10px, 2.2vw, 14px);
+            font-size: 12px;
             color: #ffaaaa;
             font-family: 'Courier New', monospace;
         }
 
-        /* SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
-        @media screen and (max-height: 700px) {
-            :root {
-                --title-font: clamp(18px, 5.5vw, 28px);
-                --subtitle-font: clamp(13px, 3.8vw, 16px);
-                --instruction-font: clamp(11px, 3.2vw, 15px);
-            }
-            
-            .setup-screen {
-                padding: clamp(6px, 1.5vh, 16px) clamp(10px, 2.5vw, 20px) clamp(12px, 3vh, 24px) clamp(10px, 2.5vw, 20px);
+        /* RESPONSIVE DESIGN */
+        @media screen and (max-width: 480px) {
+            .main-content h1 {
+                font-size: 28px;
+                margin-bottom: 12px;
             }
 
-            .main-content {
-                padding-top: clamp(15px, 6vh, 40px);
-                gap: clamp(10px, 2.5vh, 20px);
-                margin-bottom: clamp(12px, 3vh, 24px);
+            .main-content h2 {
+                font-size: 14px;
+                margin-bottom: 24px;
             }
 
             .instructions {
-                padding: clamp(12px, 3vw, 20px);
+                padding: 20px;
+                max-width: 360px;
             }
 
             .instruction {
-                margin: clamp(8px, 2vh, 14px) 0;
+                font-size: 13px;
+                margin: 12px 0;
+            }
+
+            .start-button {
+                padding: 14px 28px;
+                font-size: 16px;
+                min-width: 180px;
             }
         }
 
-        /* VERY SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
-        @media screen and (max-height: 600px) {
-            :root {
-                --title-font: clamp(16px, 5vw, 24px);
-                --subtitle-font: clamp(12px, 3.5vw, 15px);
-                --instruction-font: clamp(10px, 3vw, 13px);
-            }
-
+        @media screen and (max-height: 640px) {
             .setup-screen {
-                padding: clamp(4px, 1vh, 12px) clamp(8px, 2vw, 16px) clamp(8px, 2vh, 16px) clamp(8px, 2vw, 16px);
-            }
-
-            .main-content {
-                padding-top: clamp(10px, 4vh, 30px);
-                gap: clamp(8px, 2vh, 16px);
-                margin-bottom: clamp(8px, 2vh, 16px);
+                padding: 15px;
             }
 
             .main-content h1 {
-                margin-bottom: clamp(4px, 1vh, 8px);
-            }
-
-            .main-content h2 {
-                margin-bottom: clamp(12px, 3vh, 24px);
+                font-size: 24px;
+                margin-bottom: 8px;
             }
 
             .instructions {
-                padding: clamp(10px, 2.5vw, 16px);
+                padding: 16px;
             }
 
             .instruction {
-                margin: clamp(6px, 1.5vh, 10px) 0;
-            }
-
-            .sub-instruction {
-                margin: clamp(4px, 1vh, 8px) 0;
-            }
-
-            .start-button {
-                min-height: clamp(44px, 11vh, 60px);
-            }
-        }
-
-        /* EXTRA SMALL SCREEN OPTIMIZATIONS - IMPROVED SPACING */
-        @media screen and (max-height: 500px) {
-            :root {
-                --title-font: clamp(14px, 4.5vw, 20px);
-                --subtitle-font: clamp(11px, 3vw, 14px);
-                --instruction-font: clamp(9px, 2.8vw, 12px);
-            }
-
-            .setup-screen {
-                padding: clamp(2px, 0.5vh, 8px) clamp(6px, 1.5vw, 12px) clamp(6px, 1.5vh, 12px) clamp(6px, 1.5vw, 12px);
-            }
-
-            .main-content {
-                padding-top: clamp(8px, 3vh, 20px);
-                gap: clamp(6px, 1.5vh, 12px);
-                margin-bottom: clamp(6px, 1.5vh, 12px);
-            }
-
-            .instructions {
-                padding: clamp(8px, 2vw, 12px);
-                max-width: min(95vw, 420px);
-            }
-
-            .instruction {
-                margin: clamp(4px, 1vh, 8px) 0;
-            }
-
-            .start-button {
-                min-height: clamp(40px, 9vh, 52px);
-            }
-        }
-
-        /* REMOVED ALL CONFLICTING RESPONSIVE MEDIA QUERIES */
-        
-        /* ONLY KEEP ESSENTIAL STYLES */
-
-        /* REMOVED ALL OTHER CONFLICTING MEDIA QUERIES AND OVERRIDES */
-
-        /* EXTRA WIDE SCREEN LIMITS */
-        @media screen and (min-width: 500px) {
-            :root {
-                --base-font: 16px;
-                --title-font: 28px;
-                --subtitle-font: 16px;
-                --button-font: 16px;
-                --instruction-font: 14px;
-                --button-width: 180px;
-                --button-height: 52px;
-            }
-        }
-
-        /* LANDSCAPE ORIENTATION ADJUSTMENTS FOR SETUP */
-        @media screen and (orientation: landscape) and (max-height: 500px) {
-            .setup-screen {
-                flex-direction: row;
-                align-items: stretch;
-                padding: clamp(8px, 2vh, 16px);
-                gap: clamp(16px, 4vw, 32px);
-                overflow-y: auto;
-            }
-
-            .main-content {
-                flex: 1;
-                justify-content: flex-start;
-                text-align: left;
-                gap: clamp(8px, 2vh, 16px);
-                padding-top: clamp(8px, 2vh, 20px);
-                max-height: none;
-            }
-
-            .main-content h1,
-            .main-content h2 {
-                text-align: center;
-            }
-
-            .instructions {
-                flex: 1;
-                max-width: none;
-                margin: 0;
-                align-self: flex-start;
-            }
-
-            .start-button {
-                align-self: flex-end;
-                margin: 0;
-                min-width: clamp(140px, 35vw, 180px);
+                margin: 10px 0;
             }
         }
     </style>
@@ -1173,52 +938,16 @@
             }
         }
 
-        // SAFARI & IPHONE: Enhanced viewport and rotation handling
+        // Simple address bar hiding
         function hideAddressBar() {
             setTimeout(() => {
                 window.scrollTo(0, 1);
-                
-                // Enhanced viewport height calculation for Safari iOS
-                let vh = window.innerHeight * 0.01;
-                let vw = window.innerWidth * 0.01;
-                
-                // Safari iOS specific adjustments
-                const isSafariMobile = navigator.userAgent.includes('Safari') && 
-                                     navigator.userAgent.includes('Mobile') && 
-                                     !navigator.userAgent.includes('Chrome');
-                
-                if (isSafariMobile) {
-                    // Account for Safari's interface elements
-                    const safariAdjustment = 40; // Combined top/bottom bars
-                    vh = (window.innerHeight - safariAdjustment) * 0.01;
-                    console.log(`📱 Safari iOS detected: Adjusting viewport (${safariAdjustment}px compensation)`);
-                }
-                
+                const vh = window.innerHeight * 0.01;
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
-                document.documentElement.style.setProperty('--vw', `${vw}px`);
-                
-                console.log(`📱 Viewport: ${window.innerWidth}×${window.innerHeight} (vh: ${vh}px, vw: ${vw}px)`);
-                
-                // Force layout recalculation for rotated screen
-                const gameScreen = document.getElementById('gameScreen');
-                if (gameScreen && gameScreen.classList.contains('active')) {
-                    console.log('🔄 Forcing game screen layout recalculation...');
-                    gameScreen.style.display = 'none';
-                    gameScreen.offsetHeight; // Force reflow
-                    gameScreen.style.display = 'grid';
-                }
-                
-                // Safari-specific address bar hiding
-                if (isSafariMobile) {
-                    // Multiple attempts to hide Safari bars
-                    setTimeout(() => window.scrollTo(0, 1), 100);
-                    setTimeout(() => window.scrollTo(0, 1), 300);
-                    setTimeout(() => window.scrollTo(0, 1), 500);
-                }
             }, 100);
         }
 
-        // STEP 3: Connect handler with enhanced iPhone debugging
+        // STEP 3: Connect handler with motion sensor manager
         async function handleConnect() {
             const isReconnect = connected && token;
             const startTime = Date.now();
@@ -1227,61 +956,39 @@
             connectButton.textContent = isReconnect ? 'Генериране...' : 'Свързване...';
             hideError();
 
-            // Enhanced iPhone debugging
-            console.log('🔗 iPhone DEBUG: Starting connection attempt');
-            console.log(`📱 User Agent: ${navigator.userAgent}`);
-            console.log(`🌐 URL: ${window.location.origin}/start`);
-            console.log(`📡 Protocol: ${window.location.protocol}`);
-            console.log(`🔒 HTTPS: ${window.location.protocol === 'https:'}`);
-
             try {
                 console.log('🔗 STEP 3: Attempting connection with motion sensor keep-alive');
                 
-                // iPhone-specific fetch configuration
-                const requestConfig = {
+                const response = await fetch('/start', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Timestamp': Date.now().toString(),
-                        'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    },
-                    mode: 'cors', // Explicit CORS mode
-                    credentials: 'same-origin', // iPhone-friendly credentials
-                    body: JSON.stringify({}) // Send empty body for POST
-                };
-
-                console.log('📤 iPhone DEBUG: Request config:', requestConfig);
-
-                const response = await fetch('/start', requestConfig);
+                        'X-Timestamp': Date.now().toString()
+                    }
+                });
 
                 connectionHealth.recordResponseTime(startTime);
-                console.log(`📡 iPhone DEBUG: Response received`);
-                console.log(`📡 Status: ${response.status} ${response.statusText}`);
-                console.log(`📡 Headers:`, [...response.headers.entries()]);
+                console.log(`📡 Connection response: ${response.status} ${response.statusText}`);
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.log(`❌ iPhone DEBUG: Server error response: ${errorText}`);
                     throw new Error(`Server error: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
-                console.log('📦 iPhone DEBUG: Server data:', data);
+                console.log('📦 Server data:', data);
                 
                 if (!data.token) throw new Error('No token received from server');
 
                 token = data.token;
                 tokenElement.textContent = token;
-                console.log(`🎯 iPhone DEBUG: Token received: ${token}`);
+                console.log(`🎯 Token received: ${token}`);
 
                 if (!connected) {
                     try {
-                        console.log('📱 iPhone DEBUG: Initializing motion sensors...');
                         await motionSensorManager.initialize();
-                        console.log('✅ iPhone DEBUG: Motion sensor system activated');
+                        console.log('✅ Motion sensor keep-alive system activated');
                     } catch (motionError) {
-                        console.log('❌ iPhone DEBUG: Motion sensor error:', motionError);
                         throw new Error(`Motion sensor setup failed: ${motionError.message}`);
                     }
 
@@ -1299,14 +1006,8 @@
                     startCalibration();
                 }
 
-                console.log('✅ iPhone DEBUG: Connection successful!');
-
             } catch (error) {
-                console.log('❌ iPhone DEBUG: Connection failed with error:', error);
-                console.log('❌ iPhone DEBUG: Error name:', error.name);
-                console.log('❌ iPhone DEBUG: Error message:', error.message);
-                console.log('❌ iPhone DEBUG: Error stack:', error.stack);
-                
+                console.log('❌ Connection failed:', error);
                 connectionHealth.recordFailure(error.message);
                 
                 connectButton.disabled = false;
@@ -1317,51 +1018,22 @@
                     updateStatus('', 'error');
                 }
                 
-                // Enhanced iPhone-specific error handling
-                let errorMsg = 'Неизвестна грешка';
-                
-                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-                    errorMsg = 'iPhone мрежова грешка - проверете WiFi/данни';
-                    console.log('📱 iPhone DEBUG: Network connectivity issue detected');
-                } else if (error.name === 'NetworkError' || error.message.includes('NetworkError')) {
-                    errorMsg = 'iPhone мрежов проблем - опитайте с Safari';
-                    console.log('📱 iPhone DEBUG: Browser network issue detected');
-                } else if (error.message.includes('HTTPS') || window.location.protocol !== 'https:') {
-                    errorMsg = 'iPhone изисква HTTPS - използвайте https://';
-                    console.log('📱 iPhone DEBUG: HTTPS requirement detected');
-                } else if (error.message.includes('CORS')) {
-                    errorMsg = 'iPhone CORS проблем - проверете сървъра';
-                    console.log('📱 iPhone DEBUG: CORS issue detected');
+                // Enhanced error handling
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMsg = 'Сървърът не отговаря - проверете интернет връзката';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMsg = 'Мрежова грешка - проверете WiFi/данни';
                 } else if (error.message.includes('Motion sensor permission')) {
-                    errorMsg = 'iPhone няма разрешение за сензори - рестартирайте';
-                    console.log('📱 iPhone DEBUG: Motion permission issue detected');
+                    errorMsg = 'Няма разрешение за сензори - рестартирайте приложението';
                 } else if (error.message.includes('Device motion not supported')) {
-                    errorMsg = 'iPhone не поддържа motion сензори в този браузър';
-                    console.log('📱 iPhone DEBUG: Motion sensor compatibility issue detected');
+                    errorMsg = 'Устройството не поддържа motion сензори';
                 } else if (error.message.includes('Motion sensor setup failed')) {
-                    errorMsg = 'iPhone motion сензор грешка - опитайте Safari';
-                    console.log('📱 iPhone DEBUG: Motion sensor setup issue detected');
-                } else if (error.message.includes('Server error: 5')) {
-                    errorMsg = 'Сървър проблем - опитайте след малко';
-                    console.log('📱 iPhone DEBUG: Server error detected');
-                } else if (error.message.includes('timeout')) {
-                    errorMsg = 'iPhone timeout - бавна връзка';
-                    console.log('📱 iPhone DEBUG: Timeout issue detected');
-                } else {
-                    errorMsg = `iPhone грешка: ${error.message}`;
-                    console.log('📱 iPhone DEBUG: Unknown error type detected');
+                    errorMsg = 'Грешка в motion сензора - опитайте отново';
                 }
                 
-                // Show error with iPhone-specific context
                 showError(errorMsg, false);
-                console.log('📊 iPhone DEBUG: Connection Health:', connectionHealth.getHealthReport());
-                
-                // iPhone-specific troubleshooting info
-                console.log('🔧 iPhone DEBUG: Troubleshooting info:');
-                console.log(`   - Protocol: ${window.location.protocol}`);
-                console.log(`   - Host: ${window.location.host}`);
-                console.log(`   - Online: ${navigator.onLine}`);
-                console.log(`   - Connection: ${navigator.connection ? navigator.connection.effectiveType : 'unknown'}`);
+                console.log('📊 Connection Health:', connectionHealth.getHealthReport());
             }
         }
 
@@ -1372,7 +1044,7 @@
                 'info': 'Некалибриран',
                 'calibrating': 'Калибриране',
                 'motion-active': 'Активен',
-                'timeout': 'Прекъсната връзка'
+                'timeout': 'Прекъсната връзка'  // New timeout status
             };
 
             if (isCalibrating && type !== 'calibrating') {
@@ -1497,6 +1169,7 @@
                 let processedThrottle = applyProgressiveDeadZone(throttleTilt, 2.0);
 
                 // SENSITIVITY FIX: Progressive sensitivity curve for better control
+                // Apply progressive curve for finer control at low speeds
                 const applyProgressiveCurve = (value, multiplier) => {
                     const sign = Math.sign(value);
                     const abs = Math.abs(value);
@@ -1518,8 +1191,8 @@
                 };
 
                 const processed = spaceshipProcessor.addSample(
-                    applyProgressiveCurve(processedSteering, 3.2),
-                    applyProgressiveCurve(processedThrottle, 2.4)
+                    applyProgressiveCurve(processedSteering, 3.2),  // Reduced from 4.0 to 3.2
+                    applyProgressiveCurve(processedThrottle, 2.4)   // Reduced from 3.0 to 2.4
                 );
 
                 velocityX = Math.max(-6, Math.min(6, processed.x));
@@ -1663,129 +1336,19 @@
             }
         }
 
-        // Initialize everything with iPhone debugging and connectivity test
+        // Initialize everything with motion sensor keep-alive
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 iPhone DEBUG: Motion Sensor Keep-Alive System initialized');
-            console.log(`📱 iPhone DEBUG: User Agent: ${navigator.userAgent}`);
-            console.log(`📱 iPhone DEBUG: Platform: ${navigator.platform}`);
-            console.log(`📱 iPhone DEBUG: Online: ${navigator.onLine}`);
-            console.log(`📱 iPhone DEBUG: Protocol: ${window.location.protocol}`);
-            console.log(`📱 iPhone DEBUG: Origin: ${window.location.origin}`);
-
-            // iPhone/Safari connectivity test with multiple fallbacks
-            async function testConnectivity() {
-                console.log('🔍 iPhone/Safari DEBUG: Testing connectivity...');
-                console.log(`📱 Testing URL: ${window.location.origin}`);
-                
-                // Test 1: Basic server health check
-                try {
-                    console.log('🔍 Test 1: Basic server health...');
-                    const testResponse = await fetch('/health', {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Cache-Control': 'no-cache'
-                        },
-                        mode: 'cors',
-                        credentials: 'same-origin'
-                    });
-                    
-                    if (testResponse.ok) {
-                        const healthData = await testResponse.json();
-                        console.log('✅ Test 1 PASSED: Server connectivity OK');
-                        console.log('📊 Server health:', healthData);
-                    } else {
-                        console.log(`⚠️ Test 1 PARTIAL: Server responded with status ${testResponse.status}`);
-                    }
-                } catch (error) {
-                    console.log('❌ Test 1 FAILED: Basic connectivity failed:', error);
-                    console.log('🔧 This indicates network/CORS/DNS issues');
-                }
-
-                // Test 2: Simple GET request to same origin
-                try {
-                    console.log('🔍 Test 2: Simple same-origin request...');
-                    const simpleResponse = await fetch('/', {
-                        method: 'GET',
-                        cache: 'no-store'
-                    });
-                    
-                    if (simpleResponse.ok) {
-                        console.log('✅ Test 2 PASSED: Same-origin requests work');
-                    } else {
-                        console.log(`⚠️ Test 2 PARTIAL: Response status ${simpleResponse.status}`);
-                    }
-                } catch (error) {
-                    console.log('❌ Test 2 FAILED: Same-origin request failed:', error);
-                }
-
-                // Test 3: Check if we can reach any endpoint
-                try {
-                    console.log('🔍 Test 3: Testing cache-test endpoint...');
-                    const cacheTestResponse = await fetch('/cache-test', {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (cacheTestResponse.ok) {
-                        const cacheData = await cacheTestResponse.json();
-                        console.log('✅ Test 3 PASSED: Cache test endpoint works');
-                        console.log('📊 Cache test data:', cacheData);
-                    } else {
-                        console.log(`⚠️ Test 3 PARTIAL: Cache test status ${cacheTestResponse.status}`);
-                    }
-                } catch (error) {
-                    console.log('❌ Test 3 FAILED: Cache test failed:', error);
-                }
-
-                // Network environment info
-                console.log('🌐 Network Environment Info:');
-                console.log(`   - Protocol: ${window.location.protocol}`);
-                console.log(`   - Host: ${window.location.host}`);
-                console.log(`   - Port: ${window.location.port}`);
-                console.log(`   - Online: ${navigator.onLine}`);
-                console.log(`   - Connection: ${navigator.connection ? navigator.connection.effectiveType : 'unknown'}`);
-                console.log(`   - User Agent: ${navigator.userAgent.substring(0, 100)}...`);
-                
-                // Safari-specific info
-                if (navigator.userAgent.includes('Safari')) {
-                    console.log(`   - Safari detected: ${navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'}`);
-                    console.log(`   - Webkit: ${navigator.userAgent.includes('WebKit')}`);
-                }
-            }
-
-            // Run connectivity test after a short delay
-            setTimeout(testConnectivity, 1000);
-
-            // ADAPTIVE: Set up viewport height monitoring
-            const updateViewport = () => {
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-                console.log(`📱 iPhone DEBUG: Viewport updated: ${window.innerHeight}px`);
-            };
-
-            // Update viewport on resize and orientation change
-            window.addEventListener('resize', updateViewport);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(updateViewport, 500); // Delay to let orientation settle
-                console.log('📱 iPhone DEBUG: Orientation changed');
-            });
-
-            // Initial viewport setup
-            updateViewport();
+            console.log('🚀 HIGH SENSITIVITY: Motion Sensor Keep-Alive System initialized');
 
             // Start button
             startButton.onclick = () => {
-                console.log('🚀 iPhone DEBUG: Starting ADAPTIVE mission...');
+                console.log('🚀 Starting HIGH SENSITIVITY mission...');
                 setupScreen.style.display = 'none';
                 gameScreen.style.display = 'grid';
                 gameScreen.classList.add('active');
                 enterFullscreen();
                 hideAddressBar();
-                updateViewport(); // Ensure viewport is correct after transition
-                console.log('✅ iPhone DEBUG: ADAPTIVE mission started');
+                console.log('✅ HIGH SENSITIVITY mission started with enhanced motion system');
             };
 
             // Enhanced button handlers
@@ -1854,17 +1417,8 @@
             }, 30000); // Every 30 seconds
         });
 
-        window.addEventListener('load', () => {
-            hideAddressBar();
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        });
-        
-        window.addEventListener('resize', () => {
-            hideAddressBar();
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        });
+        window.addEventListener('load', hideAddressBar);
+        window.addEventListener('resize', hideAddressBar);
 
         // Prevent page unload to maintain wake lock
         window.addEventListener('beforeunload', async () => {
